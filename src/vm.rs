@@ -5,10 +5,10 @@ use crate::{INST_LEN, Inst, decode_inst};
 const REG_COUNT: usize = 32;
 
 const MEM_LEN: usize = 64 * 1024;
-const STACK_BEGIN: usize = MEM_LEN - 1;
-const STACK_LEN: usize = 8 * 1024;
+const STACK_BEGIN: u64 = (MEM_LEN as u64) - 1;
+const STACK_LEN: u64 = 8 * 1024;
 
-const PROG_LEN: usize = MEM_LEN - STACK_LEN;
+const PROG_LEN: usize = MEM_LEN - (STACK_LEN as usize);
 const PROG_BEGIN: usize = 0;
 
 pub struct VM {
@@ -17,7 +17,6 @@ pub struct VM {
 
     pub(crate) halt: bool,
     pub(crate) pc: usize,
-    pub(crate) sp: usize,
 }
 impl Default for VM {
     fn default() -> Self {
@@ -32,14 +31,13 @@ impl VM {
 
             halt: false,
             pc: PROG_BEGIN,
-            sp: STACK_BEGIN,
         }
     }
 
     pub fn reset(&mut self) {
         self.halt = false;
         self.pc = PROG_BEGIN;
-        self.sp = STACK_BEGIN;
+        self.set_x(2, STACK_BEGIN);
     }
 
     pub fn load_program_from_bytes(&mut self, bytes: &[u8]) -> Result<(), VMLoadError> {
@@ -71,21 +69,21 @@ impl VM {
 
     pub fn push(&mut self, bytes: &[u8]) -> Result<(), VMRunError> {
         for b in bytes.iter().rev() {
-            if self.sp <= STACK_BEGIN - STACK_LEN {
+            if self.x(2) <= STACK_BEGIN - STACK_LEN {
                 return Err(VMRunError::StackOverflow);
             }
-            self.mem[self.sp] = *b;
-            self.sp -= 1;
+            self.mem[self.x(2) as usize] = *b;
+            self.set_x(2, self.x(2) - 1);
         }
         Ok(())
     }
 
     pub fn pop(&mut self, len: usize) -> Result<&[u8], VMRunError> {
-        if self.sp + len > STACK_BEGIN {
+        if self.x(2) + (len as u64) > STACK_BEGIN {
             return Err(VMRunError::StackUnderflow);
         }
-        let v = self.sp + 1;
-        self.sp += len;
+        let v = (self.x(2) + 1) as usize;
+        self.set_x(2, self.x(2) + len as u64);
         Ok(&self.mem[v..v + len])
     }
 
@@ -119,7 +117,7 @@ impl VM {
     pub fn display(&self, out: &mut impl Write) -> io::Result<()> {
         writeln!(out, "# state")?;
         writeln!(out, "ip: {:x}", self.pc)?;
-        writeln!(out, "sp: {:x}", self.sp)?;
+        writeln!(out, "sp: {:x}", self.x(2))?;
         writeln!(out, "# registers")?;
         for j in 0..8 {
             for i in 0..4 {
