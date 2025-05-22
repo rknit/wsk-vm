@@ -47,3 +47,33 @@ pub fn sraiw(rd: usize, rs1: usize, imm: i64) -> Inst {
         Ok(())
     })
 }
+
+pub fn ld(rd: usize, rs1: usize, imm: i64) -> Inst {
+    trace!("ld x{rd}, {imm:#x}(x{rs1})");
+    inst!(vm {
+        let rs1 = vm.x(rs1);
+        let addr = rs1.wrapping_add_signed(imm);
+        let mut bytes: [u8; 8] = Default::default();
+        for (i, byte) in bytes.iter_mut().enumerate() {
+            let v = vm.mem((addr as usize) + i)?;
+            *byte = v;
+        }
+        vm.set_x(rd, u64::from_le_bytes(bytes));
+        Ok(())
+    })
+}
+
+pub fn lwu(rd: usize, rs1: usize, imm: i64) -> Inst {
+    trace!("lwu x{rd}, {imm:#x}(x{rs1})");
+    inst!(vm {
+        let rs1 = vm.x(rs1);
+        let addr = rs1.wrapping_add_signed(imm);
+        let mut bytes: [u8; 4] = Default::default();
+        for (i, byte) in bytes.iter_mut().enumerate() {
+            let v = vm.mem((addr as usize) + i)?;
+            *byte = v;
+        }
+        vm.set_x(rd, u32::from_le_bytes(bytes) as u64);
+        Ok(())
+    })
+}
