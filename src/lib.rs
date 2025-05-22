@@ -2,10 +2,10 @@
 
 mod bits;
 mod format;
-mod inst;
+mod insts;
 mod vm;
 
 use bits::*;
 use format::*;
-use inst::*;
+use insts::*;
 pub use vm::*;

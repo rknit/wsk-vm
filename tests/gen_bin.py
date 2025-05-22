@@ -1,6 +1,7 @@
 hexdump = """
-3e800093
+00200093
 00108133
+002101b3
 """
 
 clean = [c for c in hexdump if not c.isspace()]

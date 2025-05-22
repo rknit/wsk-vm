@@ -34,6 +34,10 @@ pub const fn sext_imm_21(v: u64) -> i64 {
     sext(v as u128, 20) as i64
 }
 
+pub const fn opcode(v: u32) -> u8 {
+    ext!(v, u8; 6;2)
+}
+
 pub const fn funct3_14_12(v: u32) -> u8 {
     ext!(v, u8; 14;12)
 }

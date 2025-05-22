@@ -1,6 +1,6 @@
 use std::io::{self, Write};
 
-use crate::{INST_LEN, RunInst, decode_inst};
+use crate::{INST_LEN, Inst, decode_inst};
 
 const REG_COUNT: usize = 32;
 
@@ -15,9 +15,9 @@ pub struct VM {
     regs: [u64; REG_COUNT],
     mem: Box<[u8]>,
 
-    halt: bool,
-    ip: usize,
-    sp: usize,
+    pub(crate) halt: bool,
+    pub(crate) pc: usize,
+    pub(crate) sp: usize,
 }
 impl Default for VM {
     fn default() -> Self {
@@ -31,14 +31,14 @@ impl VM {
             mem: vec![0; MEM_LEN].into_boxed_slice(),
 
             halt: false,
-            ip: PROG_BEGIN,
+            pc: PROG_BEGIN,
             sp: STACK_BEGIN,
         }
     }
 
     pub fn reset(&mut self) {
         self.halt = false;
-        self.ip = PROG_BEGIN;
+        self.pc = PROG_BEGIN;
         self.sp = STACK_BEGIN;
     }
 
@@ -51,10 +51,6 @@ impl VM {
         Ok(())
     }
 
-    pub fn halt(&mut self) {
-        self.halt = true;
-    }
-
     pub fn run(&mut self) -> Result<(), VMRunError> {
         while !self.halt {
             let inst = self.next_inst();
@@ -63,12 +59,12 @@ impl VM {
         Ok(())
     }
 
-    pub(crate) fn next_inst(&mut self) -> Box<dyn RunInst> {
+    pub(crate) fn next_inst(&mut self) -> Inst {
         let mut bytes: [u8; INST_LEN] = Default::default();
         for (i, byte) in bytes.iter_mut().enumerate() {
-            *byte = self.mem[(self.ip + i) % (PROG_LEN)];
+            *byte = self.mem[(self.pc + i) % (PROG_LEN)];
         }
-        self.ip = (self.ip + INST_LEN) % (PROG_LEN);
+        self.pc = (self.pc + INST_LEN) % (PROG_LEN);
 
         decode_inst(bytes)
     }
@@ -122,13 +118,13 @@ impl VM {
 
     pub fn display(&self, out: &mut impl Write) -> io::Result<()> {
         writeln!(out, "# state")?;
-        writeln!(out, "ip: {}", self.ip)?;
-        writeln!(out, "sp: {}", self.sp)?;
+        writeln!(out, "ip: {:x}", self.pc)?;
+        writeln!(out, "sp: {:x}", self.sp)?;
         writeln!(out, "# registers")?;
         for j in 0..8 {
             for i in 0..4 {
                 let idx = j * 4 + i;
-                write!(out, "x{idx}: {}, ", self.x(idx))?;
+                write!(out, "x{idx}: {:x}, ", self.x(idx))?;
             }
             writeln!(out)?;
         }
