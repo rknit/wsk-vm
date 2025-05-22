@@ -15,6 +15,9 @@ use rv64i::*;
 mod rv32m_rv64m;
 use rv32m_rv64m::*;
 
+mod rv64m;
+use rv64m::*;
+
 pub const INST_LEN: usize = 4;
 
 pub(crate) fn decode_inst(bytes: [u8; INST_LEN]) -> Inst {
@@ -136,21 +139,31 @@ pub(crate) fn decode_inst(bytes: [u8; INST_LEN]) -> Inst {
         0b01101 => u(lui, inst),
         0b01110 => r(
             match funct3_14_12(inst) {
-                0b000 => {
-                    if funct7_31_25(inst) > 0 {
-                        subw
-                    } else {
-                        addw
-                    }
-                }
+                0b000 => match funct7_31_25(inst) {
+                    0b0000000 => addw,
+                    0b0000001 => mulw,
+                    0b0100000 => subw,
+                    _ => unimplemented!(),
+                },
                 0b001 => sllw,
-                0b101 => {
-                    if funct7_31_25(inst) > 0 {
-                        sraw
-                    } else {
-                        srlw
-                    }
-                }
+                0b100 => match funct7_31_25(inst) {
+                    0b0000001 => divw,
+                    _ => unimplemented!(),
+                },
+                0b101 => match funct7_31_25(inst) {
+                    0b0000000 => srlw,
+                    0b0000001 => divuw,
+                    0b0100000 => sraw,
+                    _ => unimplemented!(),
+                },
+                0b110 => match funct7_31_25(inst) {
+                    0b0000001 => remw,
+                    _ => unimplemented!(),
+                },
+                0b111 => match funct7_31_25(inst) {
+                    0b0000001 => remuw,
+                    _ => unimplemented!(),
+                },
                 _ => unimplemented!(),
             },
             inst,
