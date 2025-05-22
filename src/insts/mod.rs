@@ -22,6 +22,17 @@ pub(crate) fn decode_inst(bytes: [u8; INST_LEN]) -> Inst {
     }
 
     match opcode(inst) {
+        0b00000 => i(
+            match funct3_14_12(inst) {
+                0b000 => lb,
+                0b001 => lh,
+                0b010 => lw,
+                0b100 => lbu,
+                0b101 => lhu,
+                _ => unimplemented!(),
+            },
+            inst,
+        ),
         0b00100 => i(
             match funct3_14_12(inst) {
                 0b000 => addi,
