@@ -176,3 +176,13 @@ pub fn lhu(rd: usize, rs1: usize, imm: i64) -> Inst {
         Ok(())
     })
 }
+
+pub fn jalr(rd: usize, rs1: usize, imm: i64) -> Inst {
+    trace!("jalr x{rd}, x{rs1}, {imm:#x}");
+    inst!(vm {
+        let rs1 = vm.x(rs1);
+        vm.set_x(rd, (vm.pc + 4) as u64);
+        vm.pc = (rs1.wrapping_add_signed(imm) & !1u64) as usize;
+        Ok(())
+    })
+}

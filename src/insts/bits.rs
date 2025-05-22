@@ -46,7 +46,7 @@ pub const fn funct7_31_25(v: u32) -> u8 {
     ext!(v, u8; 31;25)
 }
 
-pub const fn imm_32_20(v: u32) -> i64 {
+pub const fn imm_31_20(v: u32) -> i64 {
     sext_imm_12(ext!(v, u64; 31;20))
 }
 

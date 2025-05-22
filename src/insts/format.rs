@@ -8,7 +8,7 @@ pub fn r(f: impl Fn(usize, usize, usize) -> Inst, inst32: u32) -> Inst {
 
 #[inline]
 pub fn i(f: impl Fn(usize, usize, i64) -> Inst, inst32: u32) -> Inst {
-    f(rd_11_7(inst32), rs1_19_15(inst32), imm_32_20(inst32))
+    f(rd_11_7(inst32), rs1_19_15(inst32), imm_31_20(inst32))
 }
 
 #[inline]

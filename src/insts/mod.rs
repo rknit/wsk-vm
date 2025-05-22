@@ -88,6 +88,7 @@ pub(crate) fn decode_inst(bytes: [u8; INST_LEN]) -> Inst {
             inst,
         ),
         0b01101 => u(lui, inst),
+        0b11001 => i(jalr, inst),
         0b11011 => j(jal, inst),
         _ => unimplemented!(),
     }
