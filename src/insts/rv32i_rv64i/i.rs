@@ -1,8 +1,6 @@
 use log::trace;
 
-use crate::{bits::sext, ext};
-
-use super::{Inst, inst};
+use super::super::{Inst, ext, inst, sext};
 
 pub fn lui(rd: usize, imm: i64) -> Inst {
     trace!("lui x{rd}, {imm:#x}");

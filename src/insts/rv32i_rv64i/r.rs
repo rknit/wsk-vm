@@ -2,7 +2,7 @@ use log::trace;
 
 use crate::ext;
 
-use super::{Inst, inst};
+use super::super::{Inst, inst};
 
 pub fn add(rd: usize, rs1: usize, rs2: usize) -> Inst {
     trace!("add x{rd}, x{rs1}, x{rs2}");

@@ -2,7 +2,7 @@ use log::trace;
 
 use crate::ext;
 
-use super::{Inst, inst};
+use super::super::{Inst, inst};
 
 pub fn sb(rs1: usize, rs2: usize, imm: i64) -> Inst {
     trace!("sb x{rs2}, {imm:#x}(x{rs1})");

@@ -1,4 +1,5 @@
-use crate::{Inst, bits::*, ext};
+use super::bits::*;
+use crate::{Inst, ext};
 
 #[inline]
 pub fn r(f: impl Fn(usize, usize, usize) -> Inst, inst32: u32) -> Inst {
