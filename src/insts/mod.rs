@@ -12,6 +12,9 @@ use rv32i_rv64i::*;
 mod rv64i;
 use rv64i::*;
 
+mod rv32m_rv64m;
+use rv32m_rv64m::*;
+
 pub const INST_LEN: usize = 4;
 
 pub(crate) fn decode_inst(bytes: [u8; INST_LEN]) -> Inst {
@@ -84,26 +87,48 @@ pub(crate) fn decode_inst(bytes: [u8; INST_LEN]) -> Inst {
         ),
         0b01100 => r(
             match funct3_14_12(inst) {
-                0b000 => {
-                    if funct7_31_25(inst) > 0 {
-                        sub
-                    } else {
-                        add
-                    }
-                }
-                0b001 => sll,
-                0b010 => slt,
-                0b011 => sltu,
-                0b100 => xor,
-                0b101 => {
-                    if funct7_31_25(inst) > 0 {
-                        sra
-                    } else {
-                        srl
-                    }
-                }
-                0b110 => or,
-                0b111 => and,
+                0b000 => match funct7_31_25(inst) {
+                    0b0000000 => add,
+                    0b0000001 => mul,
+                    0b0100000 => sub,
+                    _ => unimplemented!(),
+                },
+                0b001 => match funct7_31_25(inst) {
+                    0b0000000 => sll,
+                    0b0000001 => mulh,
+                    _ => unimplemented!(),
+                },
+                0b010 => match funct7_31_25(inst) {
+                    0b0000000 => slt,
+                    0b0000001 => mulhsu,
+                    _ => unimplemented!(),
+                },
+                0b011 => match funct7_31_25(inst) {
+                    0b0000000 => sltu,
+                    0b0000001 => mulhu,
+                    _ => unimplemented!(),
+                },
+                0b100 => match funct7_31_25(inst) {
+                    0b0000000 => xor,
+                    0b0000001 => div,
+                    _ => unimplemented!(),
+                },
+                0b101 => match funct7_31_25(inst) {
+                    0b0000000 => srl,
+                    0b0000001 => divu,
+                    0b0100000 => sra,
+                    _ => unimplemented!(),
+                },
+                0b110 => match funct7_31_25(inst) {
+                    0b0000000 => or,
+                    0b0000001 => rem,
+                    _ => unimplemented!(),
+                },
+                0b111 => match funct7_31_25(inst) {
+                    0b0000000 => and,
+                    0b0000001 => remu,
+                    _ => unimplemented!(),
+                },
                 _ => unimplemented!(),
             },
             inst,
