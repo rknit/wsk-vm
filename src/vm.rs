@@ -1,3 +1,5 @@
+use std::io::{self, Write};
+
 use crate::{INST_LEN, RunInst, decode_inst};
 
 const REG_COUNT: usize = 32;
@@ -9,7 +11,6 @@ const STACK_LEN: usize = 8 * 1024;
 const PROG_LEN: usize = MEM_LEN - STACK_LEN;
 const PROG_BEGIN: usize = 0;
 
-#[derive(Debug)]
 pub struct VM {
     regs: [u64; REG_COUNT],
     mem: Box<[u8]>,
@@ -17,6 +18,11 @@ pub struct VM {
     halt: bool,
     ip: usize,
     sp: usize,
+}
+impl Default for VM {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 impl VM {
     pub fn new() -> Self {
@@ -112,6 +118,21 @@ impl VM {
     pub fn set_x(&mut self, i: usize, val: u64) {
         assert!(i < REG_COUNT, "invalid register");
         self.regs[i] = val;
+    }
+
+    pub fn display(&self, out: &mut impl Write) -> io::Result<()> {
+        writeln!(out, "# state")?;
+        writeln!(out, "ip: {}", self.ip)?;
+        writeln!(out, "sp: {}", self.sp)?;
+        writeln!(out, "# registers")?;
+        for j in 0..8 {
+            for i in 0..4 {
+                let idx = j * 4 + i;
+                write!(out, "x{idx}: {}, ", self.x(idx))?;
+            }
+            writeln!(out)?;
+        }
+        Ok(())
     }
 }
 

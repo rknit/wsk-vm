@@ -19,7 +19,7 @@ where
 
 pub(crate) fn decode_inst(bytes: [u8; INST_LEN]) -> Box<dyn RunInst> {
     let inst32 = u32::from_be_bytes(bytes);
-    trace!("decoding: {:032b}", inst32);
+    trace!("decoding: {inst32:032b}");
 
     if inst32 == 0 {
         return halt();
@@ -43,6 +43,7 @@ pub(crate) fn decode_inst(bytes: [u8; INST_LEN]) -> Box<dyn RunInst> {
 }
 
 fn halt() -> Box<dyn RunInst> {
+    trace!("halt");
     Box::new(move |vm: &mut VM| {
         vm.halt();
         Ok(())
