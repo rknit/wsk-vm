@@ -6,3 +6,4 @@ rust-version = "1.88"
 
 [dependencies]
 wsk-ir = { path = "../wsk-ir" }
+log = "0.4.27"

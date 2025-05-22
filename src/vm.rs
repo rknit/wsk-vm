@@ -1,4 +1,4 @@
-use crate::{INST_LEN, Inst, decode_inst};
+use crate::{INST_LEN, RunInst, decode_inst};
 
 const REG_COUNT: usize = 32;
 
@@ -45,15 +45,19 @@ impl VM {
         Ok(())
     }
 
+    pub fn halt(&mut self) {
+        self.halt = true;
+    }
+
     pub fn run(&mut self) -> Result<(), VMRunError> {
         while !self.halt {
             let inst = self.next_inst();
-            inst(self)?;
+            inst.run_inst(self)?;
         }
         Ok(())
     }
 
-    pub fn next_inst(&mut self) -> Inst {
+    pub(crate) fn next_inst(&mut self) -> Box<dyn RunInst> {
         let mut bytes: [u8; INST_LEN] = Default::default();
         for (i, byte) in bytes.iter_mut().enumerate() {
             *byte = self.mem[(self.ip + i) % (PROG_LEN)];
