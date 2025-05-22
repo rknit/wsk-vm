@@ -106,6 +106,27 @@ pub(crate) fn decode_inst(bytes: [u8; INST_LEN]) -> Inst {
             inst,
         ),
         0b01101 => u(lui, inst),
+        0b01110 => r(
+            match funct3_14_12(inst) {
+                0b000 => {
+                    if funct7_31_25(inst) > 0 {
+                        subw
+                    } else {
+                        addw
+                    }
+                }
+                0b001 => sllw,
+                0b101 => {
+                    if funct7_31_25(inst) > 0 {
+                        sraw
+                    } else {
+                        srlw
+                    }
+                }
+                _ => unimplemented!(),
+            },
+            inst,
+        ),
         0b11000 => b(
             match funct3_14_12(inst) {
                 0b000 => beq,
