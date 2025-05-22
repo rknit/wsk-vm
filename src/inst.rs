@@ -1,6 +1,6 @@
 use log::trace;
 
-use crate::{VM, VMRunError, bits::sext_20_32_to_i64, ext};
+use crate::{VM, VMRunError, ext, i, r};
 
 pub const INST_LEN: usize = 4;
 
@@ -26,18 +26,8 @@ pub(crate) fn decode_inst(bytes: [u8; INST_LEN]) -> Box<dyn RunInst> {
     }
 
     match ext!(inst32, u8; 6;2) {
-        0b00100 => {
-            let rd = ext!(inst32, usize; 11;7);
-            let rs1 = ext!(inst32, usize; 19;15);
-            let imm = sext_20_32_to_i64(inst32);
-            addi(rd, rs1, imm)
-        }
-        0b01100 => {
-            let rd = ext!(inst32, usize; 11;7);
-            let rs1 = ext!(inst32, usize; 19;15);
-            let rs2 = ext!(inst32, usize; 24;20);
-            add(rd, rs1, rs2)
-        }
+        0b00100 => i(addi, inst32),
+        0b01100 => r(add, inst32),
         _ => unimplemented!(),
     }
 }

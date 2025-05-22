@@ -1,9 +1,11 @@
 #![allow(dead_code)]
 
 mod bits;
+mod format;
 mod inst;
 mod vm;
 
 use bits::*;
-pub use inst::*;
+use format::*;
+use inst::*;
 pub use vm::*;
