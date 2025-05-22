@@ -9,6 +9,9 @@ use format::*;
 mod rv32i_rv64i;
 use rv32i_rv64i::*;
 
+mod rv64i;
+use rv64i::*;
+
 pub const INST_LEN: usize = 4;
 
 pub(crate) fn decode_inst(bytes: [u8; INST_LEN]) -> Inst {
@@ -52,6 +55,21 @@ pub(crate) fn decode_inst(bytes: [u8; INST_LEN]) -> Inst {
             inst,
         ),
         0b00101 => u(auipc, inst),
+        0b00110 => i(
+            match funct3_14_12(inst) {
+                0b000 => addiw,
+                0b001 => slliw,
+                0b101 => {
+                    if funct7_31_25(inst) > 0 {
+                        sraiw
+                    } else {
+                        srliw
+                    }
+                }
+                _ => unimplemented!(),
+            },
+            inst,
+        ),
         0b01000 => s(
             match funct3_14_12(inst) {
                 0b000 => sb,
