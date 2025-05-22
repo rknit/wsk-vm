@@ -5,7 +5,7 @@ use crate::{bits::sext, ext};
 use super::{Inst, inst};
 
 pub fn lui(rd: usize, imm: i64) -> Inst {
-    trace!("lui x{rd}, ${imm:x}");
+    trace!("lui x{rd}, {imm:#x}");
     inst!(vm {
         vm.set_x(rd, imm as u64);
         Ok(())
@@ -13,7 +13,7 @@ pub fn lui(rd: usize, imm: i64) -> Inst {
 }
 
 pub fn auipc(rd: usize, imm: i64) -> Inst {
-    trace!("auipc x{rd}, ${imm:x}");
+    trace!("auipc x{rd}, {imm:#x}");
     inst!(vm {
         let pc = vm.pc as u64;
         vm.set_x(rd, pc.wrapping_add_signed(imm));
@@ -22,7 +22,7 @@ pub fn auipc(rd: usize, imm: i64) -> Inst {
 }
 
 pub fn addi(rd: usize, rs1: usize, imm: i64) -> Inst {
-    trace!("addi x{rd}, x{rs1}, ${imm:x}");
+    trace!("addi x{rd}, x{rs1}, {imm:#x}");
     inst!(vm {
         let rs1 = vm.x(rs1) as i64;
         let v = rs1.wrapping_add(imm) as u64;
@@ -32,7 +32,7 @@ pub fn addi(rd: usize, rs1: usize, imm: i64) -> Inst {
 }
 
 pub fn slli(rd: usize, rs1: usize, imm: i64) -> Inst {
-    trace!("slli x{rd}, x{rs1}, ${imm:x}");
+    trace!("slli x{rd}, x{rs1}, {imm:#x}");
     inst!(vm {
         let rs1 = vm.x(rs1);
         let shamt = ext!(imm, u64; 5;0);
@@ -42,7 +42,7 @@ pub fn slli(rd: usize, rs1: usize, imm: i64) -> Inst {
 }
 
 pub fn srli(rd: usize, rs1: usize, imm: i64) -> Inst {
-    trace!("srli x{rd}, x{rs1}, ${imm:x}");
+    trace!("srli x{rd}, x{rs1}, {imm:#x}");
     inst!(vm {
         let rs1 = vm.x(rs1);
         let shamt = ext!(imm, u64; 5;0);
@@ -52,7 +52,7 @@ pub fn srli(rd: usize, rs1: usize, imm: i64) -> Inst {
 }
 
 pub fn srai(rd: usize, rs1: usize, imm: i64) -> Inst {
-    trace!("srai x{rd}, x{rs1}, ${imm:x}");
+    trace!("srai x{rd}, x{rs1}, {imm:#x}");
     inst!(vm {
         let rs1 = vm.x(rs1) as i64;
         let shamt = ext!(imm, u64; 5;0);
@@ -62,7 +62,7 @@ pub fn srai(rd: usize, rs1: usize, imm: i64) -> Inst {
 }
 
 pub fn slti(rd: usize, rs1: usize, imm: i64) -> Inst {
-    trace!("slti x{rd}, x{rs1}, ${imm:x}");
+    trace!("slti x{rd}, x{rs1}, {imm:#x}");
     inst!(vm {
         let rs1 = vm.x(rs1) as i64;
         let v = (rs1 < imm) as u64;
@@ -72,7 +72,7 @@ pub fn slti(rd: usize, rs1: usize, imm: i64) -> Inst {
 }
 
 pub fn sltiu(rd: usize, rs1: usize, imm: i64) -> Inst {
-    trace!("sltiu x{rd}, x{rs1}, ${imm:x}");
+    trace!("sltiu x{rd}, x{rs1}, {imm:#x}");
     inst!(vm {
         let rs1 = vm.x(rs1);
         let v = (rs1 < (imm as u64)) as u64;
@@ -82,7 +82,7 @@ pub fn sltiu(rd: usize, rs1: usize, imm: i64) -> Inst {
 }
 
 pub fn xori(rd: usize, rs1: usize, imm: i64) -> Inst {
-    trace!("xori x{rd}, x{rs1}, ${imm:x}");
+    trace!("xori x{rd}, x{rs1}, {imm:#x}");
     inst!(vm {
         let rs1 = vm.x(rs1) as i64;
         let v = (rs1 ^ imm) as u64;
@@ -92,7 +92,7 @@ pub fn xori(rd: usize, rs1: usize, imm: i64) -> Inst {
 }
 
 pub fn ori(rd: usize, rs1: usize, imm: i64) -> Inst {
-    trace!("ori x{rd}, x{rs1}, ${imm:x}");
+    trace!("ori x{rd}, x{rs1}, {imm:#x}");
     inst!(vm {
         let rs1 = vm.x(rs1) as i64;
         let v = (rs1 | imm) as u64;
@@ -102,7 +102,7 @@ pub fn ori(rd: usize, rs1: usize, imm: i64) -> Inst {
 }
 
 pub fn andi(rd: usize, rs1: usize, imm: i64) -> Inst {
-    trace!("andi x{rd}, x{rs1}, ${imm:x}");
+    trace!("andi x{rd}, x{rs1}, {imm:#x}");
     inst!(vm {
         let rs1 = vm.x(rs1) as i64;
         let v = (rs1 & imm) as u64;
@@ -112,7 +112,7 @@ pub fn andi(rd: usize, rs1: usize, imm: i64) -> Inst {
 }
 
 pub fn lb(rd: usize, rs1: usize, imm: i64) -> Inst {
-    trace!("lb x{rd}, ${imm:x}");
+    trace!("lb x{rd}, {imm:#x}(x{rs1})");
     inst!(vm {
         let rs1 = vm.x(rs1);
         let addr = rs1.wrapping_add_signed(imm);
@@ -124,7 +124,7 @@ pub fn lb(rd: usize, rs1: usize, imm: i64) -> Inst {
 }
 
 pub fn lh(rd: usize, rs1: usize, imm: i64) -> Inst {
-    trace!("lh x{rd}, ${imm:x}");
+    trace!("lh x{rd}, {imm:#x}(x{rs1})");
     inst!(vm {
         let rs1 = vm.x(rs1);
         let addr = rs1.wrapping_add_signed(imm);
@@ -139,7 +139,7 @@ pub fn lh(rd: usize, rs1: usize, imm: i64) -> Inst {
 }
 
 pub fn lw(rd: usize, rs1: usize, imm: i64) -> Inst {
-    trace!("lw x{rd}, ${imm:x}");
+    trace!("lw x{rd}, {imm:#x}(x{rs1})");
     inst!(vm {
         let rs1 = vm.x(rs1);
         let addr = rs1.wrapping_add_signed(imm);
@@ -154,7 +154,7 @@ pub fn lw(rd: usize, rs1: usize, imm: i64) -> Inst {
 }
 
 pub fn lbu(rd: usize, rs1: usize, imm: i64) -> Inst {
-    trace!("lbu x{rd}, ${imm:x}");
+    trace!("lbu x{rd}, {imm:#x}(x{rs1})");
     inst!(vm {
         let rs1 = vm.x(rs1);
         let addr = rs1.wrapping_add_signed(imm);
@@ -165,7 +165,7 @@ pub fn lbu(rd: usize, rs1: usize, imm: i64) -> Inst {
 }
 
 pub fn lhu(rd: usize, rs1: usize, imm: i64) -> Inst {
-    trace!("lhu x{rd}, ${imm:x}");
+    trace!("lhu x{rd}, {imm:#x}(x{rs1})");
     inst!(vm {
         let rs1 = vm.x(rs1);
         let addr = rs1.wrapping_add_signed(imm);

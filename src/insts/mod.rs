@@ -1,21 +1,25 @@
 use crate::{
     VM, VMRunError,
     bits::{funct3_14_12, funct7_31_25},
-    ext, i, opcode, r, u,
+    ext,
+    format::s,
+    i, opcode, r, u,
 };
 use log::trace;
 
 mod rv32i_rv64i_i;
 mod rv32i_rv64i_r;
+mod rv32i_rv64i_s;
 
 use rv32i_rv64i_i::*;
 use rv32i_rv64i_r::*;
+use rv32i_rv64i_s::*;
 
 pub const INST_LEN: usize = 4;
 
 pub(crate) fn decode_inst(bytes: [u8; INST_LEN]) -> Inst {
     let inst = u32::from_be_bytes(bytes);
-    trace!("decoding: {inst:032b}");
+    // trace!("decoding: {inst:032b}");
 
     if inst == 0 {
         return halt();
@@ -54,6 +58,15 @@ pub(crate) fn decode_inst(bytes: [u8; INST_LEN]) -> Inst {
             inst,
         ),
         0b00101 => u(auipc, inst),
+        0b01000 => s(
+            match funct3_14_12(inst) {
+                0b000 => sb,
+                0b001 => sh,
+                0b010 => sw,
+                _ => unimplemented!(),
+            },
+            inst,
+        ),
         0b01100 => r(
             match funct3_14_12(inst) {
                 0b000 => {
