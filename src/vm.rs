@@ -221,53 +221,132 @@ pub(crate) struct Report {
 impl Report {
     pub(crate) fn u(&mut self, inst: &'static str, rd: usize, imm: i64) {
         self.inst = if imm < 0 {
-            format!("{inst}\tx{rd}, {}", imm >> 12)
+            format!("{inst}\t{}, {}", Self::x_name(rd), imm >> 12)
         } else {
-            format!("{inst}\tx{rd}, {:#x}", imm >> 12)
+            format!("{inst}\t{}, {:#x}", Self::x_name(rd), imm >> 12)
         };
     }
 
     pub(crate) fn i(&mut self, inst: &'static str, rd: usize, rs1: usize, imm: i64) {
-        self.inst = if imm < 0 {
-            format!("{inst}\tx{rd}, x{rs1}, {imm}")
+        self.inst = if matches!(inst, "jalr") {
+            if imm < 0 {
+                format!("{inst}\t{}, {imm}({})", Self::x_name(rd), Self::x_name(rs1))
+            } else {
+                format!(
+                    "{inst}\t{}, {imm:#x}({})",
+                    Self::x_name(rd),
+                    Self::x_name(rs1)
+                )
+            }
+        } else if imm < 0 {
+            format!("{inst}\t{}, {}, {imm}", Self::x_name(rd), Self::x_name(rs1))
         } else {
-            format!("{inst}\tx{rd}, x{rs1}, {imm:#x}")
+            format!(
+                "{inst}\t{}, {}, {imm:#x}",
+                Self::x_name(rd),
+                Self::x_name(rs1)
+            )
         };
     }
 
     pub(crate) fn l(&mut self, inst: &'static str, rd: usize, rs1: usize, imm: i64) {
         self.inst = if imm < 0 {
-            format!("{inst}\tx{rd}, {imm}(x{rs1})")
+            format!("{inst}\t{}, {imm}({})", Self::x_name(rd), Self::x_name(rs1))
         } else {
-            format!("{inst}\tx{rd}, {imm:#x}(x{rs1})")
+            format!(
+                "{inst}\t{}, {imm:#x}({})",
+                Self::x_name(rd),
+                Self::x_name(rs1)
+            )
         };
     }
 
     pub(crate) fn r(&mut self, inst: &'static str, rd: usize, rs1: usize, rs2: usize) {
-        self.inst = format!("{inst}\tx{rd}, x{rs1}, x{rs2}");
+        self.inst = format!(
+            "{inst}\t{}, {}, {}",
+            Self::x_name(rd),
+            Self::x_name(rs1),
+            Self::x_name(rs2)
+        );
     }
 
     pub(crate) fn b(&mut self, inst: &'static str, rs1: usize, rs2: usize, imm: i64) {
         self.inst = if imm < 0 {
-            format!("{inst}\tx{rs1}, x{rs2}, {}", imm >> 1)
+            format!(
+                "{inst}\t{}, {}, {}",
+                Self::x_name(rs1),
+                Self::x_name(rs2),
+                imm >> 1
+            )
         } else {
-            format!("{inst}\tx{rs1}, x{rs2}, {:#x}", imm >> 1)
+            format!(
+                "{inst}\t{}, {}, {:#x}",
+                Self::x_name(rs1),
+                Self::x_name(rs2),
+                imm >> 1
+            )
         };
     }
 
     pub(crate) fn j(&mut self, inst: &'static str, rd: usize, imm: i64) {
-        self.inst = if imm < 0 {
-            format!("{inst}\tx{rd}, {}", imm >> 1)
-        } else {
-            format!("{inst}\tx{rd}, {:#x}", imm >> 1)
-        };
+        self.inst = format!(
+            "{inst}\t{:#x}\t# rd = {}",
+            self.pc.wrapping_add_signed(imm as isize),
+            Self::x_name(rd)
+        );
     }
 
     pub(crate) fn s(&mut self, inst: &'static str, rs1: usize, rs2: usize, imm: i64) {
         self.inst = if imm < 0 {
-            format!("{inst}\tx{rs2}, {imm}(x{rs1})")
+            format!(
+                "{inst}\t{}, {imm}({})",
+                Self::x_name(rs2),
+                Self::x_name(rs1)
+            )
         } else {
-            format!("{inst}\tx{rs2}, {imm:#x}(x{rs1})")
+            format!(
+                "{inst}\t{}, {imm:#x}({})",
+                Self::x_name(rs2),
+                Self::x_name(rs1)
+            )
         };
+    }
+
+    fn x_name(i: usize) -> &'static str {
+        match i {
+            0 => "zero",
+            1 => "ra",
+            2 => "sp",
+            3 => "gp",
+            4 => "tp",
+            5 => "t0",
+            6 => "t1",
+            7 => "t2",
+            8 => "s0",
+            9 => "s1",
+            10 => "a0",
+            11 => "a1",
+            12 => "a2",
+            13 => "a3",
+            14 => "a4",
+            15 => "a5",
+            16 => "a6",
+            17 => "a7",
+            18 => "s2",
+            19 => "s3",
+            20 => "s4",
+            21 => "s5",
+            22 => "s6",
+            23 => "s7",
+            24 => "s8",
+            25 => "s9",
+            26 => "s10",
+            27 => "s11",
+            28 => "t3",
+            29 => "t4",
+            30 => "t5",
+            31 => "t6",
+            _ => panic!("invalid register"),
+        }
     }
 }

@@ -50,6 +50,6 @@ inst_i!(
     jalr = {
         let rs1_val = vm.x(rs1);
         vm.set_x(rd, (vm.pc + 4) as u64);
-        vm.pc = (rs1_val.wrapping_add_signed(imm) & !1u64) as usize;
+        vm.pc = ((rs1_val.wrapping_add_signed(imm) & !1u64) - 4) as usize;
     },
 );
