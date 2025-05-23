@@ -23,7 +23,7 @@ fn main() {
         }
     };
 
-    if let Err(e) = vm.load_program_from_bytes(&bytes) {
+    if let Err(e) = vm.load_executable_bytes(&bytes) {
         eprintln!("load prog error: {e:?}");
         exit(3);
     }

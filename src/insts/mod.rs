@@ -21,8 +21,8 @@ use rv64m::*;
 pub const INST_LEN: usize = 4;
 
 pub(crate) fn decode_inst(bytes: [u8; INST_LEN]) -> Inst {
-    let inst = u32::from_be_bytes(bytes);
-    // trace!("decoding: {inst:032b}");
+    let inst = u32::from_le_bytes(bytes);
+    trace!("decoding {inst:08x}");
 
     if inst == 0 {
         return halt();

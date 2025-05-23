@@ -1,15 +1,19 @@
 use std::io::{self, Write};
 
+use log::trace;
+
 use crate::{INST_LEN, Inst, decode_inst};
 
 const REG_COUNT: usize = 32;
 
-const MEM_LEN: usize = 64 * 1024;
+const MEM_LEN: usize = 64 * MEGABYTE;
 const STACK_BEGIN: u64 = (MEM_LEN as u64) - 1;
-const STACK_LEN: u64 = 8 * 1024;
+const STACK_LEN: u64 = 8 * MEGABYTE as u64;
 
 const PROG_LEN: usize = MEM_LEN - (STACK_LEN as usize);
 const PROG_BEGIN: usize = 0;
+
+const MEGABYTE: usize = 1024 * 1024;
 
 pub struct VM {
     regs: [u64; REG_COUNT],
@@ -40,17 +44,75 @@ impl VM {
         self.set_x(2, STACK_BEGIN);
     }
 
-    pub fn load_program_from_bytes(&mut self, bytes: &[u8]) -> Result<(), VMLoadError> {
-        if PROG_BEGIN + bytes.len() >= PROG_LEN {
-            return Err(VMLoadError::OutOfMemory);
+    pub fn load_executable_bytes(&mut self, bytes: &[u8]) -> Result<(), VMLoadError> {
+        use goblin::Object;
+
+        let obj = match Object::parse(bytes) {
+            Ok(v) => v,
+            Err(e) => return Err(VMLoadError::Unknown(e.to_string())),
+        };
+        let Object::Elf(elf) = obj else {
+            return Err(VMLoadError::InvalidFileType(format!("{obj:#?}")));
+        };
+
+        if elf.is_lib {
+            return Err(VMLoadError::NotABinary);
         }
 
-        self.mem[0..bytes.len()].copy_from_slice(bytes);
+        if !elf.little_endian {
+            return Err(VMLoadError::NotLittleEndian);
+        }
+
+        if !elf.is_64 {
+            return Err(VMLoadError::Not64BitArch);
+        }
+
+        // if PROG_BEGIN + bytes.len() >= PROG_LEN {
+        //     return Err(VMLoadError::OutOfMemory);
+        // }
+        // self.mem[0..bytes.len()].copy_from_slice(bytes);
+
+        for p in &elf.program_headers {
+            match p.p_type {
+                0 => continue,      // PT_NULL
+                1 => (),            // PT_LOAD
+                0x60000000.. => (), // reserved
+                _ => unimplemented!("p_type {:#x}", p.p_type),
+            };
+
+            let bytes_begin = p.p_offset as usize;
+            let bytes_len = p.p_filesz as usize;
+
+            let mem_begin = p.p_vaddr as usize;
+            let mem_len = p.p_memsz as usize;
+
+            let min_len = bytes_len.min(mem_len);
+            self.mem[mem_begin..(mem_begin + min_len)]
+                .copy_from_slice(&bytes[bytes_begin..(bytes_begin + min_len)]);
+
+            if bytes_len < mem_len {
+                let idx = mem_begin + min_len;
+                let end_idx = idx + (mem_len - bytes_len);
+                self.mem[idx..end_idx].fill(0);
+            }
+        }
+
+        // trace!("{:#?}", elf.program_headers);
+
+        self.pc = elf.entry as usize;
+        self.set_x(2, STACK_BEGIN);
+
+        trace!("executable size: {} bytes", bytes.len());
+        trace!("program headers: {}", elf.program_headers.len());
+        trace!("start address: {:#x}", self.pc);
+        trace!("stack address: {:#x}", self.x(2));
+
         Ok(())
     }
 
     pub fn run(&mut self) -> Result<(), VMRunError> {
         while !self.halt {
+            trace!("pc {:#x}", self.pc);
             let inst = self.next_inst();
             inst.run_inst(self)?;
         }
@@ -65,26 +127,6 @@ impl VM {
         self.pc = (self.pc + INST_LEN) % (PROG_LEN);
 
         decode_inst(bytes)
-    }
-
-    pub fn push(&mut self, bytes: &[u8]) -> Result<(), VMRunError> {
-        for b in bytes.iter().rev() {
-            if self.x(2) <= STACK_BEGIN - STACK_LEN {
-                return Err(VMRunError::StackOverflow);
-            }
-            self.mem[self.x(2) as usize] = *b;
-            self.set_x(2, self.x(2) - 1);
-        }
-        Ok(())
-    }
-
-    pub fn pop(&mut self, len: usize) -> Result<&[u8], VMRunError> {
-        if self.x(2) + (len as u64) > STACK_BEGIN {
-            return Err(VMRunError::StackUnderflow);
-        }
-        let v = (self.x(2) + 1) as usize;
-        self.set_x(2, self.x(2) + len as u64);
-        Ok(&self.mem[v..v + len])
     }
 
     pub fn mem(&self, addr: usize) -> Result<u8, VMRunError> {
@@ -132,6 +174,11 @@ impl VM {
 
 #[derive(Debug)]
 pub enum VMLoadError {
+    Unknown(String),
+    InvalidFileType(String),
+    NotABinary,
+    NotLittleEndian,
+    Not64BitArch,
     OutOfMemory,
 }
 
@@ -141,3 +188,5 @@ pub enum VMRunError {
     StackOverflow,
     StackUnderflow,
 }
+
+const ELF_MAGIC: &[u8; 16] = b"\x7f\x45\x4c\x46\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00";
