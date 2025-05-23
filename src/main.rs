@@ -1,6 +1,6 @@
 use std::{env, fs, io::stdout, process::exit};
 
-use wsk_vm::VM;
+use wsk_vm::{VM, VMRunError};
 
 fn main() {
     env_logger::init();
@@ -29,7 +29,10 @@ fn main() {
     }
 
     if let Err(e) = vm.run() {
-        eprintln!("vm error: {e:?}");
+        match e {
+            VMRunError::InvalidAddress(addr) => eprintln!("vm error: invalid adress {addr:#x}"),
+            _ => eprintln!("vm error: {e:?}"),
+        }
         exit(4);
     }
 

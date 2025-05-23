@@ -1,25 +1,16 @@
-use log::trace;
+use crate::inst_s;
 
-use crate::ext;
-
-use super::super::{Inst, inst};
-
-pub fn sb(rs1: usize, rs2: usize, imm: i64) -> Inst {
-    trace!("sb x{rs2}, {imm:#x}(x{rs1})");
-    inst!(vm {
+inst_s!(
+    (vm, rs1, rs2, imm),
+    sb = {
         let rs1 = vm.x(rs1);
         let rs2 = vm.x(rs2);
 
         let data = ext!(rs2, u8; 7;0);
         let addr = rs1.wrapping_add_signed(imm) as usize;
         vm.set_mem(addr, data)?;
-        Ok(())
-    })
-}
-
-pub fn sh(rs1: usize, rs2: usize, imm: i64) -> Inst {
-    trace!("sh x{rs2}, {imm:#x}(x{rs1})");
-    inst!(vm {
+    },
+    sh = {
         let rs1 = vm.x(rs1);
         let rs2 = vm.x(rs2);
 
@@ -28,13 +19,8 @@ pub fn sh(rs1: usize, rs2: usize, imm: i64) -> Inst {
             let data = ext!(rs2, u8; 7+i*8;i*8);
             vm.set_mem(addr + i, data)?;
         }
-        Ok(())
-    })
-}
-
-pub fn sw(rs1: usize, rs2: usize, imm: i64) -> Inst {
-    trace!("sw x{rs2}, {imm:#x}(x{rs1})");
-    inst!(vm {
+    },
+    sw = {
         let rs1 = vm.x(rs1);
         let rs2 = vm.x(rs2);
 
@@ -43,6 +29,5 @@ pub fn sw(rs1: usize, rs2: usize, imm: i64) -> Inst {
             let data = ext!(rs2, u8; 7+i*8;i*8);
             vm.set_mem(addr + i, data)?;
         }
-        Ok(())
-    })
-}
+    },
+);

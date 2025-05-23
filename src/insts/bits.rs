@@ -10,7 +10,7 @@ pub const fn mask(len: usize) -> u128 {
 }
 
 pub const fn sext(v: u128, sign_pos: usize) -> u128 {
-    let mut sign = ext!(v, u128; sign_pos;sign_pos-1);
+    let mut sign = ext!(v, u128; sign_pos+1;sign_pos);
     sign <<= sign_pos;
     let mut rv = v;
     let mut i = sign_pos;

@@ -1,5 +1,4 @@
-use crate::{VM, VMRunError, ext};
-use log::trace;
+use crate::{VM, VMRunError, ext, inst};
 
 mod bits;
 use bits::*;
@@ -20,10 +19,8 @@ use rv64m::*;
 
 pub const INST_LEN: usize = 4;
 
-pub(crate) fn decode_inst(bytes: [u8; INST_LEN]) -> Inst {
-    let inst = u32::from_le_bytes(bytes);
-    trace!("decoding {inst:08x}");
-
+pub(crate) fn decode_inst(inst: u32) -> Inst {
+    // trace!("decoding {inst:08x}");
     if inst == 0 {
         return halt();
     }
@@ -187,11 +184,12 @@ pub(crate) fn decode_inst(bytes: [u8; INST_LEN]) -> Inst {
 }
 
 fn halt() -> Inst {
-    trace!("halt");
-    inst!(vm {
-        vm.halt = true;
-        Ok(())
-    })
+    inst!(
+        vm = {
+            vm.rep.inst = "halt".to_string();
+            vm.halt = true;
+        }
+    )
 }
 
 pub(crate) trait RunInst {
@@ -209,7 +207,161 @@ where
 
 pub type Inst = Box<dyn RunInst>;
 
+#[macro_export]
 macro_rules! inst {
-    ($vm:ident $body:block) => {{ Box::new(move |$vm: &mut $crate::VM| -> Result<(), $crate::VMRunError> { $body }) }};
+    ($vm:ident = $body:block) => {{
+        Box::new(
+            move |$vm: &mut $crate::VM| -> Result<(), $crate::VMRunError> {
+                $body;
+                Ok(())
+            },
+        )
+    }};
 }
-use inst;
+
+#[macro_export]
+macro_rules! inst_r {
+    (($vm:ident, $rd:ident, $rs1:ident, $rs2:ident), $(
+        $name:ident = $body:block
+    ),* $(,)?) => {
+        #[allow(unused_imports)]
+        use $crate::{ext, insts::bits::*};
+
+        $(
+        pub fn $name($rd: usize, $rs1: usize, $rs2: usize) -> $crate::insts::Inst {
+            $crate::inst!(
+                $vm = {
+                    $vm.rep.r(stringify!($name), $rd, $rs1, $rs2);
+                    $body
+                }
+            )
+        }
+        )*
+    };
+}
+
+#[macro_export]
+macro_rules! inst_u {
+    (($vm:ident, $rd:ident, $imm:ident), $(
+        $name:ident = $body:block
+    ),* $(,)?) => {
+        #[allow(unused_imports)]
+        use $crate::{ext, insts::bits::*};
+
+        $(
+        pub fn $name($rd: usize, $imm: i64) -> $crate::insts::Inst {
+            $crate::inst!(
+                $vm = {
+                    $vm.rep.u(stringify!($name), $rd, $imm);
+                    $body
+                }
+            )
+        }
+        )*
+    };
+}
+
+#[macro_export]
+macro_rules! inst_i {
+    (($vm:ident, $rd:ident, $rs1:ident, $imm:ident), $(
+        $name:ident = $body:block
+    ),* $(,)?) => {
+        #[allow(unused_imports)]
+        use $crate::{ext, insts::bits::*};
+
+        $(
+        pub fn $name($rd: usize, $rs1: usize, $imm: i64) -> $crate::insts::Inst {
+            $crate::inst!(
+                $vm = {
+                    $vm.rep.i(stringify!($name), $rd, $rs1, $imm);
+                    $body
+                }
+            )
+        }
+        )*
+    };
+}
+
+#[macro_export]
+macro_rules! inst_l {
+    (($vm:ident, $rd:ident, $rs1:ident, $imm:ident), $(
+        $name:ident = $body:block
+    ),* $(,)?) => {
+        #[allow(unused_imports)]
+        use $crate::{ext, insts::bits::*};
+
+        $(
+        pub fn $name($rd: usize, $rs1: usize, $imm: i64) -> $crate::insts::Inst {
+            $crate::inst!(
+                $vm = {
+                    $vm.rep.l(stringify!($name), $rd, $rs1, $imm);
+                    $body
+                }
+            )
+        }
+        )*
+    };
+}
+
+#[macro_export]
+macro_rules! inst_b {
+    (($vm:ident, $rs1:ident, $rs2:ident, $imm:ident), $(
+        $name:ident = $body:block
+    ),* $(,)?) => {
+        #[allow(unused_imports)]
+        use $crate::{ext, insts::bits::*};
+
+        $(
+        pub fn $name($rs1: usize, $rs2: usize, $imm: i64) -> $crate::insts::Inst {
+            $crate::inst!(
+                $vm = {
+                    $vm.rep.b(stringify!($name), $rs1, $rs2, $imm);
+                    $body
+                }
+            )
+        }
+        )*
+    };
+}
+
+#[macro_export]
+macro_rules! inst_j {
+    (($vm:ident, $rd:ident, $imm:ident), $(
+        $name:ident = $body:block
+    ),* $(,)?) => {
+        #[allow(unused_imports)]
+        use $crate::{ext, insts::bits::*};
+
+        $(
+        pub fn $name($rd: usize, $imm: i64) -> $crate::insts::Inst {
+            $crate::inst!(
+                $vm = {
+                    $vm.rep.j(stringify!($name), $rd, $imm);
+                    $body
+                }
+            )
+        }
+        )*
+    };
+}
+
+#[macro_export]
+macro_rules! inst_s {
+    (($vm:ident, $rs1:ident, $rs2:ident, $imm:ident), $(
+        $name:ident = $body:block
+    ),* $(,)?) => {
+        #[allow(unused_imports)]
+        use $crate::{ext, insts::bits::*};
+
+        $(
+        pub fn $name($rs1: usize, $rs2: usize, $imm: i64) -> $crate::insts::Inst {
+            $crate::inst!(
+                $vm = {
+                    $vm.rep.s(stringify!($name), $rs1, $rs2, $imm);
+                    $body
+                }
+            )
+        }
+        )*
+    };
+}

@@ -21,6 +21,8 @@ pub struct VM {
 
     pub(crate) halt: bool,
     pub(crate) pc: usize,
+
+    pub(crate) rep: Report,
 }
 impl Default for VM {
     fn default() -> Self {
@@ -35,6 +37,8 @@ impl VM {
 
             halt: false,
             pc: PROG_BEGIN,
+
+            rep: Default::default(),
         }
     }
 
@@ -112,28 +116,40 @@ impl VM {
 
     pub fn run(&mut self) -> Result<(), VMRunError> {
         while !self.halt {
-            trace!("pc {:#x}", self.pc);
-            let inst = self.next_inst();
-            inst.run_inst(self)?;
+            self.step()?;
         }
         Ok(())
     }
 
-    pub(crate) fn next_inst(&mut self) -> Inst {
+    pub fn step(&mut self) -> Result<(), VMRunError> {
+        self.rep = Default::default();
+        self.rep.pc = self.pc;
+
+        let inst = self.fetch_inst();
+        inst.run_inst(self)?;
+
+        self.pc = (self.pc + INST_LEN) % (PROG_LEN);
+
+        self.report();
+        Ok(())
+    }
+
+    pub(crate) fn fetch_inst(&mut self) -> Inst {
         let mut bytes: [u8; INST_LEN] = Default::default();
         for (i, byte) in bytes.iter_mut().enumerate() {
             *byte = self.mem[(self.pc + i) % (PROG_LEN)];
         }
-        self.pc = (self.pc + INST_LEN) % (PROG_LEN);
 
-        decode_inst(bytes)
+        let inst = u32::from_le_bytes(bytes);
+        self.rep.raw_inst = inst;
+        decode_inst(inst)
     }
 
     pub fn mem(&self, addr: usize) -> Result<u8, VMRunError> {
         if addr < MEM_LEN {
             Ok(self.mem[addr])
         } else {
-            Err(VMRunError::InvalidAddress)
+            Err(VMRunError::InvalidAddress(addr))
         }
     }
 
@@ -142,7 +158,7 @@ impl VM {
             self.mem[addr] = val;
             Ok(())
         } else {
-            Err(VMRunError::InvalidAddress)
+            Err(VMRunError::InvalidAddress(addr))
         }
     }
 
@@ -170,6 +186,13 @@ impl VM {
         }
         Ok(())
     }
+
+    fn report(&self) {
+        trace!(
+            "{:x}:\t{:08x}\t{}",
+            self.rep.pc, self.rep.raw_inst, self.rep.inst
+        );
+    }
 }
 
 #[derive(Debug)]
@@ -184,9 +207,67 @@ pub enum VMLoadError {
 
 #[derive(Debug)]
 pub enum VMRunError {
-    InvalidAddress,
+    InvalidAddress(usize),
     StackOverflow,
     StackUnderflow,
 }
 
-const ELF_MAGIC: &[u8; 16] = b"\x7f\x45\x4c\x46\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00";
+#[derive(Default)]
+pub(crate) struct Report {
+    pub pc: usize,
+    pub raw_inst: u32,
+    pub inst: String,
+}
+impl Report {
+    pub(crate) fn u(&mut self, inst: &'static str, rd: usize, imm: i64) {
+        self.inst = if imm < 0 {
+            format!("{inst}\tx{rd}, {}", imm >> 12)
+        } else {
+            format!("{inst}\tx{rd}, {:#x}", imm >> 12)
+        };
+    }
+
+    pub(crate) fn i(&mut self, inst: &'static str, rd: usize, rs1: usize, imm: i64) {
+        self.inst = if imm < 0 {
+            format!("{inst}\tx{rd}, x{rs1}, {imm}")
+        } else {
+            format!("{inst}\tx{rd}, x{rs1}, {imm:#x}")
+        };
+    }
+
+    pub(crate) fn l(&mut self, inst: &'static str, rd: usize, rs1: usize, imm: i64) {
+        self.inst = if imm < 0 {
+            format!("{inst}\tx{rd}, {imm}(x{rs1})")
+        } else {
+            format!("{inst}\tx{rd}, {imm:#x}(x{rs1})")
+        };
+    }
+
+    pub(crate) fn r(&mut self, inst: &'static str, rd: usize, rs1: usize, rs2: usize) {
+        self.inst = format!("{inst}\tx{rd}, x{rs1}, x{rs2}");
+    }
+
+    pub(crate) fn b(&mut self, inst: &'static str, rs1: usize, rs2: usize, imm: i64) {
+        self.inst = if imm < 0 {
+            format!("{inst}\tx{rs1}, x{rs2}, {}", imm >> 1)
+        } else {
+            format!("{inst}\tx{rs1}, x{rs2}, {:#x}", imm >> 1)
+        };
+    }
+
+    pub(crate) fn j(&mut self, inst: &'static str, rd: usize, imm: i64) {
+        self.inst = if imm < 0 {
+            format!("{inst}\tx{rd}, {}", imm >> 1)
+        } else {
+            format!("{inst}\tx{rd}, {:#x}", imm >> 1)
+        };
+    }
+
+    pub(crate) fn s(&mut self, inst: &'static str, rs1: usize, rs2: usize, imm: i64) {
+        self.inst = if imm < 0 {
+            format!("{inst}\tx{rs2}, {imm}(x{rs1})")
+        } else {
+            format!("{inst}\tx{rs2}, {imm:#x}(x{rs1})")
+        };
+    }
+}
