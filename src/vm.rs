@@ -192,6 +192,18 @@ impl VM {
         }
     }
 
+    pub fn mem_range_mut(&mut self, addr: usize, len: usize) -> Result<&mut [u8], VMRunError> {
+        if addr + len < MEM_LEN {
+            Ok(&mut self.mem[addr..(addr + len)])
+        } else {
+            Err(VMRunError {
+                pc: self.rep.pc,
+                kind: VMRunErrorKind::InvalidAddress(MEM_LEN),
+                info: "mem_range",
+            })
+        }
+    }
+
     pub fn set_mem(&mut self, addr: usize, val: u8) -> Result<(), VMRunError> {
         if addr < MEM_LEN {
             self.mem[addr] = val;

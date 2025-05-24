@@ -1,4 +1,8 @@
-use std::{fs, io::Write, os::fd::FromRawFd};
+use std::{
+    fs,
+    io::{Read, Write},
+    os::fd::FromRawFd,
+};
 
 use log::warn;
 use util::syscalls;
@@ -46,6 +50,24 @@ syscalls!(
         };
 
         vm.set_x(RET_REG, str_len as u64);
+    },
+    read(63) = {
+        let fd = vm.x(ARG0_REG) as i32;
+        let buf_ptr = vm.x(ARG1_REG) as usize;
+        let rd_len = vm.x(ARG2_REG) as usize;
+
+        let buf_slice = vm.mem_range_mut(buf_ptr, rd_len)?;
+        let mut f = unsafe { fs::File::from_raw_fd(fd) };
+        let actual_rd_len = match f.read(buf_slice) {
+            Ok(v) => v,
+            Err(e) => {
+                warn!("{}: failed to read data: {e}", vm.pc);
+                vm.set_x(RET_REG, -1i64 as u64);
+                return Ok(());
+            }
+        };
+
+        vm.set_x(RET_REG, actual_rd_len as u64);
     },
 );
 
