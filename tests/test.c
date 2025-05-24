@@ -1,5 +1,6 @@
-int main() {
-  int a = 2;
-  int b = 67;
-  return a + b;
-}
+#include <unistd.h>
+
+const char str[] = "Hello World!\n";
+const int len = sizeof(str);
+
+int main() { write(1, str, len); }

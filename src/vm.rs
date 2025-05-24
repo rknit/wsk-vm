@@ -90,6 +90,9 @@ impl VM {
         // }
         // self.mem[0..bytes.len()].copy_from_slice(bytes);
 
+        trace!("executable size: {} bytes", bytes.len());
+        trace!("program headers: {}", elf.program_headers.len());
+
         for p in &elf.program_headers {
             match p.p_type {
                 0 => continue,      // PT_NULL
@@ -113,6 +116,10 @@ impl VM {
                 let end_idx = idx + (mem_len - bytes_len);
                 self.mem[idx..end_idx].fill(0);
             }
+
+            trace!(
+                "loaded program header: v_addr={mem_begin:x}, v_len={mem_len:x}, offset={bytes_begin:x}, f_len={bytes_len:x}"
+            );
         }
 
         // trace!("{:#?}", elf.program_headers);
@@ -120,8 +127,6 @@ impl VM {
         self.pc = elf.entry as usize;
         self.set_x(2, STACK_BEGIN);
 
-        trace!("executable size: {} bytes", bytes.len());
-        trace!("program headers: {}", elf.program_headers.len());
         trace!("start address: {:#x}", self.pc);
         trace!("stack address: {:#x}", self.x(2));
 
@@ -171,6 +176,18 @@ impl VM {
                 pc: self.rep.pc,
                 kind: VMRunErrorKind::InvalidAddress(addr),
                 info: "mem",
+            })
+        }
+    }
+
+    pub fn mem_range(&self, addr: usize, len: usize) -> Result<&[u8], VMRunError> {
+        if addr + len < MEM_LEN {
+            Ok(&self.mem[addr..(addr + len)])
+        } else {
+            Err(VMRunError {
+                pc: self.rep.pc,
+                kind: VMRunErrorKind::InvalidAddress(MEM_LEN),
+                info: "mem_range",
             })
         }
     }
@@ -245,7 +262,11 @@ pub struct VMRunError {
 }
 impl Display for VMRunError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:x}: {}, {}", self.pc, self.kind, self.info)
+        if self.info.is_empty() {
+            write!(f, "{:x}: {}", self.pc, self.kind)
+        } else {
+            write!(f, "{:x}: {}, {}", self.pc, self.kind, self.info)
+        }
     }
 }
 
@@ -253,7 +274,8 @@ impl Display for VMRunError {
 pub enum VMRunErrorKind {
     UnknownInst(u32),
     InvalidAddress(usize),
-    UnknownSyscall(u8),
+    UnknownSyscall(i16),
+    Other(String),
 }
 impl Display for VMRunErrorKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -264,6 +286,7 @@ impl Display for VMRunErrorKind {
                 Self::UnknownInst(inst) => format!("unknown inst: {inst:08x}"),
                 Self::InvalidAddress(addr) => format!("invalid address {addr:x}"),
                 Self::UnknownSyscall(code) => format!("unknown syscall: {code}"),
+                Self::Other(s) => s.clone(),
             }
         )
     }
