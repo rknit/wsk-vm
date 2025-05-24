@@ -5,14 +5,11 @@
 size_t fib(size_t);
 
 int main() {
-  char buf[256];
-  ssize_t len = read(STDIN_FILENO, buf, 256);
-  buf[len] = '\0';
+  size_t n;
+  scanf("%lu", &n);
 
-  int n = atoi(buf);
   size_t v = fib(n);
-  len = sprintf(buf, "%lu\n", v);
-  write(STDOUT_FILENO, buf, len);
+  printf("%lu\n", v);
 }
 
 size_t fib(size_t n) {

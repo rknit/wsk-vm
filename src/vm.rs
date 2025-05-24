@@ -11,7 +11,7 @@ const REG_COUNT: usize = 32;
 
 const MEM_LEN: usize = 64 * MEGABYTE;
 
-const STACK_BEGIN: u64 = (MEM_LEN as u64) - 0x8000;
+const STACK_BEGIN: u64 = MEM_LEN as u64 - (8 * MEGABYTE) as u64;
 const STACK_LEN: u64 = 8 * MEGABYTE as u64;
 
 const PROG_LEN: usize = MEM_LEN - (STACK_LEN as usize);

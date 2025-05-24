@@ -1,9 +1,3 @@
-use std::{
-    fs,
-    io::{Read, Write},
-    os::fd::FromRawFd,
-};
-
 use log::warn;
 use util::syscalls;
 
@@ -29,45 +23,78 @@ syscalls!(
     },
     write(64) = {
         let fd = vm.x(ARG0_REG) as i32;
-        let str_ptr = vm.x(ARG1_REG) as usize;
-        let str_len = vm.x(ARG2_REG) as usize;
+        let buf_ptr = vm.x(ARG1_REG) as usize;
+        let buf_len = vm.x(ARG2_REG) as usize;
 
-        let str_slice = vm.mem_range(str_ptr, str_len)?;
-        let buf = match str::from_utf8(str_slice) {
-            Ok(v) => v,
-            Err(e) => {
-                warn!("{}: failed to read string: {e}", vm.pc);
-                vm.set_x(RET_REG, -1i64 as u64);
-                return Ok(());
-            }
-        };
+        let c_ptr = vm.mem_range(buf_ptr, buf_len)?.as_ptr() as *const _;
+        let wr_len = unsafe { libc::write(fd, c_ptr, buf_len) };
+        if wr_len < 0 {
+            warn!(
+                "{}: failed to write {buf_len} bytes from {buf_ptr:x} to fd({fd})",
+                vm.pc
+            );
+        }
 
-        let mut f = unsafe { fs::File::from_raw_fd(fd) };
-        if let Err(e) = write!(&mut f, "{buf}") {
-            warn!("{}: failed to write string: {e}", vm.pc);
-            vm.set_x(RET_REG, -1i64 as u64);
-            return Ok(());
-        };
-
-        vm.set_x(RET_REG, str_len as u64);
+        vm.set_x(RET_REG, wr_len as u64);
     },
     read(63) = {
         let fd = vm.x(ARG0_REG) as i32;
         let buf_ptr = vm.x(ARG1_REG) as usize;
-        let rd_len = vm.x(ARG2_REG) as usize;
+        let buf_len = vm.x(ARG2_REG) as usize;
 
-        let buf_slice = vm.mem_range_mut(buf_ptr, rd_len)?;
-        let mut f = unsafe { fs::File::from_raw_fd(fd) };
-        let actual_rd_len = match f.read(buf_slice) {
-            Ok(v) => v,
-            Err(e) => {
-                warn!("{}: failed to read data: {e}", vm.pc);
-                vm.set_x(RET_REG, -1i64 as u64);
-                return Ok(());
-            }
-        };
+        let c_ptr = vm.mem_range_mut(buf_ptr, buf_len)?.as_ptr() as *mut _;
+        let rd_len = unsafe { libc::read(fd, c_ptr, buf_len) };
+        if rd_len < 0 {
+            warn!(
+                "{}: failed to read {buf_len} bytes from fd({fd}) to {buf_ptr:x}",
+                vm.pc
+            );
+        }
 
-        vm.set_x(RET_REG, actual_rd_len as u64);
+        vm.set_x(RET_REG, rd_len as u64);
+    },
+    fstat(80) = {
+        vm.set_x(RET_REG, 0); // passthrough
+
+        // let fd = vm.x(ARG0_REG) as i32;
+        // let statbuf_ptr = vm.x(ARG1_REG) as usize;
+
+        // let c_ptr = vm
+        //     .mem_range_mut(statbuf_ptr, size_of::<libc::stat>())?
+        //     .as_ptr() as *mut libc::stat;
+        // let r = unsafe { libc::fstat(fd, c_ptr) };
+        // if r != 0 {
+        //     warn!("{}: failed to query fstat to {statbuf_ptr:x}", vm.pc);
+        // }
+        //
+        // vm.set_x(RET_REG, r as u64);
+    },
+    brk(214) = {
+        vm.set_x(RET_REG, 0); // passthrough
+    },
+    close(57) = {
+        let fd = vm.x(ARG0_REG) as i32;
+        let r = unsafe { libc::close(fd) };
+        if r < 0 {
+            warn!("{}: failed to close fd({fd})", vm.pc);
+        }
+
+        vm.set_x(RET_REG, r as u64);
+    },
+    lseek(62) = {
+        let fd = vm.x(ARG0_REG) as i32;
+        let offset = vm.x(ARG1_REG) as i64;
+        let whence = vm.x(ARG2_REG) as i32;
+
+        let r = unsafe { libc::lseek(fd, offset, whence) };
+        if r < 0 {
+            warn!(
+                "{}: failed to lseek fd({fd}) on offset {offset:x} with whence {whence}",
+                vm.pc
+            );
+        }
+
+        vm.set_x(RET_REG, r as u64);
     },
 );
 
