@@ -47,6 +47,28 @@ pub fn j(f: impl Fn(usize, i64) -> Inst, inst32: u32) -> Inst {
 }
 
 #[macro_export]
+macro_rules! inst_misc {
+    (($vm:ident), $(
+        $name:ident = $body:block
+    ),* $(,)?) => {
+        #[allow(unused_imports)]
+        use $crate::{ext, insts::bits::*};
+
+        $(
+        pub fn $name() -> $crate::insts::Inst {
+            $crate::inst!(
+                $vm = {
+                    let r = $body;
+                    $vm.rep.misc(stringify!($name));
+                    r
+                }
+            )
+        }
+        )*
+    };
+}
+
+#[macro_export]
 macro_rules! inst_r {
     (($vm:ident, $rd:ident, $rs1:ident, $rs2:ident), $(
         $name:ident = $body:block

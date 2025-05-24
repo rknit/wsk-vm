@@ -5,7 +5,7 @@ use std::{
 
 use log::trace;
 
-use crate::{INST_LEN, Inst, decode_inst};
+use crate::{Exception, INST_LEN, Inst, decode_inst};
 
 const REG_COUNT: usize = 32;
 
@@ -22,9 +22,10 @@ const MEGABYTE: usize = 1024 * 1024;
 pub struct VM {
     regs: [u64; REG_COUNT],
     mem: Box<[u8]>,
+    pub pc: usize,
 
     pub(crate) halt: bool,
-    pub pc: usize,
+    pub(crate) exit_code: u8,
 
     pub(crate) rep: Report,
 }
@@ -38,9 +39,10 @@ impl VM {
         Self {
             regs: Default::default(),
             mem: vec![0; MEM_LEN].into_boxed_slice(),
+            pc: PROG_BEGIN,
 
             halt: false,
-            pc: PROG_BEGIN,
+            exit_code: 0,
 
             rep: Default::default(),
         }
@@ -54,6 +56,10 @@ impl VM {
 
     pub fn halted(&self) -> bool {
         self.halt
+    }
+
+    pub fn exit_code(&self) -> u8 {
+        self.exit_code
     }
 
     pub fn load_executable_bytes(&mut self, bytes: &[u8]) -> Result<(), VMLoadError> {
@@ -122,18 +128,18 @@ impl VM {
         Ok(())
     }
 
-    pub fn run(&mut self) -> Result<(), VMRunError> {
+    pub fn run(&mut self) -> Result<u8, VMRunError> {
         while !self.halt {
             self.step()?;
         }
-        Ok(())
+        Ok(self.exit_code())
     }
 
     pub fn step(&mut self) -> Result<(), VMRunError> {
         self.rep = Default::default();
         self.rep.pc = self.pc;
 
-        let inst = self.fetch_inst();
+        let inst = self.fetch_inst()?;
         inst.run_inst(self)?;
 
         self.pc = (self.pc + INST_LEN) % (PROG_LEN);
@@ -142,7 +148,7 @@ impl VM {
         Ok(())
     }
 
-    pub(crate) fn fetch_inst(&mut self) -> Inst {
+    pub(crate) fn fetch_inst(&mut self) -> Result<Inst, VMRunError> {
         let mut bytes: [u8; INST_LEN] = Default::default();
         for (i, byte) in bytes.iter_mut().enumerate() {
             *byte = self.mem[(self.pc + i) % (PROG_LEN)];
@@ -150,7 +156,11 @@ impl VM {
 
         let inst = u32::from_le_bytes(bytes);
         self.rep.raw_inst = inst;
-        decode_inst(inst)
+        decode_inst(inst).map_err(|e| VMRunError {
+            pc: self.rep.pc,
+            kind: e,
+            info: "decode",
+        })
     }
 
     pub fn mem(&self, addr: usize) -> Result<u8, VMRunError> {
@@ -209,6 +219,12 @@ impl VM {
             self.rep.pc, self.rep.raw_inst, self.rep.inst
         )
     }
+
+    pub(crate) fn raise(&mut self, ex: Exception) -> Result<(), VMRunError> {
+        match ex {
+            Exception::EnvCall => self.syscall(),
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -235,7 +251,9 @@ impl Display for VMRunError {
 
 #[derive(Debug)]
 pub enum VMRunErrorKind {
+    UnknownInst(u32),
     InvalidAddress(usize),
+    UnknownSyscall(u8),
 }
 impl Display for VMRunErrorKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -243,7 +261,9 @@ impl Display for VMRunErrorKind {
             f,
             "{}",
             match self {
+                Self::UnknownInst(inst) => format!("unknown inst: {inst:08x}"),
                 Self::InvalidAddress(addr) => format!("invalid address {addr:x}"),
+                Self::UnknownSyscall(code) => format!("unknown syscall: {code}"),
             }
         )
     }
@@ -254,8 +274,18 @@ pub(crate) struct Report {
     pub pc: usize,
     pub raw_inst: u32,
     pub inst: String,
+    pub is_syscall: bool,
+    pub syscall_name: &'static str,
 }
 impl Report {
+    pub(crate) fn misc(&mut self, inst: &'static str) {
+        if self.is_syscall {
+            self.inst = format!("{inst}\t# syscall = {}", self.syscall_name)
+        } else {
+            self.inst = inst.to_owned();
+        }
+    }
+
     pub(crate) fn u(&mut self, inst: &'static str, rd: usize, imm: i64) {
         self.inst = if imm < 0 {
             format!("{inst}\t{}, {}", Self::x_name(rd), imm >> 12)

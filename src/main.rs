@@ -36,13 +36,17 @@ fn main() {
         None => run_prog(&cli.input),
     };
 
-    if let Err(e) = r {
-        eprintln!("vm error: {e}");
-        exit(55);
-    }
+    let exit_code = match r {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("vm error: {e}");
+            exit(55);
+        }
+    };
+    exit(exit_code as i32);
 }
 
-fn run_prog(path: &Path) -> Result<(), VMRunError> {
+fn run_prog(path: &Path) -> Result<u8, VMRunError> {
     let bytes = match fs::read(path) {
         Ok(v) => v,
         Err(e) => {
@@ -55,7 +59,7 @@ fn run_prog(path: &Path) -> Result<(), VMRunError> {
     vm.reset();
 
     if let Err(e) = vm.load_executable_bytes(&bytes) {
-        eprintln!("load prog error: {e:?}");
+        eprintln!("load program error: {e:?}");
         exit(3);
     }
 

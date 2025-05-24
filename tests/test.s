@@ -14,7 +14,7 @@ main:
 	addi	s0,sp,32
 	li	a5,2
 	sw	a5,-20(s0)
-	li	a5,12
+	li	a5,67
 	sw	a5,-24(s0)
 	lw	a5,-20(s0)
 	mv	a4,a5

@@ -1,4 +1,4 @@
-use crate::{VM, VMRunError, inst};
+use crate::{VM, VMRunError, VMRunErrorKind, ext};
 
 mod bits;
 use bits::*;
@@ -19,13 +19,9 @@ use rv64m::*;
 
 pub const INST_LEN: usize = 4;
 
-pub(crate) fn decode_inst(inst: u32) -> Inst {
+pub(crate) fn decode_inst(inst: u32) -> Result<Inst, VMRunErrorKind> {
     // trace!("decoding {inst:08x}");
-    if inst == 0 {
-        return halt();
-    }
-
-    match opcode(inst) {
+    Ok(match opcode(inst) {
         0b00000 => i(
             match funct3_14_12(inst) {
                 0b000 => lb,
@@ -35,7 +31,7 @@ pub(crate) fn decode_inst(inst: u32) -> Inst {
                 0b100 => lbu,
                 0b101 => lhu,
                 0b110 => lwu,
-                _ => unimplemented!(),
+                _ => return Err(VMRunErrorKind::UnknownInst(inst)),
             },
             inst,
         ),
@@ -49,11 +45,11 @@ pub(crate) fn decode_inst(inst: u32) -> Inst {
                 0b101 => match funct7_31_25(inst) {
                     0b0000000 | 0b0000001 => srli,
                     0b0100000 | 0b0100001 => srai,
-                    _ => unimplemented!(),
+                    _ => return Err(VMRunErrorKind::UnknownInst(inst)),
                 },
                 0b110 => ori,
                 0b111 => andi,
-                _ => unimplemented!(),
+                _ => return Err(VMRunErrorKind::UnknownInst(inst)),
             },
             inst,
         ),
@@ -65,9 +61,9 @@ pub(crate) fn decode_inst(inst: u32) -> Inst {
                 0b101 => match funct7_31_25(inst) {
                     0b0000000 => srliw,
                     0b0100000 => sraiw,
-                    _ => unimplemented!(),
+                    _ => return Err(VMRunErrorKind::UnknownInst(inst)),
                 },
-                _ => unimplemented!(),
+                _ => return Err(VMRunErrorKind::UnknownInst(inst)),
             },
             inst,
         ),
@@ -77,7 +73,7 @@ pub(crate) fn decode_inst(inst: u32) -> Inst {
                 0b001 => sh,
                 0b010 => sw,
                 0b011 => sd,
-                _ => unimplemented!(),
+                _ => return Err(VMRunErrorKind::UnknownInst(inst)),
             },
             inst,
         ),
@@ -87,45 +83,45 @@ pub(crate) fn decode_inst(inst: u32) -> Inst {
                     0b0000000 => add,
                     0b0000001 => mul,
                     0b0100000 => sub,
-                    _ => unimplemented!(),
+                    _ => return Err(VMRunErrorKind::UnknownInst(inst)),
                 },
                 0b001 => match funct7_31_25(inst) {
                     0b0000000 => sll,
                     0b0000001 => mulh,
-                    _ => unimplemented!(),
+                    _ => return Err(VMRunErrorKind::UnknownInst(inst)),
                 },
                 0b010 => match funct7_31_25(inst) {
                     0b0000000 => slt,
                     0b0000001 => mulhsu,
-                    _ => unimplemented!(),
+                    _ => return Err(VMRunErrorKind::UnknownInst(inst)),
                 },
                 0b011 => match funct7_31_25(inst) {
                     0b0000000 => sltu,
                     0b0000001 => mulhu,
-                    _ => unimplemented!(),
+                    _ => return Err(VMRunErrorKind::UnknownInst(inst)),
                 },
                 0b100 => match funct7_31_25(inst) {
                     0b0000000 => xor,
                     0b0000001 => div,
-                    _ => unimplemented!(),
+                    _ => return Err(VMRunErrorKind::UnknownInst(inst)),
                 },
                 0b101 => match funct7_31_25(inst) {
                     0b0000000 => srl,
                     0b0000001 => divu,
                     0b0100000 => sra,
-                    _ => unimplemented!(),
+                    _ => return Err(VMRunErrorKind::UnknownInst(inst)),
                 },
                 0b110 => match funct7_31_25(inst) {
                     0b0000000 => or,
                     0b0000001 => rem,
-                    _ => unimplemented!(),
+                    _ => return Err(VMRunErrorKind::UnknownInst(inst)),
                 },
                 0b111 => match funct7_31_25(inst) {
                     0b0000000 => and,
                     0b0000001 => remu,
-                    _ => unimplemented!(),
+                    _ => return Err(VMRunErrorKind::UnknownInst(inst)),
                 },
-                _ => unimplemented!(),
+                _ => return Err(VMRunErrorKind::UnknownInst(inst)),
             },
             inst,
         ),
@@ -136,28 +132,28 @@ pub(crate) fn decode_inst(inst: u32) -> Inst {
                     0b0000000 => addw,
                     0b0000001 => mulw,
                     0b0100000 => subw,
-                    _ => unimplemented!(),
+                    _ => return Err(VMRunErrorKind::UnknownInst(inst)),
                 },
                 0b001 => sllw,
                 0b100 => match funct7_31_25(inst) {
                     0b0000001 => divw,
-                    _ => unimplemented!(),
+                    _ => return Err(VMRunErrorKind::UnknownInst(inst)),
                 },
                 0b101 => match funct7_31_25(inst) {
                     0b0000000 => srlw,
                     0b0000001 => divuw,
                     0b0100000 => sraw,
-                    _ => unimplemented!(),
+                    _ => return Err(VMRunErrorKind::UnknownInst(inst)),
                 },
                 0b110 => match funct7_31_25(inst) {
                     0b0000001 => remw,
-                    _ => unimplemented!(),
+                    _ => return Err(VMRunErrorKind::UnknownInst(inst)),
                 },
                 0b111 => match funct7_31_25(inst) {
                     0b0000001 => remuw,
-                    _ => unimplemented!(),
+                    _ => return Err(VMRunErrorKind::UnknownInst(inst)),
                 },
-                _ => unimplemented!(),
+                _ => return Err(VMRunErrorKind::UnknownInst(inst)),
             },
             inst,
         ),
@@ -169,23 +165,18 @@ pub(crate) fn decode_inst(inst: u32) -> Inst {
                 0b101 => bge,
                 0b110 => bltu,
                 0b111 => bgeu,
-                _ => unimplemented!(),
+                _ => return Err(VMRunErrorKind::UnknownInst(inst)),
             },
             inst,
         ),
         0b11001 => i(jalr, inst),
         0b11011 => j(jal, inst),
-        _ => unimplemented!(),
-    }
-}
-
-fn halt() -> Inst {
-    inst!(
-        vm = {
-            vm.rep.inst = "halt".to_string();
-            vm.halt = true;
-        }
-    )
+        0b11100 => match inst {
+            _ if ext!(inst, u32; 31;7) == 0 => ecall(),
+            _ => return Err(VMRunErrorKind::UnknownInst(inst)),
+        },
+        _ => return Err(VMRunErrorKind::UnknownInst(inst)),
+    })
 }
 
 pub(crate) trait RunInst {
