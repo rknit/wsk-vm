@@ -3,7 +3,7 @@ use std::{
     io::{self, Write},
 };
 
-use log::trace;
+use log::{log_enabled, trace};
 
 use crate::{Exception, INST_LEN, Inst, decode_inst};
 
@@ -149,17 +149,18 @@ impl VM {
 
         self.pc = (self.pc + INST_LEN) % (PROG_LEN);
 
-        trace!("{}", self.report());
+        if log_enabled!(log::Level::Trace) {
+            trace!("{}", self.report());
+        }
         Ok(())
     }
 
     pub(crate) fn fetch_inst(&mut self) -> Result<Inst, VMRunError> {
-        let mut bytes: [u8; INST_LEN] = Default::default();
-        for (i, byte) in bytes.iter_mut().enumerate() {
-            *byte = self.mem[(self.pc + i) % (PROG_LEN)];
-        }
-
-        let inst = u32::from_le_bytes(bytes);
+        let inst = u32::from_le_bytes(unsafe {
+            (&self.mem[self.pc..self.pc + INST_LEN])
+                .try_into()
+                .unwrap_unchecked()
+        });
         self.rep.raw_inst = inst;
         decode_inst(inst).map_err(|e| VMRunError {
             pc: self.rep.pc,

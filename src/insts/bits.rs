@@ -1,37 +1,25 @@
-pub const fn mask(len: usize) -> u128 {
-    let mut v = 0u128;
-    let mut i = 0;
-    while i < len {
-        v <<= 1;
-        v |= 1;
-        i += 1;
-    }
-    v
+#[inline]
+pub const fn mask(len: usize) -> u64 {
+    (!0u64) >> (64 - len)
 }
 
-pub const fn sext(v: u128, sign_pos: usize) -> u128 {
-    let mut sign = ext!(v, u128; sign_pos+1;sign_pos);
-    sign <<= sign_pos;
-    let mut rv = v;
-    let mut i = sign_pos;
-    while i < 128 {
-        sign <<= 1;
-        rv |= sign;
-        i += 1;
-    }
-    rv
+#[inline]
+pub const fn sext(v: u64, sign_pos: usize) -> u64 {
+    let v_shl = (v << (64 - sign_pos - 1)) as i64;
+    let v_shr = v_shl >> (64 - sign_pos - 1);
+    v_shr as u64
 }
 
 pub const fn sext_imm_12(v: u64) -> i64 {
-    sext(v as u128, 11) as i64
+    sext(v, 11) as i64
 }
 
 pub const fn sext_imm_13(v: u64) -> i64 {
-    sext(v as u128, 12) as i64
+    sext(v, 12) as i64
 }
 
 pub const fn sext_imm_21(v: u64) -> i64 {
-    sext(v as u128, 20) as i64
+    sext(v, 20) as i64
 }
 
 pub const fn opcode(v: u32) -> u8 {
@@ -67,7 +55,7 @@ macro_rules! ext {
     ($val:expr, $t:ty; $high:expr;$low:expr) => {{
         let s = $val >> $low;
         let m = $crate::insts::bits::mask($high - $low + 1);
-        ((s as u128) & m) as $t
+        ((s as u64) & m) as $t
     }};
 }
 

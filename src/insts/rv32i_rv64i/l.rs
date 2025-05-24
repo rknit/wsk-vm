@@ -6,7 +6,7 @@ inst_l!(
         let rs1_val = vm.x(rs1);
         let addr = rs1_val.wrapping_add_signed(imm);
         let data = vm.mem(addr as usize)?;
-        let data = sext(data as u128, 7) as u64;
+        let data = sext(data as u64, 7);
         vm.set_x(rd, data);
     },
     lh = {

@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-int factorial(int);
+size_t fib(size_t);
 
 int main() {
   char buf[256];
@@ -10,13 +10,15 @@ int main() {
   buf[len] = '\0';
 
   int n = atoi(buf);
-  int fac = factorial(n);
-  len = sprintf(buf, "%d\n", fac);
+  size_t v = fib(n);
+  len = sprintf(buf, "%lu\n", v);
   write(STDOUT_FILENO, buf, len);
 }
 
-int factorial(int n) {
-  if (n <= 1)
+size_t fib(size_t n) {
+  if (n == 0)
+    return 0;
+  if (n == 1)
     return 1;
-  return n * factorial(n - 1);
+  return fib(n - 1) + fib(n - 2);
 }
