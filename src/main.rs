@@ -1,40 +1,63 @@
-use std::{env, fs, io::stdout, process::exit};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+    process::exit,
+};
 
-use wsk_vm::{VM, VMRunError};
+use clap::{Parser, Subcommand};
+use wsk_vm::{VM, VMRunError, repl::run_repl};
+
+#[derive(Parser)]
+#[command(version, about, long_about=None)]
+struct Cli {
+    /// Path to ELF executable file
+    #[arg(short, long)]
+    input: PathBuf,
+
+    #[command(subcommand)]
+    command: Option<Commands>,
+}
+
+#[derive(Subcommand)]
+enum Commands {
+    /// Use REPL to control VM
+    Repl,
+}
 
 fn main() {
     env_logger::init();
 
-    let mut vm = VM::new();
-    vm.reset();
+    let cli = Cli::parse();
 
-    let path = match env::args().nth(1) {
-        Some(v) => v,
-        None => {
-            eprintln!("usage: wsk-vm <path-to-binary>");
-            exit(1);
-        }
+    let r = match cli.command.as_ref() {
+        Some(cmd) => match cmd {
+            Commands::Repl => run_repl(&cli.input),
+        },
+        None => run_prog(&cli.input),
     };
+
+    if let Err(e) = r {
+        eprintln!("vm error: {e}");
+        exit(55);
+    }
+}
+
+fn run_prog(path: &Path) -> Result<(), VMRunError> {
     let bytes = match fs::read(path) {
         Ok(v) => v,
         Err(e) => {
-            eprintln!("read from file error: {e:?}");
+            eprintln!("read file error: {e}");
             exit(2);
         }
     };
+
+    let mut vm = VM::new();
+    vm.reset();
 
     if let Err(e) = vm.load_executable_bytes(&bytes) {
         eprintln!("load prog error: {e:?}");
         exit(3);
     }
 
-    if let Err(e) = vm.run() {
-        match e {
-            VMRunError::InvalidAddress(addr) => eprintln!("vm error: invalid adress {addr:#x}"),
-            _ => eprintln!("vm error: {e:?}"),
-        }
-        exit(4);
-    }
-
-    vm.display(&mut stdout()).unwrap();
+    vm.run()
 }

@@ -1,4 +1,7 @@
-use std::io::{self, Write};
+use std::{
+    fmt::Display,
+    io::{self, Write},
+};
 
 use log::trace;
 
@@ -7,7 +10,8 @@ use crate::{INST_LEN, Inst, decode_inst};
 const REG_COUNT: usize = 32;
 
 const MEM_LEN: usize = 64 * MEGABYTE;
-const STACK_BEGIN: u64 = (MEM_LEN as u64) - 1;
+
+const STACK_BEGIN: u64 = (MEM_LEN as u64) - 0x8000;
 const STACK_LEN: u64 = 8 * MEGABYTE as u64;
 
 const PROG_LEN: usize = MEM_LEN - (STACK_LEN as usize);
@@ -20,7 +24,7 @@ pub struct VM {
     mem: Box<[u8]>,
 
     pub(crate) halt: bool,
-    pub(crate) pc: usize,
+    pub pc: usize,
 
     pub(crate) rep: Report,
 }
@@ -46,6 +50,10 @@ impl VM {
         self.halt = false;
         self.pc = PROG_BEGIN;
         self.set_x(2, STACK_BEGIN);
+    }
+
+    pub fn halted(&self) -> bool {
+        self.halt
     }
 
     pub fn load_executable_bytes(&mut self, bytes: &[u8]) -> Result<(), VMLoadError> {
@@ -130,7 +138,7 @@ impl VM {
 
         self.pc = (self.pc + INST_LEN) % (PROG_LEN);
 
-        self.report();
+        trace!("{}", self.report());
         Ok(())
     }
 
@@ -149,7 +157,11 @@ impl VM {
         if addr < MEM_LEN {
             Ok(self.mem[addr])
         } else {
-            Err(VMRunError::InvalidAddress(addr))
+            Err(VMRunError {
+                pc: self.rep.pc,
+                kind: VMRunErrorKind::InvalidAddress(addr),
+                info: "mem",
+            })
         }
     }
 
@@ -158,7 +170,11 @@ impl VM {
             self.mem[addr] = val;
             Ok(())
         } else {
-            Err(VMRunError::InvalidAddress(addr))
+            Err(VMRunError {
+                pc: self.rep.pc,
+                kind: VMRunErrorKind::InvalidAddress(addr),
+                info: "set_mem",
+            })
         }
     }
 
@@ -187,11 +203,11 @@ impl VM {
         Ok(())
     }
 
-    fn report(&self) {
-        trace!(
+    pub fn report(&self) -> String {
+        format!(
             "{:x}:\t{:08x}\t{}",
             self.rep.pc, self.rep.raw_inst, self.rep.inst
-        );
+        )
     }
 }
 
@@ -206,10 +222,31 @@ pub enum VMLoadError {
 }
 
 #[derive(Debug)]
-pub enum VMRunError {
+pub struct VMRunError {
+    pub pc: usize,
+    pub kind: VMRunErrorKind,
+    pub info: &'static str,
+}
+impl Display for VMRunError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:x}: {}, {}", self.pc, self.kind, self.info)
+    }
+}
+
+#[derive(Debug)]
+pub enum VMRunErrorKind {
     InvalidAddress(usize),
-    StackOverflow,
-    StackUnderflow,
+}
+impl Display for VMRunErrorKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::InvalidAddress(addr) => format!("invalid address {addr:x}"),
+            }
+        )
+    }
 }
 
 #[derive(Default)]
