@@ -1,3 +1,5 @@
+use std::io;
+
 use log::warn;
 use util::syscalls;
 
@@ -29,8 +31,9 @@ syscalls!(
         let c_ptr = vm.mem_range(buf_ptr, buf_len)?.as_ptr() as *const _;
         let wr_len = unsafe { libc::write(fd, c_ptr, buf_len) };
         if wr_len < 0 {
+            let errno = io::Error::last_os_error().raw_os_error().unwrap();
             warn!(
-                "{}: failed to write {buf_len} bytes from {buf_ptr:x} to fd({fd})",
+                "{:x}: errno {errno:x}: failed to write {buf_len} bytes from {buf_ptr:x} to fd({fd})",
                 vm.pc
             );
         }
@@ -45,8 +48,9 @@ syscalls!(
         let c_ptr = vm.mem_range_mut(buf_ptr, buf_len)?.as_ptr() as *mut _;
         let rd_len = unsafe { libc::read(fd, c_ptr, buf_len) };
         if rd_len < 0 {
+            let errno = io::Error::last_os_error().raw_os_error().unwrap();
             warn!(
-                "{}: failed to read {buf_len} bytes from fd({fd}) to {buf_ptr:x}",
+                "{:x}: errno {errno:x}: failed to read {buf_len} bytes from fd({fd}) to {buf_ptr:x}",
                 vm.pc
             );
         }
@@ -76,7 +80,8 @@ syscalls!(
         let fd = vm.x(ARG0_REG) as i32;
         let r = unsafe { libc::close(fd) };
         if r < 0 {
-            warn!("{}: failed to close fd({fd})", vm.pc);
+            let errno = io::Error::last_os_error().raw_os_error().unwrap();
+            warn!("{:x}: errno {errno:x}: failed to close fd({fd})", vm.pc);
         }
 
         vm.set_x(RET_REG, r as u64);
@@ -88,8 +93,28 @@ syscalls!(
 
         let r = unsafe { libc::lseek(fd, offset, whence) };
         if r < 0 {
+            let errno = io::Error::last_os_error().raw_os_error().unwrap();
             warn!(
-                "{}: failed to lseek fd({fd}) on offset {offset:x} with whence {whence}",
+                "{:x}: errno {errno:x}: failed to lseek fd({fd}) on offset {offset:x} with whence {whence}",
+                vm.pc
+            );
+        }
+
+        vm.set_x(RET_REG, r as u64);
+    },
+    gettimeofday(169) = {
+        let tv = vm.x(ARG0_REG) as usize;
+        let tz = vm.x(ARG1_REG) as usize;
+
+        let tv_ptr =
+            vm.mem_range_mut(tv, size_of::<libc::timeval>())?.as_ptr() as *mut libc::timeval;
+        let tz_ptr =
+            vm.mem_range_mut(tz, size_of::<libc::timezone>())?.as_ptr() as *mut libc::timezone;
+        let r = unsafe { libc::gettimeofday(tv_ptr, tz_ptr) };
+        if r < 0 {
+            let errno = io::Error::last_os_error().raw_os_error().unwrap();
+            warn!(
+                "{:x}: errno {errno:x}: failed to query time of day to tv({tv:x}) and tz({tz:x})",
                 vm.pc
             );
         }

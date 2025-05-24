@@ -3,7 +3,7 @@ use std::{
     io::{self, Write},
 };
 
-use log::{log_enabled, trace};
+use log::{info, log_enabled, trace};
 
 use crate::{Exception, INST_LEN, Inst, decode_inst};
 
@@ -90,8 +90,8 @@ impl VM {
         // }
         // self.mem[0..bytes.len()].copy_from_slice(bytes);
 
-        trace!("executable size: {} bytes", bytes.len());
-        trace!("program headers: {}", elf.program_headers.len());
+        info!("executable size: {} bytes", bytes.len());
+        info!("program headers: {}", elf.program_headers.len());
 
         for p in &elf.program_headers {
             match p.p_type {
@@ -127,8 +127,8 @@ impl VM {
         self.pc = elf.entry as usize;
         self.set_x(2, STACK_BEGIN);
 
-        trace!("start address: {:#x}", self.pc);
-        trace!("stack address: {:#x}", self.x(2));
+        info!("start address: {:#x}", self.pc);
+        info!("stack address: {:#x}", self.x(2));
 
         Ok(())
     }
