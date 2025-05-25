@@ -1,6 +1,6 @@
 #[inline]
 pub const fn mask(len: usize) -> u64 {
-    (!0u64) >> (64 - len)
+    !(0 as u64) >> (8 * 8 - len)
 }
 
 #[inline]
@@ -16,13 +16,8 @@ pub const fn sext_imm_12(v: u64) -> i64 {
 }
 
 #[inline]
-pub const fn sext_imm_13(v: u64) -> i64 {
-    sext(v, 12) as i64
-}
-
-#[inline]
-pub const fn sext_imm_21(v: u64) -> i64 {
-    sext(v, 20) as i64
+pub const fn sext_imm_20(v: u64) -> i64 {
+    sext(v, 19) as i64
 }
 
 #[inline]
@@ -41,23 +36,23 @@ pub const fn funct7_31_25(v: u32) -> u8 {
 }
 
 #[inline]
-pub const fn imm_31_20(v: u32) -> i64 {
-    sext_imm_12(ext!(v, u64; 31;20))
+pub const fn imm_31_20(v: u32) -> i16 {
+    sext_imm_12(ext!(v, u64; 31;20)) as i16
 }
 
 #[inline]
-pub const fn rd_11_7(v: u32) -> usize {
-    ext!(v, usize; 11;7)
+pub const fn rd_11_7(v: u32) -> u8 {
+    ext!(v, u8; 11;7)
 }
 
 #[inline]
-pub const fn rs1_19_15(v: u32) -> usize {
-    ext!(v, usize; 19;15)
+pub const fn rs1_19_15(v: u32) -> u8 {
+    ext!(v, u8; 19;15)
 }
 
 #[inline]
-pub const fn rs2_24_20(v: u32) -> usize {
-    ext!(v, usize; 24;20)
+pub const fn rs2_24_20(v: u32) -> u8 {
+    ext!(v, u8; 24;20)
 }
 
 #[macro_export]

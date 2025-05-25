@@ -7,9 +7,9 @@ use std::{
     str::SplitWhitespace,
 };
 
-use log::log_enabled;
+use log::{log_enabled, trace};
 
-use crate::{VM, VMRunError};
+use crate::{Report, VM, VMRunError};
 
 pub fn run_repl(path: &Path) -> Result<u8, VMRunError> {
     let bytes = match fs::read(path) {
@@ -32,10 +32,12 @@ pub fn run_repl(path: &Path) -> Result<u8, VMRunError> {
     let mut cmd = String::new();
 
     let step = |vm: &mut VM| -> Result<(), VMRunError> {
-        vm.step()?;
-        if !log_enabled!(log::Level::Trace) {
-            println!("{}", vm.report());
+        if log_enabled!(log::Level::Trace) {
+            let mut rep = Report::default();
+            vm.fetch_inst(vm.pc, Some(&mut rep))?;
+            trace!("{}", rep);
         }
+        vm.step()?;
         Ok(())
     };
 
