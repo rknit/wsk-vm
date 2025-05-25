@@ -1,4 +1,5 @@
 use std::{
+    collections::{HashMap, HashSet},
     fmt::Display,
     io::{self, Write},
 };
@@ -28,6 +29,8 @@ pub struct VM {
     pub(crate) exit_code: u8,
 
     pub(crate) rep: Report,
+
+    dbg_syms: HashMap<usize, HashSet<String>>,
 }
 impl Default for VM {
     fn default() -> Self {
@@ -45,6 +48,8 @@ impl VM {
             exit_code: 0,
 
             rep: Default::default(),
+
+            dbg_syms: HashMap::new(),
         }
     }
 
@@ -64,6 +69,7 @@ impl VM {
 
     pub fn load_executable_bytes(&mut self, bytes: &[u8]) -> Result<(), VMLoadError> {
         use goblin::Object;
+        use goblin::elf::section_header as sh;
 
         let obj = match Object::parse(bytes) {
             Ok(v) => v,
@@ -129,6 +135,37 @@ impl VM {
 
         info!("start address: {:#x}", self.pc);
         info!("stack address: {:#x}", self.x(2));
+
+        if cfg!(debug_assertions) {
+            self.dbg_syms.clear();
+            let mut sym_cnt = 0;
+
+            for sym in elf.syms.iter() {
+                if sym.st_value == 0 || matches!(sym.st_shndx as u32, sh::SHN_UNDEF) {
+                    continue;
+                }
+                let sttype = sym.st_info & 0xf;
+                if !matches!(sttype, 1..=3) {
+                    continue;
+                }
+
+                let Some(name) = elf.strtab.get_at(sym.st_name) else {
+                    continue;
+                };
+                if name.is_empty() {
+                    continue;
+                }
+
+                let v = self.dbg_syms.entry(sym.st_value as usize).or_default();
+                if !v.insert(name.to_owned()) {
+                    panic!("duplicate '{name}' at {:x}", sym.st_value);
+                }
+
+                sym_cnt += 1;
+            }
+
+            trace!("debug symbols: {sym_cnt}");
+        }
 
         Ok(())
     }
