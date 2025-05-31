@@ -103,7 +103,14 @@ def gen_module_files(modules: Modules) -> list[str]:
                 f.write(inst + "\n")
                 
         paths.append(file_path)
-        print(f"{Colors.OKGREEN}Generated {len(append_insts)} new instructions in {file_path}{Colors.ENDC}")
+        
+        skip_count = len(inst_list) - len(append_insts)
+        if skip_count > 0:
+            print(
+                f"{Colors.WARNING}Generated {len(append_insts)} insts in {file_path} ({skip_count} skipped){Colors.ENDC}")
+        else:
+            print(
+                f"{Colors.OKGREEN}Generated {len(append_insts)} insts in {file_path}{Colors.ENDC}")
         
     return paths
      
