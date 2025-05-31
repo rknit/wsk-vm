@@ -1,31 +1,31 @@
 from info import Inst, Module, Modules
+import toml
 
 IMPL_TOKEN = "$IMPL"
 
-def read_insts() -> Modules:
+def read_insts(path: str) -> Modules:
     modules = Modules()
-    cur_mod = None
 
-    with open("./insts.txt", "r") as file:
-        for line in file:
-            toks = line.split()
-            if len(toks) == 0:
-                continue
-            elif len(toks) == 1:
-                line = line.strip()
-                assert line[0] == "[" and line[-1] == "]", "not a module declaration"
-                mod_name = line.lstrip("[").rstrip("]")
-                modules.append(Module(mod_name))
-                cur_mod = mod_name
-            elif len(toks) == 5:
-                assert cur_mod is not None, "no module to insert to"
-                mod = modules.get(cur_mod)
-                mod.append(Inst(toks[0], toks[1], toks[2], toks[3], toks[4]))
-            else:
-                assert False, "invalid line"
+    with open(path, "r") as file:
+        data = toml.load(file)
+        
+        for mod_name, format in data.items():
+            module = Module(mod_name)
+            for format, inst in format.items():
+                for inst_name, inst_data in inst.items():
+                    inst = Inst(
+                        format, 
+                        inst_data["opc"], 
+                        inst_data.get("f3", "-"), 
+                        inst_data.get("f7", "-"),
+                        inst_name,
+                    )
+                    module.append(inst)
+            modules.append(module)
 
     for mod in modules.mods():
         mod.validate()
+        
     return modules
 
 def gen_main(modules: Modules) -> str:

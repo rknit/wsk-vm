@@ -1,0 +1,27 @@
+[rv32i_rv64i]
+
+[rv32i_rv64i.r]
+add = { opc = "01100", f3 = "000", f7 = "0000000" }
+
+[rv32i_rv64i.i]
+addi = { opc = "00100", f3 = "000" }
+
+[rv32i_rv64i.s]
+sb = { opc = "01000", f3 = "000" }
+
+[rv32i_rv64i.b]
+beq = { opc = "11000", f3 = "000" }
+
+[rv32i_rv64i.u]
+lui = { opc = "01101" }
+
+[rv32i_rv64i.j]
+jal = { opc = "11001" }
+
+[rv32i_rv64i.o]
+ecall = { opc = "11100" }
+
+[rv64i]
+
+[rv64i.i]
+addiw = { opc = "00110", f3 = "000" }

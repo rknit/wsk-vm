@@ -15,12 +15,13 @@ use rv64i::*;
 #[derive(Debug, Clone, Copy)]
 pub enum Inst {
     // RV32I_RV64I
-    Lui { rd: u8, imm: i64 },
-    Addi { rd: u8, rs1: u8, imm: i64 },
     Add { rd: u8, rs1: u8, rs2: u8 },
-    Ecall {},
+    Addi { rd: u8, rs1: u8, imm: i64 },
     Sb { rs1: u8, rs2: u8, offset: i64 },
     Beq { rs1: u8, rs2: u8, offset: i64 },
+    Lui { rd: u8, imm: i64 },
+    Jal { rd: u8, offset: i64 },
+    Ecall {},
 
     // RV64I
     Addiw { rd: u8, rs1: u8, imm: i64 },
@@ -106,6 +107,11 @@ impl Inst {
                 _ => return None,
             },
             J { opc, rd, imm } => match opc {
+                0b11001 => Inst::Jal {
+                    rd,
+                    offset: sext((imm as u64) << 1, 20) as i64,
+                },
+
                 #[allow(unreachable_patterns)]
                 _ => return None,
             },
@@ -120,12 +126,13 @@ impl Inst {
 
     pub fn run(self, vm: &mut VM) -> Result<(), VMRunError> {
         match self {
-            Inst::Lui { rd, imm } => Lui::run(vm, rd, imm),
-            Inst::Addi { rd, rs1, imm } => Addi::run(vm, rd, vm.x(rs1), imm),
             Inst::Add { rd, rs1, rs2 } => Add::run(vm, rd, vm.x(rs1), vm.x(rs2)),
-            Inst::Ecall {} => Ecall::run(vm),
+            Inst::Addi { rd, rs1, imm } => Addi::run(vm, rd, vm.x(rs1), imm),
             Inst::Sb { rs1, rs2, offset } => Sb::run(vm, vm.x(rs1), vm.x(rs2), offset),
             Inst::Beq { rs1, rs2, offset } => Beq::run(vm, vm.x(rs1), vm.x(rs2), offset),
+            Inst::Lui { rd, imm } => Lui::run(vm, rd, imm),
+            Inst::Jal { rd, offset } => Jal::run(vm, rd, offset),
+            Inst::Ecall {} => Ecall::run(vm),
             Inst::Addiw { rd, rs1, imm } => Addiw::run(vm, rd, vm.x(rs1), imm),
 
             #[allow(unreachable_patterns)]

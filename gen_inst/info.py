@@ -112,6 +112,9 @@ class Inst:
         
     def run_arm(self) -> str:
         return f"Inst::{self.name} {{ {self.enum_args()} }} => {self.name}::run(vm, {self.run_args()}),\n"
+    
+    def __str__(self) -> str:
+        return f"Inst(format={self.format}, op={self.op}, f3={self.f3}, f7={self.f7}, name={self.name})"
 
 
 class Module:
