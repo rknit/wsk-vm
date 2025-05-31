@@ -42,9 +42,6 @@ pub enum RawFormat {
         rd: u8,
         imm: i32,
     },
-    Other {
-        opc: u8,
-    },
 }
 impl RawFormat {
     pub fn parse(inst: u32) -> Option<Self> {
@@ -86,7 +83,7 @@ impl RawFormat {
         };
 
         Some(match opc {
-            0b00000 | 0b00100 | 0b00110 | 0b11001 => RawFormat::I {
+            0b00000 | 0b00100 | 0b00110 | 0b11001 | 0b11100 => RawFormat::I {
                 opc,
                 rd,
                 rs1,
@@ -125,7 +122,6 @@ impl RawFormat {
                 rd,
                 imm: imm_j(),
             },
-            0b11100 => RawFormat::Other { opc },
             _ => return None,
         })
     }

@@ -23,6 +23,7 @@ def read_insts(path: str) -> Modules:
                     
                     # other configs
                     inst.special_match = inst_data.get("special_match", "")
+                    inst.imm = inst_data.get("imm", "")
                     
                     module.append(inst)
             modules.append(module)
@@ -122,13 +123,6 @@ impl Inst {{
                 #[allow(unreachable_patterns)]
                 _ => return None,
             }},
-            Other {{
-                opc,
-            }} => match opc {{
-                {"                ".join([inst.decode_arm() for inst in modules.all_format("o")])}
-                #[allow(unreachable_patterns)]
-                _ => return None,
-            }},
         }})
     }}""")
 
@@ -164,16 +158,16 @@ impl Inst {{
 
 def gen_impl_inst(inst: Inst) -> str:
     return f"""#[derive(Debug, Clone, Copy)]
-pub struct {inst.name};
-impl {inst.name} {{
+pub struct {inst.symbol};
+impl {inst.symbol} {{
     pub fn run(vm: &mut VM, {inst.run_params()}) -> Result<(), VMRunError> {{
-        todo!("implement {inst.name} please!");
+        todo!("implement {inst.symbol} please!");
         Ok(())
     }}
 }}"""
 
 def get_impl_token(inst: Inst) -> str:
-    return f"// {IMPL_TOKEN} {inst.name}"
+    return f"// {IMPL_TOKEN} {inst.symbol}"
 
 def get_impl_token_full(inst: Inst) -> str:
     return f"{get_impl_token(inst)} {inst.format}"

@@ -37,7 +37,7 @@ impl InstReport {
             RawFormat::S { rs1, rs2, imm, .. } => {
                 write!(
                     f,
-                    "{} {}({})",
+                    "{}, {}({})",
                     x_name(rs2),
                     imm_to_str(imm as i32),
                     x_name(rs1)
@@ -63,7 +63,6 @@ impl InstReport {
                         .wrapping_add_signed(sext((imm as u64) << 1, 20) as isize)
                 )
             }
-            RawFormat::Other { .. } => Ok(()),
         }
     }
 }

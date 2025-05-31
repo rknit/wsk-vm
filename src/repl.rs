@@ -181,7 +181,7 @@ fn toggle_brk<W: Write, R: BufRead>(repl: &mut Repl<W, R>) {
         return;
     };
     if let Some(addr) = brk.strip_prefix("0x") {
-        let addr: usize = match addr.parse() {
+        let addr: usize = match usize::from_str_radix(addr, 16) {
             Ok(v) => v,
             Err(e) => {
                 writeln!(repl, "brk: invalid address: {e}").unwrap();

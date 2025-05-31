@@ -435,11 +435,151 @@ impl Jal {
     }
 }
 
-// $IMPL Ecall o
+// $IMPL SfenceVma r
+#[derive(Debug, Clone, Copy)]
+pub struct SfenceVma;
+impl SfenceVma {
+    pub fn run(vm: &mut VM, rd: u8, r1: u64, r2: u64) -> Result<(), VMRunError> {
+        todo!("implement SfenceVma please!");
+        Ok(())
+    }
+}
+
+// $IMPL Fence i
+#[derive(Debug, Clone, Copy)]
+pub struct Fence;
+impl Fence {
+    pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
+        todo!("implement Fence please!");
+        Ok(())
+    }
+}
+
+// $IMPL Csrrw i
+#[derive(Debug, Clone, Copy)]
+pub struct Csrrw;
+impl Csrrw {
+    pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
+        todo!("implement Csrrw please!");
+        Ok(())
+    }
+}
+
+// $IMPL Csrrs i
+#[derive(Debug, Clone, Copy)]
+pub struct Csrrs;
+impl Csrrs {
+    pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
+        todo!("implement Csrrs please!");
+        Ok(())
+    }
+}
+
+// $IMPL Csrrc i
+#[derive(Debug, Clone, Copy)]
+pub struct Csrrc;
+impl Csrrc {
+    pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
+        todo!("implement Csrrc please!");
+        Ok(())
+    }
+}
+
+// $IMPL Csrrwi i
+#[derive(Debug, Clone, Copy)]
+pub struct Csrrwi;
+impl Csrrwi {
+    pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
+        todo!("implement Csrrwi please!");
+        Ok(())
+    }
+}
+
+// $IMPL Csrrsi i
+#[derive(Debug, Clone, Copy)]
+pub struct Csrrsi;
+impl Csrrsi {
+    pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
+        todo!("implement Csrrsi please!");
+        Ok(())
+    }
+}
+
+// $IMPL Csrrci i
+#[derive(Debug, Clone, Copy)]
+pub struct Csrrci;
+impl Csrrci {
+    pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
+        todo!("implement Csrrci please!");
+        Ok(())
+    }
+}
+
+// $IMPL Ecall i
 #[derive(Debug, Clone, Copy)]
 pub struct Ecall;
 impl Ecall {
-    pub fn run(vm: &mut VM) -> Result<(), VMRunError> {
+    pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
         vm.raise(Exception::Ecall)
+    }
+}
+
+// $IMPL Ebreak i
+#[derive(Debug, Clone, Copy)]
+pub struct Ebreak;
+impl Ebreak {
+    pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
+        todo!("implement Ebreak please!");
+        Ok(())
+    }
+}
+
+// $IMPL Uret i
+#[derive(Debug, Clone, Copy)]
+pub struct Uret;
+impl Uret {
+    pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
+        todo!("implement Uret please!");
+        Ok(())
+    }
+}
+
+// $IMPL Sret i
+#[derive(Debug, Clone, Copy)]
+pub struct Sret;
+impl Sret {
+    pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
+        todo!("implement Sret please!");
+        Ok(())
+    }
+}
+
+// $IMPL Mret i
+#[derive(Debug, Clone, Copy)]
+pub struct Mret;
+impl Mret {
+    pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
+        todo!("implement Mret please!");
+        Ok(())
+    }
+}
+
+// $IMPL Wfi i
+#[derive(Debug, Clone, Copy)]
+pub struct Wfi;
+impl Wfi {
+    pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
+        todo!("implement Wfi please!");
+        Ok(())
+    }
+}
+
+// $IMPL FenceI i
+#[derive(Debug, Clone, Copy)]
+pub struct FenceI;
+impl FenceI {
+    pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
+        todo!("implement FenceI please!");
+        Ok(())
     }
 }

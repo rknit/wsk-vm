@@ -90,10 +90,10 @@ def gen_module_files(modules: Modules) -> list[str]:
                 token = get_impl_token_full(inst)
                 if token in existing_content:
                     continue
-                token = get_impl_token(inst)
-                if f"{token} " in existing_content:
-                    print(f"{Colors.WARNING}Warning: '{inst.name}' is already \
-                          implemented with format '{inst.format}' in {file_path}, skipping.{Colors.ENDC}")
+                token = f"{get_impl_token(inst)} "
+                if token in existing_content:
+                    format = existing_content[existing_content.find(token) + len(token)]
+                    print(f"{Colors.WARNING}Warning: '{inst.symbol}' has already been implemented with format '{format}' in {file_path}, skipping.{Colors.ENDC}")
                     continue
                 append_insts.append(gen_str)
         
