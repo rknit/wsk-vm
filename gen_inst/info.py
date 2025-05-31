@@ -4,7 +4,7 @@ class Inst:
         self.op = op
         self.f3 = f3
         self.f7 = f7
-        self.name = name.lower().capitalize()
+        self.name = "_".join([part.capitalize() for part in name.lower().split(".")])
         self.special_match: str = ""
 
     def enum_fields(self) -> str:
