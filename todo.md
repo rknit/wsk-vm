@@ -3,6 +3,10 @@
 ---
 
 - [ ] load debug symbols
-- [ ] inst generator
+    -- [ ] break at symbol
+- [ ] print ecall
+- [ ] better repl
+- [x] break at inst
+- [x] inst generator
     -- [x] module generator
-    -- [ ] perserve instruction
+    -- [x] perserve instruction
