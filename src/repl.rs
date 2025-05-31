@@ -7,9 +7,7 @@ use std::{
     str::SplitWhitespace,
 };
 
-use log::log_enabled;
-
-use crate::{Report, VM, VMRunError};
+use crate::{InstReport, VM, VMRunError, format::RawFormat};
 
 pub fn run_repl(path: &Path) -> Result<u8, VMRunError> {
     let bytes = match fs::read(path) {
@@ -31,12 +29,33 @@ pub fn run_repl(path: &Path) -> Result<u8, VMRunError> {
     let mut brk: HashSet<usize> = HashSet::new();
     let mut cmd = String::new();
 
+    let log = |vm: &VM| {
+        let raw_inst = {
+            let Ok([b1, b2, b3, b4]) = vm.mem_range(vm.pc, 4) else {
+                return;
+            };
+            u32::from_le_bytes([*b1, *b2, *b3, *b4])
+        };
+
+        let format = RawFormat::parse(raw_inst).unwrap();
+
+        let Ok(inst) = vm.fetch_inst(vm.pc) else {
+            return;
+        };
+
+        println!(
+            "{}",
+            InstReport {
+                addr: vm.pc,
+                raw_inst,
+                inst_name: inst.name(),
+                format,
+            }
+        );
+    };
+
     let step = |vm: &mut VM| -> Result<(), VMRunError> {
-        if log_enabled!(log::Level::Trace) {
-            let rep = Report::default();
-            vm.fetch_inst(vm.pc)?;
-            todo!("{}", rep);
-        }
+        log(&vm);
         vm.step()?;
         Ok(())
     };
@@ -58,14 +77,31 @@ pub fn run_repl(path: &Path) -> Result<u8, VMRunError> {
             "h" => {
                 println!("q           : quit REPL");
                 println!("s           : display VM status");
-                println!("n           : advance one instruction");
+                println!("n <step>    : advance <step> instructions (1 if not specified)");
                 println!("c           : advance until breakpoint or halt");
                 println!("b <address> : toggle breakpoint at address");
                 println!("j <address> : force jump to address");
             }
             "q" => break 'q,
             "s" => vm.display(&mut stdout()).unwrap(),
-            "n" => step(&mut vm)?,
+            "n" => {
+                let step_count = match toks.next() {
+                    Some(s) => match s.parse::<usize>() {
+                        Ok(v) => v,
+                        Err(e) => {
+                            eprintln!("n: {e}");
+                            continue;
+                        }
+                    },
+                    None => 1, // default step count
+                };
+                for _ in 0..step_count {
+                    if vm.halted() {
+                        break;
+                    }
+                    step(&mut vm)?;
+                }
+            }
             "c" => {
                 while !vm.halted() {
                     step(&mut vm)?;
@@ -93,8 +129,8 @@ pub fn run_repl(path: &Path) -> Result<u8, VMRunError> {
                 let Some(addr) = parse_address(&mut toks) else {
                     continue;
                 };
-                vm.pc = addr;
-                println!("set program counter to {addr:x}");
+                vm.jump(addr, false)?;
+                println!("vm jumped to {:x}", vm.pc);
             }
             _ => {
                 eprintln!("unknown command '{cmd}'");

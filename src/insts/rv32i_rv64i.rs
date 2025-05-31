@@ -284,10 +284,9 @@ impl Lhu {
 pub struct Jalr;
 impl Jalr {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
-        let addr = r1.wrapping_add_signed(imm) & !1; // Clear the least significant bit
-        let return_address = vm.pc + 4; // Save the return address
-        vm.set_x(rd, return_address as u64);
-        vm.pc = addr as usize; // Jump to the target address
+        let return_address = vm.pc + 4;
+        vm.jump(r1.wrapping_add_signed(imm) as usize, true)?; // Jump to the target address
+        vm.set_x(rd, return_address as u64); // Save the return address
         Ok(())
     }
 }
@@ -336,7 +335,7 @@ pub struct Beq;
 impl Beq {
     pub fn run(vm: &mut VM, r1: u64, r2: u64, offset: i64) -> Result<(), VMRunError> {
         if r1 == r2 {
-            vm.pc = vm.pc.wrapping_add_signed(offset as isize); // Jump to the target address
+            vm.jump_pc_rel(offset as isize, true)?; // Jump to the target address
         }
         Ok(())
     }
@@ -348,7 +347,7 @@ pub struct Bne;
 impl Bne {
     pub fn run(vm: &mut VM, r1: u64, r2: u64, offset: i64) -> Result<(), VMRunError> {
         if r1 != r2 {
-            vm.pc = vm.pc.wrapping_add_signed(offset as isize); // Jump to the target address
+            vm.jump_pc_rel(offset as isize, true)?; // Jump to the target address
         }
         Ok(())
     }
@@ -360,7 +359,7 @@ pub struct Blt;
 impl Blt {
     pub fn run(vm: &mut VM, r1: u64, r2: u64, offset: i64) -> Result<(), VMRunError> {
         if (r1 as i64) < (r2 as i64) {
-            vm.pc = vm.pc.wrapping_add_signed(offset as isize); // Jump to the target address
+            vm.jump_pc_rel(offset as isize, true)?; // Jump to the target address
         }
         Ok(())
     }
@@ -372,7 +371,7 @@ pub struct Bge;
 impl Bge {
     pub fn run(vm: &mut VM, r1: u64, r2: u64, offset: i64) -> Result<(), VMRunError> {
         if (r1 as i64) >= (r2 as i64) {
-            vm.pc = vm.pc.wrapping_add_signed(offset as isize); // Jump to the target address
+            vm.jump_pc_rel(offset as isize, true)?; // Jump to the target address
         }
         Ok(())
     }
@@ -384,7 +383,7 @@ pub struct Bltu;
 impl Bltu {
     pub fn run(vm: &mut VM, r1: u64, r2: u64, offset: i64) -> Result<(), VMRunError> {
         if r1 < r2 {
-            vm.pc = vm.pc.wrapping_add_signed(offset as isize); // Jump to the target address
+            vm.jump_pc_rel(offset as isize, true)?; // Jump to the target address
         }
         Ok(())
     }
@@ -396,7 +395,7 @@ pub struct Bgeu;
 impl Bgeu {
     pub fn run(vm: &mut VM, r1: u64, r2: u64, offset: i64) -> Result<(), VMRunError> {
         if r1 >= r2 {
-            vm.pc = vm.pc.wrapping_add_signed(offset as isize); // Jump to the target address
+            vm.jump_pc_rel(offset as isize, true)?; // Jump to the target address
         }
         Ok(())
     }
@@ -429,9 +428,9 @@ impl Auipc {
 pub struct Jal;
 impl Jal {
     pub fn run(vm: &mut VM, rd: u8, offset: i64) -> Result<(), VMRunError> {
-        let return_address = vm.pc + 4; // Save the return address
-        vm.set_x(rd, return_address as u64);
-        vm.pc = vm.pc.wrapping_add_signed(offset as isize); // Jump to the target address
+        let return_address = vm.pc + 4;
+        vm.set_x(rd, return_address as u64); // Save the return address
+        vm.jump_pc_rel(offset as isize, true)?; // Jump to the target address
         Ok(())
     }
 }

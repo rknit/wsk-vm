@@ -4,9 +4,9 @@ use std::{
     io::{self, Write},
 };
 
-use log::{info, trace};
+use log::{info, log_enabled, trace};
 
-use crate::{Exception, Inst, RawFormat};
+use crate::{Exception, Inst, InstReport, RawFormat};
 
 const REG_COUNT: usize = 32;
 
@@ -174,6 +174,34 @@ impl VM {
     }
 
     pub fn step(&mut self) -> Result<(), VMRunError> {
+        if log_enabled!(log::Level::Trace) {
+            let log = |vm: &VM| {
+                let raw_inst = {
+                    let Ok([b1, b2, b3, b4]) = vm.mem_range(vm.pc, 4) else {
+                        return;
+                    };
+                    u32::from_le_bytes([*b1, *b2, *b3, *b4])
+                };
+
+                let format = RawFormat::parse(raw_inst).unwrap();
+
+                let Ok(inst) = vm.fetch_inst(vm.pc) else {
+                    return;
+                };
+
+                trace!(
+                    "{}",
+                    InstReport {
+                        addr: vm.pc,
+                        raw_inst,
+                        inst_name: inst.name(),
+                        format,
+                    }
+                );
+            };
+            log(self);
+        }
+
         let inst = self.fetch_inst(self.pc)?;
         inst.run(self)?;
         self.pc = (self.pc + 4) % (PROG_LEN);
@@ -301,6 +329,37 @@ impl VM {
         Ok(())
     }
 
+    pub fn jump(&mut self, addr: usize, dec_4: bool) -> Result<(), VMRunError> {
+        if addr < PROG_LEN {
+            if dec_4 {
+                // -4 bytes to account for the instruction fetch
+                self.pc = addr - 4;
+            } else {
+                self.pc = addr;
+            }
+            Ok(())
+        } else {
+            Err(VMRunError {
+                err_addr: self.pc,
+                kind: VMRunErrorKind::InvalidAddress(addr),
+                info: "jump",
+            })
+        }
+    }
+
+    pub fn jump_pc_rel(&mut self, offset: isize, dec_4: bool) -> Result<(), VMRunError> {
+        let addr = self.pc.wrapping_add_signed(offset) & !1;
+        if addr < PROG_LEN {
+            self.jump(addr, dec_4)
+        } else {
+            Err(VMRunError {
+                err_addr: self.pc,
+                kind: VMRunErrorKind::InvalidAddress(addr),
+                info: "jump_rel",
+            })
+        }
+    }
+
     pub(crate) fn raise(&mut self, ex: Exception) -> Result<(), VMRunError> {
         match ex {
             Exception::EnvCall => self.syscall(),
@@ -358,67 +417,7 @@ impl Display for VMRunErrorKind {
     }
 }
 
-#[derive(Default)]
-pub struct Report {
-    pub pc: usize,
-    pub raw_inst: u32,
-    pub fmt: Option<RawFormat>,
-    pub inst_name: &'static str,
-    pub excp: Option<Exception>,
-    pub syscall_name: &'static str,
-}
-impl Display for Report {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{:08x}: {:08x} {}\t",
-            self.pc, self.raw_inst, self.inst_name
-        )?;
-        let xn = x_name;
-        let im = |imm: i32| {
-            if imm < 0 {
-                format!("{}", imm)
-            } else {
-                format!("{:x}", imm)
-            }
-        };
-        let ofs12 = |imm: i16| {
-            let imm = (imm << 1) as isize;
-            self.pc.wrapping_add_signed(imm)
-        };
-        let ofs20 = |imm: i32| {
-            let imm = (imm << 12) as isize;
-            self.pc.wrapping_add_signed(imm)
-        };
-        match self.fmt.expect("format") {
-            RawFormat::R { rd, rs1, rs2, .. } => {
-                write!(f, "{}, {}, {}", xn(rd), xn(rs1), xn(rs2))
-            }
-            RawFormat::I { rd, rs1, imm, .. } => {
-                write!(f, "{}, {}, {}", xn(rd), xn(rs1), im(imm as i32))
-            }
-            RawFormat::S { rs1, rs2, imm, .. } => {
-                write!(f, "{}, {}({})", xn(rs2), im(imm as i32), xn(rs1))
-            }
-            RawFormat::B { rs1, rs2, imm, .. } => {
-                write!(f, "{}, {}, {:08x}", xn(rs1), xn(rs2), ofs12(imm))
-            }
-            RawFormat::U { rd, imm, .. } => write!(f, "{}, {}", xn(rd), im(imm)),
-            RawFormat::J { rd, imm, .. } => write!(f, "{}, {:08x}", xn(rd), ofs20(imm)),
-            RawFormat::Other { .. } => {
-                if let Some(ex) = &self.excp {
-                    match ex {
-                        Exception::EnvCall => write!(f, "# {}", self.syscall_name),
-                    }
-                } else {
-                    Ok(())
-                }
-            }
-        }
-    }
-}
-
-fn x_name(i: u8) -> &'static str {
+pub(crate) fn x_name(i: u8) -> &'static str {
     match i {
         0 => "zero",
         1 => "ra",

@@ -132,7 +132,7 @@ impl Inst {{
         }})
     }}""")
 
-        # run function
+    # run function
     gen(f"""
     pub fn run(self, vm: &mut VM) -> Result<(), VMRunError> {{
         match self {{
@@ -145,8 +145,18 @@ impl Inst {{
             }}),
         }}
     }}""")
+    
+    # name function
+    gen(f"""
+    pub fn name(self) -> &'static str {{
+        match self {{
+            {"            ".join([inst.name_arm() for inst in modules.all_inst()])}
+            #[allow(unreachable_patterns)]
+            _ => "unknown",
+        }}
+    }}""")
 
-        # finish impl
+    # finish impl
     gen("}")
     return out
 
