@@ -3,14 +3,14 @@
 // This file contains the implementations of the instruction set,
 // which requires developers to implement them themselves.
 // Please backup this file regularly, as it can be overwritten by `gen_inst.py`.
-use crate::{VM, VMRunError};
+use crate::{VM, VMRunError, exception::Exception, ext};
 
 // $IMPL Add r
 #[derive(Debug, Clone, Copy)]
 pub struct Add;
 impl Add {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, r2: u64) -> Result<(), VMRunError> {
-        todo!("implement Add please!");
+        vm.set_x(rd, r1.wrapping_add(r2));
         Ok(())
     }
 }
@@ -20,7 +20,7 @@ impl Add {
 pub struct Sub;
 impl Sub {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, r2: u64) -> Result<(), VMRunError> {
-        todo!("implement Sub please!");
+        vm.set_x(rd, r1.wrapping_sub(r2));
         Ok(())
     }
 }
@@ -30,7 +30,7 @@ impl Sub {
 pub struct Sll;
 impl Sll {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, r2: u64) -> Result<(), VMRunError> {
-        todo!("implement Sll please!");
+        vm.set_x(rd, r1 << ext!(r2, u64; 4;0));
         Ok(())
     }
 }
@@ -40,7 +40,11 @@ impl Sll {
 pub struct Slt;
 impl Slt {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, r2: u64) -> Result<(), VMRunError> {
-        todo!("implement Slt please!");
+        if (r1 as i64) < (r2 as i64) {
+            vm.set_x(rd, 1);
+        } else {
+            vm.set_x(rd, 0);
+        }
         Ok(())
     }
 }
@@ -50,7 +54,11 @@ impl Slt {
 pub struct Sltu;
 impl Sltu {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, r2: u64) -> Result<(), VMRunError> {
-        todo!("implement Sltu please!");
+        if r1 < r2 {
+            vm.set_x(rd, 1);
+        } else {
+            vm.set_x(rd, 0);
+        }
         Ok(())
     }
 }
@@ -60,7 +68,7 @@ impl Sltu {
 pub struct Xor;
 impl Xor {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, r2: u64) -> Result<(), VMRunError> {
-        todo!("implement Xor please!");
+        vm.set_x(rd, r1 ^ r2);
         Ok(())
     }
 }
@@ -70,7 +78,7 @@ impl Xor {
 pub struct Srl;
 impl Srl {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, r2: u64) -> Result<(), VMRunError> {
-        todo!("implement Srl please!");
+        vm.set_x(rd, r1 >> ext!(r2, u64; 4;0));
         Ok(())
     }
 }
@@ -80,7 +88,7 @@ impl Srl {
 pub struct Sra;
 impl Sra {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, r2: u64) -> Result<(), VMRunError> {
-        todo!("implement Sra please!");
+        vm.set_x(rd, ((r1 as i64) >> ext!(r2, u64; 4;0)) as u64);
         Ok(())
     }
 }
@@ -90,7 +98,7 @@ impl Sra {
 pub struct Or;
 impl Or {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, r2: u64) -> Result<(), VMRunError> {
-        todo!("implement Or please!");
+        vm.set_x(rd, r1 | r2);
         Ok(())
     }
 }
@@ -100,7 +108,7 @@ impl Or {
 pub struct And;
 impl And {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, r2: u64) -> Result<(), VMRunError> {
-        todo!("implement And please!");
+        vm.set_x(rd, r1 & r2);
         Ok(())
     }
 }
@@ -110,7 +118,7 @@ impl And {
 pub struct Addi;
 impl Addi {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
-        todo!("implement Addi please!");
+        vm.set_x(rd, r1.wrapping_add_signed(imm));
         Ok(())
     }
 }
@@ -120,7 +128,11 @@ impl Addi {
 pub struct Slti;
 impl Slti {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
-        todo!("implement Slti please!");
+        if (r1 as i64) < imm {
+            vm.set_x(rd, 1);
+        } else {
+            vm.set_x(rd, 0);
+        }
         Ok(())
     }
 }
@@ -130,7 +142,11 @@ impl Slti {
 pub struct Sltiu;
 impl Sltiu {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
-        todo!("implement Sltiu please!");
+        if r1 < (imm as u64) {
+            vm.set_x(rd, 1);
+        } else {
+            vm.set_x(rd, 0);
+        }
         Ok(())
     }
 }
@@ -140,7 +156,7 @@ impl Sltiu {
 pub struct Xori;
 impl Xori {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
-        todo!("implement Xori please!");
+        vm.set_x(rd, r1 ^ (imm as u64));
         Ok(())
     }
 }
@@ -150,7 +166,7 @@ impl Xori {
 pub struct Ori;
 impl Ori {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
-        todo!("implement Ori please!");
+        vm.set_x(rd, r1 | (imm as u64));
         Ok(())
     }
 }
@@ -160,7 +176,7 @@ impl Ori {
 pub struct Andi;
 impl Andi {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
-        todo!("implement Andi please!");
+        vm.set_x(rd, r1 & (imm as u64));
         Ok(())
     }
 }
@@ -170,7 +186,8 @@ impl Andi {
 pub struct Slli;
 impl Slli {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
-        todo!("implement Slli please!");
+        let shamt = ext!(imm, u64; 5;0);
+        vm.set_x(rd, r1 << shamt);
         Ok(())
     }
 }
@@ -180,7 +197,8 @@ impl Slli {
 pub struct Srli;
 impl Srli {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
-        todo!("implement Srli please!");
+        let shamt = ext!(imm, u64; 5;0);
+        vm.set_x(rd, r1 >> shamt);
         Ok(())
     }
 }
@@ -190,7 +208,8 @@ impl Srli {
 pub struct Srai;
 impl Srai {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
-        todo!("implement Srai please!");
+        let shamt = ext!(imm, u64; 5;0);
+        vm.set_x(rd, ((r1 as i64) >> shamt) as u64);
         Ok(())
     }
 }
@@ -200,7 +219,10 @@ impl Srai {
 pub struct Lb;
 impl Lb {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
-        todo!("implement Lb please!");
+        let addr = r1.wrapping_add_signed(imm);
+        let data = vm.mem(addr as usize)?;
+        let data = data as i8 as i64; // Sign-extend the byte
+        vm.set_x(rd, data as u64);
         Ok(())
     }
 }
@@ -210,7 +232,10 @@ impl Lb {
 pub struct Lh;
 impl Lh {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
-        todo!("implement Lh please!");
+        let addr = r1.wrapping_add_signed(imm);
+        let data = vm.mem_range(addr as usize, 2)?;
+        let data = i16::from_le_bytes([data[0], data[1]]) as i64; // Sign-extend the halfword
+        vm.set_x(rd, data as u64);
         Ok(())
     }
 }
@@ -220,7 +245,10 @@ impl Lh {
 pub struct Lw;
 impl Lw {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
-        todo!("implement Lw please!");
+        let addr = r1.wrapping_add_signed(imm);
+        let data = vm.mem_range(addr as usize, 4)?;
+        let data = i32::from_le_bytes([data[0], data[1], data[2], data[3]]) as i64; // Sign-extend the word
+        vm.set_x(rd, data as u64);
         Ok(())
     }
 }
@@ -230,7 +258,10 @@ impl Lw {
 pub struct Lbu;
 impl Lbu {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
-        todo!("implement Lbu please!");
+        let addr = r1.wrapping_add_signed(imm);
+        let data = vm.mem(addr as usize)?;
+        let data = data as u64; // Zero-extend the byte
+        vm.set_x(rd, data);
         Ok(())
     }
 }
@@ -240,7 +271,10 @@ impl Lbu {
 pub struct Lhu;
 impl Lhu {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
-        todo!("implement Lhu please!");
+        let addr = r1.wrapping_add_signed(imm);
+        let data = vm.mem_range(addr as usize, 2)?;
+        let data = u16::from_le_bytes([data[0], data[1]]) as u64; // Zero-extend the halfword
+        vm.set_x(rd, data);
         Ok(())
     }
 }
@@ -250,7 +284,10 @@ impl Lhu {
 pub struct Jalr;
 impl Jalr {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
-        todo!("implement Jalr please!");
+        let addr = r1.wrapping_add_signed(imm) & !1; // Clear the least significant bit
+        let return_address = vm.pc + 4; // Save the return address
+        vm.set_x(rd, return_address as u64);
+        vm.pc = addr as usize; // Jump to the target address
         Ok(())
     }
 }
@@ -260,7 +297,9 @@ impl Jalr {
 pub struct Sb;
 impl Sb {
     pub fn run(vm: &mut VM, r1: u64, r2: u64, offset: i64) -> Result<(), VMRunError> {
-        todo!("implement Sb please!");
+        let addr = r1.wrapping_add_signed(offset);
+        let data = (r2 & 0xFF) as u8; // Store only the least significant byte
+        vm.set_mem(addr as usize, data)?;
         Ok(())
     }
 }
@@ -270,7 +309,10 @@ impl Sb {
 pub struct Sh;
 impl Sh {
     pub fn run(vm: &mut VM, r1: u64, r2: u64, offset: i64) -> Result<(), VMRunError> {
-        todo!("implement Sh please!");
+        let addr = r1.wrapping_add_signed(offset);
+        let data = (r2 & 0xFFFF) as u16; // Store only the least significant halfword
+        let bytes = data.to_le_bytes();
+        vm.set_mem_range(addr as usize, &bytes)?;
         Ok(())
     }
 }
@@ -280,7 +322,10 @@ impl Sh {
 pub struct Sw;
 impl Sw {
     pub fn run(vm: &mut VM, r1: u64, r2: u64, offset: i64) -> Result<(), VMRunError> {
-        todo!("implement Sw please!");
+        let addr = r1.wrapping_add_signed(offset);
+        let data = (r2 & 0xFFFFFFFF) as u32; // Store only the least significant word
+        let bytes = data.to_le_bytes();
+        vm.set_mem_range(addr as usize, &bytes)?;
         Ok(())
     }
 }
@@ -290,7 +335,9 @@ impl Sw {
 pub struct Beq;
 impl Beq {
     pub fn run(vm: &mut VM, r1: u64, r2: u64, offset: i64) -> Result<(), VMRunError> {
-        todo!("implement Beq please!");
+        if r1 == r2 {
+            vm.pc = vm.pc.wrapping_add_signed(offset as isize); // Jump to the target address
+        }
         Ok(())
     }
 }
@@ -300,7 +347,9 @@ impl Beq {
 pub struct Bne;
 impl Bne {
     pub fn run(vm: &mut VM, r1: u64, r2: u64, offset: i64) -> Result<(), VMRunError> {
-        todo!("implement Bne please!");
+        if r1 != r2 {
+            vm.pc = vm.pc.wrapping_add_signed(offset as isize); // Jump to the target address
+        }
         Ok(())
     }
 }
@@ -310,7 +359,9 @@ impl Bne {
 pub struct Blt;
 impl Blt {
     pub fn run(vm: &mut VM, r1: u64, r2: u64, offset: i64) -> Result<(), VMRunError> {
-        todo!("implement Blt please!");
+        if (r1 as i64) < (r2 as i64) {
+            vm.pc = vm.pc.wrapping_add_signed(offset as isize); // Jump to the target address
+        }
         Ok(())
     }
 }
@@ -320,7 +371,9 @@ impl Blt {
 pub struct Bge;
 impl Bge {
     pub fn run(vm: &mut VM, r1: u64, r2: u64, offset: i64) -> Result<(), VMRunError> {
-        todo!("implement Bge please!");
+        if (r1 as i64) >= (r2 as i64) {
+            vm.pc = vm.pc.wrapping_add_signed(offset as isize); // Jump to the target address
+        }
         Ok(())
     }
 }
@@ -330,7 +383,9 @@ impl Bge {
 pub struct Bltu;
 impl Bltu {
     pub fn run(vm: &mut VM, r1: u64, r2: u64, offset: i64) -> Result<(), VMRunError> {
-        todo!("implement Bltu please!");
+        if r1 < r2 {
+            vm.pc = vm.pc.wrapping_add_signed(offset as isize); // Jump to the target address
+        }
         Ok(())
     }
 }
@@ -340,7 +395,9 @@ impl Bltu {
 pub struct Bgeu;
 impl Bgeu {
     pub fn run(vm: &mut VM, r1: u64, r2: u64, offset: i64) -> Result<(), VMRunError> {
-        todo!("implement Bgeu please!");
+        if r1 >= r2 {
+            vm.pc = vm.pc.wrapping_add_signed(offset as isize); // Jump to the target address
+        }
         Ok(())
     }
 }
@@ -350,7 +407,8 @@ impl Bgeu {
 pub struct Lui;
 impl Lui {
     pub fn run(vm: &mut VM, rd: u8, imm: i64) -> Result<(), VMRunError> {
-        todo!("implement Lui please!");
+        // imm has already been shifted left by 12 bits and sign-extended to 64 bits
+        vm.set_x(rd, imm as u64);
         Ok(())
     }
 }
@@ -360,7 +418,8 @@ impl Lui {
 pub struct Auipc;
 impl Auipc {
     pub fn run(vm: &mut VM, rd: u8, imm: i64) -> Result<(), VMRunError> {
-        todo!("implement Auipc please!");
+        // imm has already been shifted left by 12 bits and sign-extended to 64 bits
+        vm.set_x(rd, vm.pc.wrapping_add_signed(imm as isize) as u64);
         Ok(())
     }
 }
@@ -370,7 +429,9 @@ impl Auipc {
 pub struct Jal;
 impl Jal {
     pub fn run(vm: &mut VM, rd: u8, offset: i64) -> Result<(), VMRunError> {
-        todo!("implement Jal please!");
+        let return_address = vm.pc + 4; // Save the return address
+        vm.set_x(rd, return_address as u64);
+        vm.pc = vm.pc.wrapping_add_signed(offset as isize); // Jump to the target address
         Ok(())
     }
 }
@@ -380,7 +441,6 @@ impl Jal {
 pub struct Ecall;
 impl Ecall {
     pub fn run(vm: &mut VM) -> Result<(), VMRunError> {
-        todo!("implement Ecall please!");
-        Ok(())
+        vm.raise(Exception::EnvCall)
     }
 }

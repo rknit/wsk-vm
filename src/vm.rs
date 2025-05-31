@@ -260,6 +260,20 @@ impl VM {
         }
     }
 
+    pub fn set_mem_range(&mut self, addr: usize, val: &[u8]) -> Result<(), VMRunError> {
+        if addr < MEM_LEN {
+            let mem = self.mem_range_mut(addr, val.len()).unwrap();
+            mem.copy_from_slice(val);
+            Ok(())
+        } else {
+            Err(VMRunError {
+                err_addr: self.pc,
+                kind: VMRunErrorKind::InvalidAddress(addr),
+                info: "set_mem_range",
+            })
+        }
+    }
+
     pub fn x(&self, i: u8) -> u64 {
         let i = i as usize;
         assert!(i < REG_COUNT, "invalid register");

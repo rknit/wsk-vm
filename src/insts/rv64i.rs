@@ -10,7 +10,10 @@ use crate::{VM, VMRunError};
 pub struct Addw;
 impl Addw {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, r2: u64) -> Result<(), VMRunError> {
-        todo!("implement Addw please!");
+        let result = r1.wrapping_add(r2);
+        let result = (result & 0xFFFFFFFF) as u32; // Ensure result is 32 bits
+        let result = result as i32 as i64; // Sign-extend to 64 bits
+        vm.set_x(rd, result as u64);
         Ok(())
     }
 }
@@ -20,7 +23,10 @@ impl Addw {
 pub struct Subw;
 impl Subw {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, r2: u64) -> Result<(), VMRunError> {
-        todo!("implement Subw please!");
+        let result = r1.wrapping_sub(r2);
+        let result = (result & 0xFFFFFFFF) as u32; // Ensure result is 32 bits
+        let result = result as i32 as i64; // Sign-extend to 64 bits
+        vm.set_x(rd, result as u64);
         Ok(())
     }
 }
@@ -30,7 +36,10 @@ impl Subw {
 pub struct Sllw;
 impl Sllw {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, r2: u64) -> Result<(), VMRunError> {
-        todo!("implement Sllw please!");
+        let shift = (r2 & 0b11111) as u32; // Only the lower 5 bits are used for shift
+        let result = ((r1 << shift) & 0xFFFFFFFF) as u32; // Ensure result is 32 bits
+        let result = result as i32 as i64; // Sign-extend to 64 bits
+        vm.set_x(rd, result as u64);
         Ok(())
     }
 }
@@ -40,7 +49,10 @@ impl Sllw {
 pub struct Srlw;
 impl Srlw {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, r2: u64) -> Result<(), VMRunError> {
-        todo!("implement Srlw please!");
+        let shift = (r2 & 0b11111) as u32; // Only the lower 5 bits are used for shift
+        let val = r1 as u32; // Convert to 32 bits
+        let result = (val >> shift) as i32 as i64; // Sign-extend to 64 bits
+        vm.set_x(rd, result as u64);
         Ok(())
     }
 }
@@ -50,7 +62,10 @@ impl Srlw {
 pub struct Sraw;
 impl Sraw {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, r2: u64) -> Result<(), VMRunError> {
-        todo!("implement Sraw please!");
+        let shift = (r2 & 0b11111) as u32; // Only the lower 5 bits are used for shift
+        let val = r1 as i32; // Convert to 32 bits
+        let result = (val >> shift) as i64; // Sign-extend to 64 bits
+        vm.set_x(rd, result as u64);
         Ok(())
     }
 }
@@ -60,7 +75,10 @@ impl Sraw {
 pub struct Addiw;
 impl Addiw {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
-        todo!("implement Addiw please!");
+        let result = r1.wrapping_add_signed(imm);
+        let result = (result & 0xFFFFFFFF) as u32; // Ensure result is 32 bits
+        let result = result as i32 as i64; // Sign-extend to 64 bits
+        vm.set_x(rd, result as u64);
         Ok(())
     }
 }
@@ -70,7 +88,10 @@ impl Addiw {
 pub struct Slliw;
 impl Slliw {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
-        todo!("implement Slliw please!");
+        let shift = (imm & 0b11111) as u32; // Only the lower 5 bits are used for shift
+        let result = ((r1 << shift) & 0xFFFFFFFF) as u32; // Ensure result is 32 bits
+        let result = result as i32 as i64; // Sign-extend to 64 bits
+        vm.set_x(rd, result as u64);
         Ok(())
     }
 }
@@ -80,7 +101,10 @@ impl Slliw {
 pub struct Srliw;
 impl Srliw {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
-        todo!("implement Srliw please!");
+        let shift = (imm & 0b11111) as u32; // Only the lower 5 bits are used for shift
+        let val = r1 as u32; // Convert to 32 bits
+        let result = (val >> shift) as i32 as i64; // Sign-extend to 64 bits
+        vm.set_x(rd, result as u64);
         Ok(())
     }
 }
@@ -90,7 +114,10 @@ impl Srliw {
 pub struct Sraiw;
 impl Sraiw {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
-        todo!("implement Sraiw please!");
+        let shift = (imm & 0b11111) as u32; // Only the lower 5 bits are used for shift
+        let val = r1 as i32; // Convert to 32 bits
+        let result = (val >> shift) as i64; // Sign-extend to 64 bits
+        vm.set_x(rd, result as u64);
         Ok(())
     }
 }
@@ -100,7 +127,10 @@ impl Sraiw {
 pub struct Lwu;
 impl Lwu {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
-        todo!("implement Lwu please!");
+        let address = r1.wrapping_add_signed(imm);
+        let data = vm.mem_range(address as usize, 4)?;
+        let val = u32::from_le_bytes([data[0], data[1], data[2], data[3]]);
+        vm.set_x(rd, val as u64);
         Ok(())
     }
 }
@@ -110,7 +140,12 @@ impl Lwu {
 pub struct Ld;
 impl Ld {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
-        todo!("implement Ld please!");
+        let address = r1.wrapping_add_signed(imm);
+        let data = vm.mem_range(address as usize, 8)?;
+        let val = u64::from_le_bytes([
+            data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7],
+        ]);
+        vm.set_x(rd, val);
         Ok(())
     }
 }
@@ -120,7 +155,9 @@ impl Ld {
 pub struct Sd;
 impl Sd {
     pub fn run(vm: &mut VM, r1: u64, r2: u64, offset: i64) -> Result<(), VMRunError> {
-        todo!("implement Sd please!");
+        let address = r1.wrapping_add_signed(offset);
+        let data = r2.to_le_bytes();
+        vm.set_mem_range(address as usize, &data)?;
         Ok(())
     }
 }
