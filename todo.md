@@ -4,7 +4,10 @@
 
 - [ ] priviledges
 - [ ] gen_inst v2
-    -- [ ] provide 5 bits register index to inst's run function
+    -- [ ] 'Format' trait (provide bit mask method, common method)
+    -- [ ] format struct 'FmtI', 'FmtR' ... (usage: 'fmt.r1(vm)', 'fmt.rs1', 'fmt.imm' etc.)
+        --- maybe FmtI, FmtR... can store ref mut VM? (usage: fmt.vm(), fmt.r1() instead of fmt.r1())
+    -- [ ] implementation migrating (new token '$IMPL_START' ... '$IMPL_END'?)
 - [ ] load debug symbols
     -- [ ] break at symbol
 - [x] refactor repl
