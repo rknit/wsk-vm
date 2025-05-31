@@ -36,11 +36,6 @@ pub const fn funct7_31_25(v: u32) -> u8 {
 }
 
 #[inline]
-pub const fn imm_31_20(v: u32) -> i16 {
-    sext_imm_12(ext!(v, u64; 31;20)) as i16
-}
-
-#[inline]
 pub const fn rd_11_7(v: u32) -> u8 {
     ext!(v, u8; 11;7)
 }
@@ -55,13 +50,17 @@ pub const fn rs2_24_20(v: u32) -> u8 {
     ext!(v, u8; 24;20)
 }
 
-#[macro_export]
-macro_rules! ext {
-    ($val:expr, $t:ty; $high:expr;$low:expr) => {{
-        let s = $val >> $low;
-        let m = $crate::bits::mask($high - $low + 1);
-        ((s as u64) & m) as $t
-    }};
+mod utils {
+    #[macro_export]
+    macro_rules! ext {
+        ($val:expr, $t:ty; $high:expr;$low:expr) => {{
+            let s = $val >> $low;
+            let m = $crate::bits::mask($high - $low + 1);
+            ((s as u64) & m) as $t
+        }};
+    }
+
+    pub(crate) use ext;
 }
 
-use ext;
+pub(crate) use utils::ext;

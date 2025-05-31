@@ -6,7 +6,7 @@ use std::{
 
 use log::{info, trace};
 
-use crate::{Exception, Inst, format::RawFormat};
+use crate::{Exception, Inst, RawFormat};
 
 const REG_COUNT: usize = 32;
 
@@ -174,13 +174,13 @@ impl VM {
     }
 
     pub fn step(&mut self) -> Result<(), VMRunError> {
-        let inst = self.fetch_inst(self.pc, None)?;
+        let inst = self.fetch_inst(self.pc)?;
         inst.run(self)?;
         self.pc = (self.pc + 4) % (PROG_LEN);
         Ok(())
     }
 
-    pub fn fetch_inst(&self, addr: usize, rep: Option<&mut Report>) -> Result<Inst, VMRunError> {
+    pub fn fetch_inst(&self, addr: usize) -> Result<Inst, VMRunError> {
         if addr % 4 != 0 {
             return Err(VMRunError {
                 err_addr: addr,

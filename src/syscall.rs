@@ -111,6 +111,7 @@ syscalls!(
     },
 );
 
+#[allow(dead_code)]
 const SYSCALL_REG: u8 = 17;
 #[allow(dead_code)]
 const RET_REG: u8 = 10;

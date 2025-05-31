@@ -5,6 +5,7 @@ class Inst:
         self.f3 = f3
         self.f7 = f7
         self.name = name.lower().capitalize()
+        self.special_match: str = ""
 
     def enum_fields(self) -> str:
         fmt = self.format
@@ -64,14 +65,27 @@ class Inst:
             return ""
         assert False, f"invalid format {self.format}"
 
+    def get_special_match(self) -> str:
+        if not self.special_match:
+            return ""
+        sm = self.special_match
+        
+        if sm == "slli" or sm == "srli":
+            return "if ext!(imm, u8; 11;6) == 0"
+        if sm == "srai":
+            return "if ext!(imm, u8; 11;6) == 0b010000"
+        
+        assert False, f"invalid special match {self.special_match} for {self.name}"
+
     def decode_arm(self) -> str:
         fmt = self.format
+        sm = self.get_special_match()
         if fmt == "r":
-            return f"(0b{self.op}, 0b{self.f3}, 0b{self.f7}) => Inst::{self.name} {{ {self.enum_args_assign()} }},\n"
+            return f"(0b{self.op}, 0b{self.f3}, 0b{self.f7}){sm} => Inst::{self.name} {{ {self.enum_args_assign()} }},\n"
         if fmt == "i" or fmt == "s" or fmt == "b":
-            return f"(0b{self.op}, 0b{self.f3}) => Inst::{self.name} {{ {self.enum_args_assign()} }},\n"
+            return f"(0b{self.op}, 0b{self.f3}){sm} => Inst::{self.name} {{ {self.enum_args_assign()} }},\n"
         if fmt == "u" or fmt == "j" or fmt == "o":
-            return f"0b{self.op} => Inst::{self.name} {{ {self.enum_args_assign()} }},\n"
+            return f"0b{self.op}{sm} => Inst::{self.name} {{ {self.enum_args_assign()} }},\n"
         assert False, f"invalid format {self.format}"
         
     def run_params(self) -> str:
@@ -115,6 +129,14 @@ class Inst:
     
     def __str__(self) -> str:
         return f"Inst(format={self.format}, op={self.op}, f3={self.f3}, f7={self.f7}, name={self.name})"
+    
+    def __eq__(self, value: object) -> bool:
+        if not isinstance(value, Inst):
+            return False
+        return self.name == value.name
+        
+    def __hash__(self) -> int:
+        return hash(self.name)
 
 
 class Module:
@@ -124,14 +146,8 @@ class Module:
         self.insts: list[Inst] = list()
 
     def append(self, inst: Inst):
+        assert inst not in self.insts, "duplicate inst"
         self.insts.append(inst)
-
-    def validate(self):
-        s: set[tuple[str, str, str]] = set()
-        for inst in self.insts:
-            v = (inst.op, inst.f3, inst.f7)
-            assert v not in s, f"duplicate inst '{inst.name}'"
-            s.add(v)
 
     def all_format(self, fmt: str) -> list[Inst]:
         insts: list[Inst] = list()

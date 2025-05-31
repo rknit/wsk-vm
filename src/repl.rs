@@ -7,7 +7,7 @@ use std::{
     str::SplitWhitespace,
 };
 
-use log::{log_enabled, trace};
+use log::log_enabled;
 
 use crate::{Report, VM, VMRunError};
 
@@ -33,9 +33,9 @@ pub fn run_repl(path: &Path) -> Result<u8, VMRunError> {
 
     let step = |vm: &mut VM| -> Result<(), VMRunError> {
         if log_enabled!(log::Level::Trace) {
-            let mut rep = Report::default();
-            vm.fetch_inst(vm.pc, Some(&mut rep))?;
-            trace!("{}", rep);
+            let rep = Report::default();
+            vm.fetch_inst(vm.pc)?;
+            todo!("{}", rep);
         }
         vm.step()?;
         Ok(())

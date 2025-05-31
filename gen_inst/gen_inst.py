@@ -91,7 +91,7 @@ def gen_module_files(modules: Modules) -> list[str]:
                 if token in existing_content:
                     continue
                 token = get_impl_token(inst)
-                if token in existing_content:
+                if f"{token} " in existing_content:
                     print(f"{Colors.WARNING}Warning: '{inst.name}' is already \
                           implemented with format '{inst.format}' in {file_path}, skipping.{Colors.ENDC}")
                     continue

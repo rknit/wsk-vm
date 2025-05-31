@@ -12,19 +12,84 @@ use rv32i_rv64i::*;
 mod rv64i;
 use rv64i::*;
 
+mod rv32m_rv64m;
+use rv32m_rv64m::*;
+
+mod rv64m;
+use rv64m::*;
+
 #[derive(Debug, Clone, Copy)]
 pub enum Inst {
     // RV32I_RV64I
     Add { rd: u8, rs1: u8, rs2: u8 },
+    Sub { rd: u8, rs1: u8, rs2: u8 },
+    Sll { rd: u8, rs1: u8, rs2: u8 },
+    Slt { rd: u8, rs1: u8, rs2: u8 },
+    Sltu { rd: u8, rs1: u8, rs2: u8 },
+    Xor { rd: u8, rs1: u8, rs2: u8 },
+    Srl { rd: u8, rs1: u8, rs2: u8 },
+    Sra { rd: u8, rs1: u8, rs2: u8 },
+    Or { rd: u8, rs1: u8, rs2: u8 },
+    And { rd: u8, rs1: u8, rs2: u8 },
     Addi { rd: u8, rs1: u8, imm: i64 },
+    Slti { rd: u8, rs1: u8, imm: i64 },
+    Sltiu { rd: u8, rs1: u8, imm: i64 },
+    Xori { rd: u8, rs1: u8, imm: i64 },
+    Ori { rd: u8, rs1: u8, imm: i64 },
+    Andi { rd: u8, rs1: u8, imm: i64 },
+    Slli { rd: u8, rs1: u8, imm: i64 },
+    Srli { rd: u8, rs1: u8, imm: i64 },
+    Srai { rd: u8, rs1: u8, imm: i64 },
+    Lb { rd: u8, rs1: u8, imm: i64 },
+    Lh { rd: u8, rs1: u8, imm: i64 },
+    Lw { rd: u8, rs1: u8, imm: i64 },
+    Lbu { rd: u8, rs1: u8, imm: i64 },
+    Lhu { rd: u8, rs1: u8, imm: i64 },
+    Jalr { rd: u8, rs1: u8, imm: i64 },
     Sb { rs1: u8, rs2: u8, offset: i64 },
+    Sh { rs1: u8, rs2: u8, offset: i64 },
+    Sw { rs1: u8, rs2: u8, offset: i64 },
     Beq { rs1: u8, rs2: u8, offset: i64 },
+    Bne { rs1: u8, rs2: u8, offset: i64 },
+    Blt { rs1: u8, rs2: u8, offset: i64 },
+    Bge { rs1: u8, rs2: u8, offset: i64 },
+    Bltu { rs1: u8, rs2: u8, offset: i64 },
+    Bgeu { rs1: u8, rs2: u8, offset: i64 },
     Lui { rd: u8, imm: i64 },
+    Auipc { rd: u8, imm: i64 },
     Jal { rd: u8, offset: i64 },
     Ecall {},
 
     // RV64I
+    Addw { rd: u8, rs1: u8, rs2: u8 },
+    Subw { rd: u8, rs1: u8, rs2: u8 },
+    Sllw { rd: u8, rs1: u8, rs2: u8 },
+    Srlw { rd: u8, rs1: u8, rs2: u8 },
+    Sraw { rd: u8, rs1: u8, rs2: u8 },
     Addiw { rd: u8, rs1: u8, imm: i64 },
+    Slliw { rd: u8, rs1: u8, imm: i64 },
+    Srliw { rd: u8, rs1: u8, imm: i64 },
+    Sraiw { rd: u8, rs1: u8, imm: i64 },
+    Lwu { rd: u8, rs1: u8, imm: i64 },
+    Ld { rd: u8, rs1: u8, imm: i64 },
+    Sd { rs1: u8, rs2: u8, offset: i64 },
+
+    // RV32M_RV64M
+    Mul { rd: u8, rs1: u8, rs2: u8 },
+    Mulh { rd: u8, rs1: u8, rs2: u8 },
+    Mulhsu { rd: u8, rs1: u8, rs2: u8 },
+    Mulhu { rd: u8, rs1: u8, rs2: u8 },
+    Div { rd: u8, rs1: u8, rs2: u8 },
+    Divu { rd: u8, rs1: u8, rs2: u8 },
+    Rem { rd: u8, rs1: u8, rs2: u8 },
+    Remu { rd: u8, rs1: u8, rs2: u8 },
+
+    // RV64M
+    Mulw { rd: u8, rs1: u8, rs2: u8 },
+    Divw { rd: u8, rs1: u8, rs2: u8 },
+    Divuw { rd: u8, rs1: u8, rs2: u8 },
+    Remw { rd: u8, rs1: u8, rs2: u8 },
+    Remuw { rd: u8, rs1: u8, rs2: u8 },
 }
 
 impl Inst {
@@ -40,6 +105,33 @@ impl Inst {
                 rs2,
             } => match (opc, funct3, funct7) {
                 (0b01100, 0b000, 0b0000000) => Inst::Add { rd, rs1, rs2 },
+                (0b01100, 0b000, 0b0100000) => Inst::Sub { rd, rs1, rs2 },
+                (0b01100, 0b001, 0b0000000) => Inst::Sll { rd, rs1, rs2 },
+                (0b01100, 0b010, 0b0000000) => Inst::Slt { rd, rs1, rs2 },
+                (0b01100, 0b011, 0b0000000) => Inst::Sltu { rd, rs1, rs2 },
+                (0b01100, 0b100, 0b0000000) => Inst::Xor { rd, rs1, rs2 },
+                (0b01100, 0b101, 0b0000000) => Inst::Srl { rd, rs1, rs2 },
+                (0b01100, 0b101, 0b0100000) => Inst::Sra { rd, rs1, rs2 },
+                (0b01100, 0b110, 0b0000000) => Inst::Or { rd, rs1, rs2 },
+                (0b01100, 0b111, 0b0000000) => Inst::And { rd, rs1, rs2 },
+                (0b01110, 0b000, 0b0000000) => Inst::Addw { rd, rs1, rs2 },
+                (0b01110, 0b000, 0b0100000) => Inst::Subw { rd, rs1, rs2 },
+                (0b01110, 0b001, 0b0000000) => Inst::Sllw { rd, rs1, rs2 },
+                (0b01110, 0b101, 0b0000000) => Inst::Srlw { rd, rs1, rs2 },
+                (0b01110, 0b101, 0b0100000) => Inst::Sraw { rd, rs1, rs2 },
+                (0b01100, 0b000, 0b0000001) => Inst::Mul { rd, rs1, rs2 },
+                (0b01100, 0b001, 0b0000001) => Inst::Mulh { rd, rs1, rs2 },
+                (0b01100, 0b010, 0b0000001) => Inst::Mulhsu { rd, rs1, rs2 },
+                (0b01100, 0b011, 0b0000001) => Inst::Mulhu { rd, rs1, rs2 },
+                (0b01100, 0b100, 0b0000001) => Inst::Div { rd, rs1, rs2 },
+                (0b01100, 0b101, 0b0000001) => Inst::Divu { rd, rs1, rs2 },
+                (0b01100, 0b110, 0b0000001) => Inst::Rem { rd, rs1, rs2 },
+                (0b01100, 0b111, 0b0000001) => Inst::Remu { rd, rs1, rs2 },
+                (0b01110, 0b000, 0b0000001) => Inst::Mulw { rd, rs1, rs2 },
+                (0b01110, 0b100, 0b0000001) => Inst::Divw { rd, rs1, rs2 },
+                (0b01110, 0b101, 0b0000001) => Inst::Divuw { rd, rs1, rs2 },
+                (0b01110, 0b110, 0b0000001) => Inst::Remw { rd, rs1, rs2 },
+                (0b01110, 0b111, 0b0000001) => Inst::Remuw { rd, rs1, rs2 },
 
                 #[allow(unreachable_patterns)]
                 _ => return None,
@@ -56,7 +148,102 @@ impl Inst {
                     rs1,
                     imm: sext(imm as u64, 11) as i64,
                 },
+                (0b00100, 0b010) => Inst::Slti {
+                    rd,
+                    rs1,
+                    imm: sext(imm as u64, 11) as i64,
+                },
+                (0b00100, 0b011) => Inst::Sltiu {
+                    rd,
+                    rs1,
+                    imm: sext(imm as u64, 11) as i64,
+                },
+                (0b00100, 0b100) => Inst::Xori {
+                    rd,
+                    rs1,
+                    imm: sext(imm as u64, 11) as i64,
+                },
+                (0b00100, 0b110) => Inst::Ori {
+                    rd,
+                    rs1,
+                    imm: sext(imm as u64, 11) as i64,
+                },
+                (0b00100, 0b111) => Inst::Andi {
+                    rd,
+                    rs1,
+                    imm: sext(imm as u64, 11) as i64,
+                },
+                (0b00100, 0b001) if ext!(imm, u8; 11;6) == 0 => Inst::Slli {
+                    rd,
+                    rs1,
+                    imm: sext(imm as u64, 11) as i64,
+                },
+                (0b00100, 0b101) if ext!(imm, u8; 11;6) == 0 => Inst::Srli {
+                    rd,
+                    rs1,
+                    imm: sext(imm as u64, 11) as i64,
+                },
+                (0b00100, 0b101) if ext!(imm, u8; 11;6) == 0b010000 => Inst::Srai {
+                    rd,
+                    rs1,
+                    imm: sext(imm as u64, 11) as i64,
+                },
+                (0b00000, 0b000) => Inst::Lb {
+                    rd,
+                    rs1,
+                    imm: sext(imm as u64, 11) as i64,
+                },
+                (0b00000, 0b001) => Inst::Lh {
+                    rd,
+                    rs1,
+                    imm: sext(imm as u64, 11) as i64,
+                },
+                (0b00000, 0b010) => Inst::Lw {
+                    rd,
+                    rs1,
+                    imm: sext(imm as u64, 11) as i64,
+                },
+                (0b00000, 0b100) => Inst::Lbu {
+                    rd,
+                    rs1,
+                    imm: sext(imm as u64, 11) as i64,
+                },
+                (0b00000, 0b101) => Inst::Lhu {
+                    rd,
+                    rs1,
+                    imm: sext(imm as u64, 11) as i64,
+                },
+                (0b11001, 0b000) => Inst::Jalr {
+                    rd,
+                    rs1,
+                    imm: sext(imm as u64, 11) as i64,
+                },
                 (0b00110, 0b000) => Inst::Addiw {
+                    rd,
+                    rs1,
+                    imm: sext(imm as u64, 11) as i64,
+                },
+                (0b00110, 0b001) if ext!(imm, u8; 11;6) == 0 => Inst::Slliw {
+                    rd,
+                    rs1,
+                    imm: sext(imm as u64, 11) as i64,
+                },
+                (0b00110, 0b101) if ext!(imm, u8; 11;6) == 0 => Inst::Srliw {
+                    rd,
+                    rs1,
+                    imm: sext(imm as u64, 11) as i64,
+                },
+                (0b00110, 0b101) if ext!(imm, u8; 11;6) == 0b010000 => Inst::Sraiw {
+                    rd,
+                    rs1,
+                    imm: sext(imm as u64, 11) as i64,
+                },
+                (0b00000, 0b110) => Inst::Lwu {
+                    rd,
+                    rs1,
+                    imm: sext(imm as u64, 11) as i64,
+                },
+                (0b00000, 0b011) => Inst::Ld {
                     rd,
                     rs1,
                     imm: sext(imm as u64, 11) as i64,
@@ -77,6 +264,21 @@ impl Inst {
                     rs2,
                     offset: sext(imm as u64, 11) as i64,
                 },
+                (0b01000, 0b001) => Inst::Sh {
+                    rs1,
+                    rs2,
+                    offset: sext(imm as u64, 11) as i64,
+                },
+                (0b01000, 0b010) => Inst::Sw {
+                    rs1,
+                    rs2,
+                    offset: sext(imm as u64, 11) as i64,
+                },
+                (0b01000, 0b011) => Inst::Sd {
+                    rs1,
+                    rs2,
+                    offset: sext(imm as u64, 11) as i64,
+                },
 
                 #[allow(unreachable_patterns)]
                 _ => return None,
@@ -93,6 +295,31 @@ impl Inst {
                     rs2,
                     offset: sext((imm as u64) << 1, 12) as i64,
                 },
+                (0b11000, 0b001) => Inst::Bne {
+                    rs1,
+                    rs2,
+                    offset: sext((imm as u64) << 1, 12) as i64,
+                },
+                (0b11000, 0b100) => Inst::Blt {
+                    rs1,
+                    rs2,
+                    offset: sext((imm as u64) << 1, 12) as i64,
+                },
+                (0b11000, 0b101) => Inst::Bge {
+                    rs1,
+                    rs2,
+                    offset: sext((imm as u64) << 1, 12) as i64,
+                },
+                (0b11000, 0b110) => Inst::Bltu {
+                    rs1,
+                    rs2,
+                    offset: sext((imm as u64) << 1, 12) as i64,
+                },
+                (0b11000, 0b111) => Inst::Bgeu {
+                    rs1,
+                    rs2,
+                    offset: sext((imm as u64) << 1, 12) as i64,
+                },
 
                 #[allow(unreachable_patterns)]
                 _ => return None,
@@ -102,12 +329,16 @@ impl Inst {
                     rd,
                     imm: ((imm as i32) << 12) as i64,
                 },
+                0b00101 => Inst::Auipc {
+                    rd,
+                    imm: ((imm as i32) << 12) as i64,
+                },
 
                 #[allow(unreachable_patterns)]
                 _ => return None,
             },
             J { opc, rd, imm } => match opc {
-                0b11001 => Inst::Jal {
+                0b11011 => Inst::Jal {
                     rd,
                     offset: sext((imm as u64) << 1, 20) as i64,
                 },
@@ -127,13 +358,68 @@ impl Inst {
     pub fn run(self, vm: &mut VM) -> Result<(), VMRunError> {
         match self {
             Inst::Add { rd, rs1, rs2 } => Add::run(vm, rd, vm.x(rs1), vm.x(rs2)),
+            Inst::Sub { rd, rs1, rs2 } => Sub::run(vm, rd, vm.x(rs1), vm.x(rs2)),
+            Inst::Sll { rd, rs1, rs2 } => Sll::run(vm, rd, vm.x(rs1), vm.x(rs2)),
+            Inst::Slt { rd, rs1, rs2 } => Slt::run(vm, rd, vm.x(rs1), vm.x(rs2)),
+            Inst::Sltu { rd, rs1, rs2 } => Sltu::run(vm, rd, vm.x(rs1), vm.x(rs2)),
+            Inst::Xor { rd, rs1, rs2 } => Xor::run(vm, rd, vm.x(rs1), vm.x(rs2)),
+            Inst::Srl { rd, rs1, rs2 } => Srl::run(vm, rd, vm.x(rs1), vm.x(rs2)),
+            Inst::Sra { rd, rs1, rs2 } => Sra::run(vm, rd, vm.x(rs1), vm.x(rs2)),
+            Inst::Or { rd, rs1, rs2 } => Or::run(vm, rd, vm.x(rs1), vm.x(rs2)),
+            Inst::And { rd, rs1, rs2 } => And::run(vm, rd, vm.x(rs1), vm.x(rs2)),
             Inst::Addi { rd, rs1, imm } => Addi::run(vm, rd, vm.x(rs1), imm),
+            Inst::Slti { rd, rs1, imm } => Slti::run(vm, rd, vm.x(rs1), imm),
+            Inst::Sltiu { rd, rs1, imm } => Sltiu::run(vm, rd, vm.x(rs1), imm),
+            Inst::Xori { rd, rs1, imm } => Xori::run(vm, rd, vm.x(rs1), imm),
+            Inst::Ori { rd, rs1, imm } => Ori::run(vm, rd, vm.x(rs1), imm),
+            Inst::Andi { rd, rs1, imm } => Andi::run(vm, rd, vm.x(rs1), imm),
+            Inst::Slli { rd, rs1, imm } => Slli::run(vm, rd, vm.x(rs1), imm),
+            Inst::Srli { rd, rs1, imm } => Srli::run(vm, rd, vm.x(rs1), imm),
+            Inst::Srai { rd, rs1, imm } => Srai::run(vm, rd, vm.x(rs1), imm),
+            Inst::Lb { rd, rs1, imm } => Lb::run(vm, rd, vm.x(rs1), imm),
+            Inst::Lh { rd, rs1, imm } => Lh::run(vm, rd, vm.x(rs1), imm),
+            Inst::Lw { rd, rs1, imm } => Lw::run(vm, rd, vm.x(rs1), imm),
+            Inst::Lbu { rd, rs1, imm } => Lbu::run(vm, rd, vm.x(rs1), imm),
+            Inst::Lhu { rd, rs1, imm } => Lhu::run(vm, rd, vm.x(rs1), imm),
+            Inst::Jalr { rd, rs1, imm } => Jalr::run(vm, rd, vm.x(rs1), imm),
             Inst::Sb { rs1, rs2, offset } => Sb::run(vm, vm.x(rs1), vm.x(rs2), offset),
+            Inst::Sh { rs1, rs2, offset } => Sh::run(vm, vm.x(rs1), vm.x(rs2), offset),
+            Inst::Sw { rs1, rs2, offset } => Sw::run(vm, vm.x(rs1), vm.x(rs2), offset),
             Inst::Beq { rs1, rs2, offset } => Beq::run(vm, vm.x(rs1), vm.x(rs2), offset),
+            Inst::Bne { rs1, rs2, offset } => Bne::run(vm, vm.x(rs1), vm.x(rs2), offset),
+            Inst::Blt { rs1, rs2, offset } => Blt::run(vm, vm.x(rs1), vm.x(rs2), offset),
+            Inst::Bge { rs1, rs2, offset } => Bge::run(vm, vm.x(rs1), vm.x(rs2), offset),
+            Inst::Bltu { rs1, rs2, offset } => Bltu::run(vm, vm.x(rs1), vm.x(rs2), offset),
+            Inst::Bgeu { rs1, rs2, offset } => Bgeu::run(vm, vm.x(rs1), vm.x(rs2), offset),
             Inst::Lui { rd, imm } => Lui::run(vm, rd, imm),
+            Inst::Auipc { rd, imm } => Auipc::run(vm, rd, imm),
             Inst::Jal { rd, offset } => Jal::run(vm, rd, offset),
             Inst::Ecall {} => Ecall::run(vm),
+            Inst::Addw { rd, rs1, rs2 } => Addw::run(vm, rd, vm.x(rs1), vm.x(rs2)),
+            Inst::Subw { rd, rs1, rs2 } => Subw::run(vm, rd, vm.x(rs1), vm.x(rs2)),
+            Inst::Sllw { rd, rs1, rs2 } => Sllw::run(vm, rd, vm.x(rs1), vm.x(rs2)),
+            Inst::Srlw { rd, rs1, rs2 } => Srlw::run(vm, rd, vm.x(rs1), vm.x(rs2)),
+            Inst::Sraw { rd, rs1, rs2 } => Sraw::run(vm, rd, vm.x(rs1), vm.x(rs2)),
             Inst::Addiw { rd, rs1, imm } => Addiw::run(vm, rd, vm.x(rs1), imm),
+            Inst::Slliw { rd, rs1, imm } => Slliw::run(vm, rd, vm.x(rs1), imm),
+            Inst::Srliw { rd, rs1, imm } => Srliw::run(vm, rd, vm.x(rs1), imm),
+            Inst::Sraiw { rd, rs1, imm } => Sraiw::run(vm, rd, vm.x(rs1), imm),
+            Inst::Lwu { rd, rs1, imm } => Lwu::run(vm, rd, vm.x(rs1), imm),
+            Inst::Ld { rd, rs1, imm } => Ld::run(vm, rd, vm.x(rs1), imm),
+            Inst::Sd { rs1, rs2, offset } => Sd::run(vm, vm.x(rs1), vm.x(rs2), offset),
+            Inst::Mul { rd, rs1, rs2 } => Mul::run(vm, rd, vm.x(rs1), vm.x(rs2)),
+            Inst::Mulh { rd, rs1, rs2 } => Mulh::run(vm, rd, vm.x(rs1), vm.x(rs2)),
+            Inst::Mulhsu { rd, rs1, rs2 } => Mulhsu::run(vm, rd, vm.x(rs1), vm.x(rs2)),
+            Inst::Mulhu { rd, rs1, rs2 } => Mulhu::run(vm, rd, vm.x(rs1), vm.x(rs2)),
+            Inst::Div { rd, rs1, rs2 } => Div::run(vm, rd, vm.x(rs1), vm.x(rs2)),
+            Inst::Divu { rd, rs1, rs2 } => Divu::run(vm, rd, vm.x(rs1), vm.x(rs2)),
+            Inst::Rem { rd, rs1, rs2 } => Rem::run(vm, rd, vm.x(rs1), vm.x(rs2)),
+            Inst::Remu { rd, rs1, rs2 } => Remu::run(vm, rd, vm.x(rs1), vm.x(rs2)),
+            Inst::Mulw { rd, rs1, rs2 } => Mulw::run(vm, rd, vm.x(rs1), vm.x(rs2)),
+            Inst::Divw { rd, rs1, rs2 } => Divw::run(vm, rd, vm.x(rs1), vm.x(rs2)),
+            Inst::Divuw { rd, rs1, rs2 } => Divuw::run(vm, rd, vm.x(rs1), vm.x(rs2)),
+            Inst::Remw { rd, rs1, rs2 } => Remw::run(vm, rd, vm.x(rs1), vm.x(rs2)),
+            Inst::Remuw { rd, rs1, rs2 } => Remuw::run(vm, rd, vm.x(rs1), vm.x(rs2)),
 
             #[allow(unreachable_patterns)]
             _ => {

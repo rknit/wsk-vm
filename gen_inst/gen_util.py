@@ -20,11 +20,12 @@ def read_insts(path: str) -> Modules:
                         inst_data.get("f7", "-"),
                         inst_name,
                     )
+                    
+                    # other configs
+                    inst.special_match = inst_data.get("special_match", "")
+                    
                     module.append(inst)
             modules.append(module)
-
-    for mod in modules.mods():
-        mod.validate()
         
     return modules
 
