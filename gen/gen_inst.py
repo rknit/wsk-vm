@@ -1,5 +1,9 @@
 #! /usr/bin/env python
 
+import os
+import shutil
+
+
 OUTPUT_DIR = "./output"
 
 
@@ -11,16 +15,16 @@ class Inst:
         self.f7 = f7
         self.name = name.lower().capitalize()
 
-    def run_params(self) -> str:
+    def enum_fields(self) -> str:
         fmt = self.format
         if fmt == "r":
-            return "rd: u8, r1: u64, r2: u64"
+            return "rd: u8, rs1: u64, rs2: u64"
         if fmt == "i":
-            return "rd: u8, r1: u64, imm: i64"
+            return "rd: u8, rs1: u64, imm: i64"
         if fmt == "s":
-            return "rd: u8, r1: u64, rs2: u64, offset: i64"
+            return "rs1: u64, rs2: u64, offset: i64"
         if fmt == "b":
-            return "r1: u64, rs2: u64, offset: i64"
+            return "rs1: u64, rs2: u64, offset: i64"
         if fmt == "u":
             return "rd: u8, imm: i64"
         if fmt == "j":
@@ -30,19 +34,19 @@ class Inst:
         assert False, f"invalid format {self.format}"
 
     def enum(self) -> str:
-        s = self.run_params()
+        s = self.enum_fields()
         return f"{self.name} {{ {s} }},"
 
     def enum_args(self) -> str:
         fmt = self.format
         if fmt == "r":
-            return "rd, r1, r2"
+            return "rd, rs1, rs2"
         if fmt == "i":
-            return "rd, r1, imm"
+            return "rd, rs1, imm"
         if fmt == "s":
-            return "rd, r1, rs2, offset"
+            return "rs1, rs2, offset"
         if fmt == "b":
-            return "r1, rs2, offset"
+            return "rs1, rs2, offset"
         if fmt == "u":
             return "rd, imm"
         if fmt == "j":
@@ -114,13 +118,14 @@ class Modules:
 
 
 def gen_main(modules: Modules):
-    with open("./inst.rs", "w") as _gen:
+    with open(f"{OUTPUT_DIR}/mod.rs", "w") as _gen:
 
         def gen(s="", endl="\n"):
             _gen.write(s + endl)
 
         gen("use crate::{VM, VMRunError, VMRunErrorKind};\n")
-        gen("use super::format::RawFormat;\n")
+
+        gen("mod bits;\nuse bits::*;\n\nmod format;\nuse format::*;\n\n")
 
         # include all modules
         for mod in modules.mods():
@@ -130,6 +135,7 @@ def gen_main(modules: Modules):
             gen()
 
         # create Inst enum
+        gen("#[derive(Debug, Clone, Copy)]")
         gen("pub enum Inst {")
         for mod_idx, mod in enumerate(modules.mods()):
             gen(f"    // {mod.name.upper()}")
@@ -220,15 +226,15 @@ impl Inst {{
 
         # run function
         gen(f"""
-    pub fn run(&self, vm: &mut VM) -> Result<(), VMRunError> {{
+    pub fn run(self, vm: &mut VM) -> Result<(), VMRunError> {{
         match self {{
             {"            ".join([inst.run_arm() for inst in modules.all_inst()])}
             #[allow(unreachable_patterns)]
-            _ => return VMRunError {{
-                addr: vm.pc,
+            _ => return Err(VMRunError {{
+                err_addr: vm.pc,
                 kind: VMRunErrorKind::Other(format!("{{:?}}", self)),
                 info: "unimplemented inst",
-            }},
+            }}),
         }}
     }}""")
 
@@ -236,7 +242,7 @@ impl Inst {{
         gen("}")
 
 
-if __name__ == "__main__":
+def read_insts() -> Modules:
     modules = Modules()
     cur_mod = None
 
@@ -260,22 +266,32 @@ if __name__ == "__main__":
 
     for mod in modules.mods():
         mod.validate()
+    return modules
+
+
+if __name__ == "__main__":
+    modules = read_insts()
+
+    if os.path.exists(OUTPUT_DIR):
+        shutil.rmtree(OUTPUT_DIR)
+    os.mkdir(OUTPUT_DIR)
 
     gen_main(modules)
 
     # create instruction structs and their run methods
     for mod in modules.mods():
-        with open(f"./{mod.file_name}.rs", "w") as _gen:
+        with open(f"{OUTPUT_DIR}/{mod.file_name}.rs", "w") as _gen:
 
             def gen(s="", endl="\n"):
                 _gen.write(s + endl)
 
-            gen("use crate::{VM, VMRunError}\n")
+            gen("use crate::{VM, VMRunError};\n")
 
             for inst in mod.insts:
+                gen("#[derive(Debug, Clone, Copy)]")
                 gen(f"""pub struct {inst.name};
 impl {inst.name} {{
-    pub fn run(vm: &mut VM, {inst.run_params()}) -> Result<(), VMRunError> {{
+    pub fn run(vm: &mut VM, {inst.enum_fields()}) -> Result<(), VMRunError> {{
         todo!("implement {inst.name} please!");
         Ok(())
     }}

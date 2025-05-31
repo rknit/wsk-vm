@@ -1,0 +1,56 @@
+use crate::{VM, VMRunError};
+
+#[derive(Debug, Clone, Copy)]
+pub struct Lui;
+impl Lui {
+    pub fn run(vm: &mut VM, rd: u8, imm: i64) -> Result<(), VMRunError> {
+        todo!("implement Lui please!");
+        Ok(())
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct Addi;
+impl Addi {
+    pub fn run(vm: &mut VM, rd: u8, r1: u64, imm: i64) -> Result<(), VMRunError> {
+        todo!("implement Addi please!");
+        Ok(())
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct Add;
+impl Add {
+    pub fn run(vm: &mut VM, rd: u8, r1: u64, r2: u64) -> Result<(), VMRunError> {
+        todo!("implement Add please!");
+        Ok(())
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct Ecall;
+impl Ecall {
+    pub fn run(vm: &mut VM, ) -> Result<(), VMRunError> {
+        todo!("implement Ecall please!");
+        Ok(())
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct Sb;
+impl Sb {
+    pub fn run(vm: &mut VM, r1: u64, r2: u64, offset: i64) -> Result<(), VMRunError> {
+        todo!("implement Sb please!");
+        Ok(())
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct Beq;
+impl Beq {
+    pub fn run(vm: &mut VM, r1: u64, r2: u64, offset: i64) -> Result<(), VMRunError> {
+        todo!("implement Beq please!");
+        Ok(())
+    }
+}
+
