@@ -3,14 +3,15 @@
 // This file contains the implementations of the instruction set,
 // which requires developers to implement them themselves.
 // Please backup this file regularly, as it can be overwritten by `gen_inst.py`.
-use crate::{VM, VMRunError};
+use crate::{VM, VMRunError, VMRunErrorKind};
 
 // $IMPL Mul r
 #[derive(Debug, Clone, Copy)]
 pub struct Mul;
 impl Mul {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, r2: u64) -> Result<(), VMRunError> {
-        todo!("implement Mul please!");
+        let result = (r1 as i64).wrapping_mul(r2 as i64);
+        vm.set_x(rd, result as u64);
         Ok(())
     }
 }
@@ -20,7 +21,10 @@ impl Mul {
 pub struct Mulh;
 impl Mulh {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, r2: u64) -> Result<(), VMRunError> {
-        todo!("implement Mulh please!");
+        let r1 = r1 as i64 as i128;
+        let r2 = r2 as i64 as i128;
+        let result = ((r1 * r2) >> 64) as i64;
+        vm.set_x(rd, result as u64);
         Ok(())
     }
 }
@@ -30,7 +34,10 @@ impl Mulh {
 pub struct Mulhsu;
 impl Mulhsu {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, r2: u64) -> Result<(), VMRunError> {
-        todo!("implement Mulhsu please!");
+        let r1 = r1 as i64 as i128;
+        let r2 = r2 as i128; // r2 is treated as unsigned, so we don't sign-extend it
+        let result = ((r1 * r2) >> 64) as i64;
+        vm.set_x(rd, result as u64);
         Ok(())
     }
 }
@@ -40,7 +47,10 @@ impl Mulhsu {
 pub struct Mulhu;
 impl Mulhu {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, r2: u64) -> Result<(), VMRunError> {
-        todo!("implement Mulhu please!");
+        let r1 = r1 as u128;
+        let r2 = r2 as u128;
+        let result = ((r1 * r2) >> 64) as u64;
+        vm.set_x(rd, result);
         Ok(())
     }
 }
@@ -50,7 +60,15 @@ impl Mulhu {
 pub struct Div;
 impl Div {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, r2: u64) -> Result<(), VMRunError> {
-        todo!("implement Div please!");
+        if r2 == 0 {
+            return Err(VMRunError {
+                err_addr: vm.pc,
+                kind: VMRunErrorKind::DivisionByZero,
+                info: "division by zero",
+            });
+        }
+        let result = (r1 as i64).wrapping_div(r2 as i64);
+        vm.set_x(rd, result as u64);
         Ok(())
     }
 }
@@ -60,7 +78,15 @@ impl Div {
 pub struct Divu;
 impl Divu {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, r2: u64) -> Result<(), VMRunError> {
-        todo!("implement Divu please!");
+        if r2 == 0 {
+            return Err(VMRunError {
+                err_addr: vm.pc,
+                kind: VMRunErrorKind::DivisionByZero,
+                info: "division by zero",
+            });
+        }
+        let result = r1.wrapping_div(r2);
+        vm.set_x(rd, result);
         Ok(())
     }
 }
@@ -70,7 +96,15 @@ impl Divu {
 pub struct Rem;
 impl Rem {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, r2: u64) -> Result<(), VMRunError> {
-        todo!("implement Rem please!");
+        if r2 == 0 {
+            return Err(VMRunError {
+                err_addr: vm.pc,
+                kind: VMRunErrorKind::DivisionByZero,
+                info: "division by zero",
+            });
+        }
+        let result = (r1 as i64).wrapping_rem(r2 as i64);
+        vm.set_x(rd, result as u64);
         Ok(())
     }
 }
@@ -80,7 +114,15 @@ impl Rem {
 pub struct Remu;
 impl Remu {
     pub fn run(vm: &mut VM, rd: u8, r1: u64, r2: u64) -> Result<(), VMRunError> {
-        todo!("implement Remu please!");
+        if r2 == 0 {
+            return Err(VMRunError {
+                err_addr: vm.pc,
+                kind: VMRunErrorKind::DivisionByZero,
+                info: "division by zero",
+            });
+        }
+        let result = r1.wrapping_rem(r2);
+        vm.set_x(rd, result);
         Ok(())
     }
 }

@@ -440,6 +440,6 @@ impl Jal {
 pub struct Ecall;
 impl Ecall {
     pub fn run(vm: &mut VM) -> Result<(), VMRunError> {
-        vm.raise(Exception::EnvCall)
+        vm.raise(Exception::Ecall)
     }
 }

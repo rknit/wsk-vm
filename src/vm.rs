@@ -362,7 +362,7 @@ impl VM {
 
     pub(crate) fn raise(&mut self, ex: Exception) -> Result<(), VMRunError> {
         match ex {
-            Exception::EnvCall => self.syscall(),
+            Exception::Ecall => self.syscall(),
         }
     }
 }
@@ -399,6 +399,7 @@ pub enum VMRunErrorKind {
     UnknownInst(u32),
     InvalidAddress(usize),
     UnknownSyscall(i16),
+    DivisionByZero,
     Other(String),
 }
 impl Display for VMRunErrorKind {
@@ -411,6 +412,7 @@ impl Display for VMRunErrorKind {
                 Self::UnknownInst(inst) => format!("unknown inst: {inst:08x}"),
                 Self::InvalidAddress(addr) => format!("invalid address {addr:x}"),
                 Self::UnknownSyscall(code) => format!("unknown syscall: {code}"),
+                Self::DivisionByZero => "division by zero".to_owned(),
                 Self::Other(s) => s.clone(),
             }
         )
