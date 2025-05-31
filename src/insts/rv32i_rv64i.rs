@@ -1,3 +1,7 @@
+// This file is auto-generated.
+// This file contains the implementations of the instruction set, 
+// which requires developers to implement them themselves.
+// Please backup this file regularly, as it can be overwritten by `gen_inst.py`.
 use crate::{VM, VMRunError};
 
 #[derive(Debug, Clone, Copy)]

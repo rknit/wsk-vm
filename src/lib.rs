@@ -1,11 +1,15 @@
-#![allow(dead_code)]
+// #![allow(dead_code)]
 
+mod bits;
 mod exception;
+mod format;
 mod insts;
 pub mod repl;
 mod syscall;
 mod vm;
 
+use bits::*;
 use exception::*;
+use format::*;
 use insts::*;
 pub use vm::*;

@@ -59,7 +59,7 @@ pub const fn rs2_24_20(v: u32) -> u8 {
 macro_rules! ext {
     ($val:expr, $t:ty; $high:expr;$low:expr) => {{
         let s = $val >> $low;
-        let m = $crate::insts::bits::mask($high - $low + 1);
+        let m = $crate::bits::mask($high - $low + 1);
         ((s as u64) & m) as $t
     }};
 }

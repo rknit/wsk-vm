@@ -6,10 +6,7 @@ use std::{
 
 use log::{info, trace};
 
-use crate::{
-    Exception, Inst,
-    insts::{RawFormat, decode},
-};
+use crate::{Exception, Inst, format::RawFormat};
 
 const REG_COUNT: usize = 32;
 
@@ -178,7 +175,7 @@ impl VM {
 
     pub fn step(&mut self) -> Result<(), VMRunError> {
         let inst = self.fetch_inst(self.pc, None)?;
-        inst(self);
+        inst.run(self)?;
         self.pc = (self.pc + 4) % (PROG_LEN);
         Ok(())
     }
@@ -202,22 +199,16 @@ impl VM {
         let fmt = RawFormat::parse(inst).ok_or_else(|| VMRunError {
             err_addr: addr,
             kind: VMRunErrorKind::UnknownInst(inst),
-            info: "parse",
+            info: "fetch_inst (parse)",
         })?;
 
-        let (inst_name, f) = decode(fmt).ok_or_else(|| VMRunError {
+        let inst = Inst::decode(fmt).ok_or_else(|| VMRunError {
             err_addr: addr,
             kind: VMRunErrorKind::UnknownInst(inst),
-            info: "decode",
+            info: "fetch_inst (decode)",
         })?;
 
-        if let Some(rep) = rep {
-            rep.raw_inst = inst;
-            rep.fmt = Some(fmt);
-            rep.inst_name = inst_name;
-        }
-
-        Ok(f)
+        Ok(inst)
     }
 
     pub fn mem(&self, addr: usize) -> Result<u8, VMRunError> {
@@ -354,7 +345,7 @@ impl Display for VMRunErrorKind {
 }
 
 #[derive(Default)]
-pub(crate) struct Report {
+pub struct Report {
     pub pc: usize,
     pub raw_inst: u32,
     pub fmt: Option<RawFormat>,

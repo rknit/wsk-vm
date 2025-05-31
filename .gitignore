@@ -2,3 +2,5 @@
 /tests/test.s
 /tests/test.bin
 /tests/perf.*
+
+/gen_inst/insts_old
