@@ -3,4 +3,6 @@
 ---
 
 - [ ] load debug symbols
-- [ ] improve instruction decoder
+- [ ] inst generator
+    -- [x] module generator
+    -- [ ] perserve instruction

@@ -4,3 +4,4 @@
 /tests/perf.*
 
 /gen_inst/insts_old
+__pycache__

@@ -1,9 +1,11 @@
+// $GEN_VERSION 1
 // This file is auto-generated.
-// This file contains the implementations of the instruction set, 
+// This file contains the implementations of the instruction set,
 // which requires developers to implement them themselves.
 // Please backup this file regularly, as it can be overwritten by `gen_inst.py`.
 use crate::{VM, VMRunError};
 
+// $IMPL Lui u
 #[derive(Debug, Clone, Copy)]
 pub struct Lui;
 impl Lui {
@@ -13,6 +15,7 @@ impl Lui {
     }
 }
 
+// $IMPL Addi i
 #[derive(Debug, Clone, Copy)]
 pub struct Addi;
 impl Addi {
@@ -22,6 +25,7 @@ impl Addi {
     }
 }
 
+// $IMPL Add r
 #[derive(Debug, Clone, Copy)]
 pub struct Add;
 impl Add {
@@ -31,15 +35,17 @@ impl Add {
     }
 }
 
+// $IMPL Ecall o
 #[derive(Debug, Clone, Copy)]
 pub struct Ecall;
 impl Ecall {
-    pub fn run(vm: &mut VM, ) -> Result<(), VMRunError> {
+    pub fn run(vm: &mut VM) -> Result<(), VMRunError> {
         todo!("implement Ecall please!");
         Ok(())
     }
 }
 
+// $IMPL Sb s
 #[derive(Debug, Clone, Copy)]
 pub struct Sb;
 impl Sb {
@@ -49,6 +55,7 @@ impl Sb {
     }
 }
 
+// $IMPL Beq b
 #[derive(Debug, Clone, Copy)]
 pub struct Beq;
 impl Beq {
@@ -57,4 +64,3 @@ impl Beq {
         Ok(())
     }
 }
-
