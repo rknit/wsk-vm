@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use super::bits::*;
 use crate::{VM, ext};
 
@@ -13,7 +14,15 @@ impl<'vm> DataR<'vm> {
     }
 
     pub fn r2(&self) -> u64 {
-        self.vm.x(self.rs1)
+        self.vm.x(self.rs2)
+    }
+
+    pub fn r1s(&self) -> i64 {
+        self.vm.x(self.rs1) as i64
+    }
+
+    pub fn r2s(&self) -> i64 {
+        self.vm.x(self.rs2) as i64
     }
 
     pub fn set_rd(&mut self, value: u64) {
@@ -32,8 +41,16 @@ impl<'vm> DataI<'vm> {
         self.vm.x(self.rs1)
     }
 
+    pub fn r1s(&self) -> i64 {
+        self.vm.x(self.rs1) as i64
+    }
+
     pub fn imm(&self) -> i64 {
         sext(self.raw_imm as u64, 11)
+    }
+
+    pub fn immu(&self) -> u64 {
+        self.imm() as u64
     }
 
     pub fn set_rd(&mut self, value: u64) {
@@ -56,8 +73,20 @@ impl<'vm> DataS<'vm> {
         self.vm.x(self.rs2)
     }
 
+    pub fn r1s(&self) -> i64 {
+        self.vm.x(self.rs1) as i64
+    }
+
+    pub fn r2s(&self) -> i64 {
+        self.vm.x(self.rs2) as i64
+    }
+
     pub fn imm(&self) -> i64 {
         sext(self.raw_imm as u64, 11)
+    }
+
+    pub fn immu(&self) -> u64 {
+        self.imm() as u64
     }
 }
 
@@ -76,8 +105,20 @@ impl<'vm> DataB<'vm> {
         self.vm.x(self.rs2)
     }
 
+    pub fn r1s(&self) -> i64 {
+        self.vm.x(self.rs1) as i64
+    }
+
+    pub fn r2s(&self) -> i64 {
+        self.vm.x(self.rs2) as i64
+    }
+
     pub fn imm(&self) -> i64 {
         sext((self.raw_imm as u64) << 1, 12)
+    }
+
+    pub fn immu(&self) -> u64 {
+        self.imm() as u64
     }
 }
 
@@ -89,6 +130,10 @@ pub struct DataU<'vm> {
 impl<'vm> DataU<'vm> {
     pub fn imm(&self) -> i64 {
         ((self.raw_imm as u64) << 12) as i32 as i64
+    }
+
+    pub fn immu(&self) -> u64 {
+        self.imm() as u64
     }
 
     pub fn set_rd(&mut self, value: u64) {
@@ -104,6 +149,10 @@ pub struct DataJ<'vm> {
 impl<'vm> DataJ<'vm> {
     pub fn imm(&self) -> i64 {
         sext((self.raw_imm as u64) << 1, 20)
+    }
+
+    pub fn immu(&self) -> u64 {
+        self.imm() as u64
     }
 
     pub fn set_rd(&mut self, value: u64) {

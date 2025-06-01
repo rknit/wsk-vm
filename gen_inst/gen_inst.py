@@ -24,7 +24,7 @@ DISCLAIMER_IMPL = f"""// This auto-generated file provides instruction set imple
 MAIN_HEADER = f"""
 // $GEN_VERSION {GEN_VERSION}
 {DISCLAIMER}
-#![allow(dead_code, unused_variables, unused_imports, unreachable_code)]
+#![allow(dead_code, unused_variables, unused_imports, unreachable_code, unused_mut)]
 use crate::{{VM, VMRunError, VMRunErrorKind}};
 use crate::bits::*;
 use crate::format::*;

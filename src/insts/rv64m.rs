@@ -9,9 +9,10 @@ use crate::*;
 
 pub struct Mulw;
 impl Mulw {
-    pub fn run(data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
         // $IMPL_START Mulw$
-        todo!("implement Mulw please!");
+        let result = data.r1().wrapping_mul(data.r2()) as i32 as i64;
+        data.set_rd(result as u64);
         Ok(())
         // $IMPL_END Mulw$
     }
@@ -19,9 +20,17 @@ impl Mulw {
 
 pub struct Divw;
 impl Divw {
-    pub fn run(data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
         // $IMPL_START Divw$
-        todo!("implement Divw please!");
+        if data.r2() == 0 {
+            return Err(VMRunError {
+                err_addr: data.vm.pc,
+                kind: VMRunErrorKind::DivisionByZero,
+                info: "division by zero",
+            });
+        }
+        let result = data.r1s().wrapping_div(data.r2s());
+        data.set_rd(result as u64);
         Ok(())
         // $IMPL_END Divw$
     }
@@ -29,9 +38,17 @@ impl Divw {
 
 pub struct Divuw;
 impl Divuw {
-    pub fn run(data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
         // $IMPL_START Divuw$
-        todo!("implement Divuw please!");
+        if data.r2() == 0 {
+            return Err(VMRunError {
+                err_addr: data.vm.pc,
+                kind: VMRunErrorKind::DivisionByZero,
+                info: "division by zero",
+            });
+        }
+        let result = data.r1().wrapping_div(data.r2());
+        data.set_rd(result);
         Ok(())
         // $IMPL_END Divuw$
     }
@@ -39,9 +56,17 @@ impl Divuw {
 
 pub struct Remw;
 impl Remw {
-    pub fn run(data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
         // $IMPL_START Remw$
-        todo!("implement Remw please!");
+        if data.r2() == 0 {
+            return Err(VMRunError {
+                err_addr: data.vm.pc,
+                kind: VMRunErrorKind::DivisionByZero,
+                info: "division by zero",
+            });
+        }
+        let result = data.r1s().wrapping_rem(data.r2s());
+        data.set_rd(result as u64);
         Ok(())
         // $IMPL_END Remw$
     }
@@ -49,9 +74,17 @@ impl Remw {
 
 pub struct Remuw;
 impl Remuw {
-    pub fn run(data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
         // $IMPL_START Remuw$
-        todo!("implement Remuw please!");
+        if data.r2() == 0 {
+            return Err(VMRunError {
+                err_addr: data.vm.pc,
+                kind: VMRunErrorKind::DivisionByZero,
+                info: "division by zero",
+            });
+        }
+        let result = data.r1().wrapping_rem(data.r2());
+        data.set_rd(result);
         Ok(())
         // $IMPL_END Remuw$
     }

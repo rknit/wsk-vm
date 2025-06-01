@@ -9,9 +9,12 @@ use crate::*;
 
 pub struct Addw;
 impl Addw {
-    pub fn run(data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
         // $IMPL_START Addw$
-        todo!("implement Addw please!");
+        let result = data.r1().wrapping_add(data.r2());
+        let result = (result & 0xFFFFFFFF) as u32; // Ensure result is 32 bits
+        let result = result as i32 as i64; // Sign-extend to 64 bits
+        data.set_rd(result as u64);
         Ok(())
         // $IMPL_END Addw$
     }
@@ -19,9 +22,12 @@ impl Addw {
 
 pub struct Subw;
 impl Subw {
-    pub fn run(data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
         // $IMPL_START Subw$
-        todo!("implement Subw please!");
+        let result = data.r1().wrapping_sub(data.r2());
+        let result = (result & 0xFFFFFFFF) as u32; // Ensure result is 32 bits
+        let result = result as i32 as i64; // Sign-extend to 64 bits
+        data.set_rd(result as u64);
         Ok(())
         // $IMPL_END Subw$
     }
@@ -29,9 +35,12 @@ impl Subw {
 
 pub struct Sllw;
 impl Sllw {
-    pub fn run(data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
         // $IMPL_START Sllw$
-        todo!("implement Sllw please!");
+        let shift = (data.r2() & 0b11111) as u32; // Only the lower 5 bits are used for shift
+        let result = ((data.r1() << shift) & 0xFFFFFFFF) as u32; // Ensure result is 32 bits
+        let result = result as i32 as i64; // Sign-extend to 64 bits
+        data.set_rd(result as u64);
         Ok(())
         // $IMPL_END Sllw$
     }
@@ -39,9 +48,12 @@ impl Sllw {
 
 pub struct Srlw;
 impl Srlw {
-    pub fn run(data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
         // $IMPL_START Srlw$
-        todo!("implement Srlw please!");
+        let shift = (data.r2() & 0b11111) as u32; // Only the lower 5 bits are used for shift
+        let val = data.r1() as u32; // Convert to 32 bits
+        let result = (val >> shift) as i32 as i64; // Sign-extend to 64 bits
+        data.set_rd(result as u64);
         Ok(())
         // $IMPL_END Srlw$
     }
@@ -49,9 +61,12 @@ impl Srlw {
 
 pub struct Sraw;
 impl Sraw {
-    pub fn run(data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
         // $IMPL_START Sraw$
-        todo!("implement Sraw please!");
+        let shift = (data.r2() & 0b11111) as u32; // Only the lower 5 bits are used for shift
+        let val = data.r1() as i32; // Convert to 32 bits
+        let result = (val >> shift) as i64; // Sign-extend to 64 bits
+        data.set_rd(result as u64);
         Ok(())
         // $IMPL_END Sraw$
     }
@@ -59,9 +74,12 @@ impl Sraw {
 
 pub struct Addiw;
 impl Addiw {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Addiw$
-        todo!("implement Addiw please!");
+        let result = data.r1().wrapping_add_signed(data.imm());
+        let result = (result & 0xFFFFFFFF) as u32; // Ensure result is 32 bits
+        let result = result as i32 as i64; // Sign-extend to 64 bits
+        data.set_rd(result as u64);
         Ok(())
         // $IMPL_END Addiw$
     }
@@ -69,9 +87,12 @@ impl Addiw {
 
 pub struct Slliw;
 impl Slliw {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Slliw$
-        todo!("implement Slliw please!");
+        let shift = data.immu() & 0b11111; // Only the lower 5 bits are used for shift
+        let result = ((data.r1() << shift) & 0xFFFFFFFF) as u32; // Ensure result is 32 bits
+        let result = result as i32 as i64; // Sign-extend to 64 bits
+        data.set_rd(result as u64);
         Ok(())
         // $IMPL_END Slliw$
     }
@@ -79,9 +100,12 @@ impl Slliw {
 
 pub struct Srliw;
 impl Srliw {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Srliw$
-        todo!("implement Srliw please!");
+        let shift = data.immu() & 0b11111; // Only the lower 5 bits are used for shift
+        let val = data.r1() as u32; // Convert to 32 bits
+        let result = (val >> shift) as i32 as i64; // Sign-extend to 64 bits
+        data.set_rd(result as u64);
         Ok(())
         // $IMPL_END Srliw$
     }
@@ -89,9 +113,12 @@ impl Srliw {
 
 pub struct Sraiw;
 impl Sraiw {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Sraiw$
-        todo!("implement Sraiw please!");
+        let shift = data.immu() & 0b11111; // Only the lower 5 bits are used for shift
+        let val = data.r1() as i32; // Convert to 32 bits
+        let result = (val >> shift) as i64; // Sign-extend to 64 bits
+        data.set_rd(result as u64);
         Ok(())
         // $IMPL_END Sraiw$
     }
@@ -99,9 +126,12 @@ impl Sraiw {
 
 pub struct Lwu;
 impl Lwu {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Lwu$
-        todo!("implement Lwu please!");
+        let addr = data.r1().wrapping_add_signed(data.imm()) as usize;
+        let vals = data.vm.mem_range(addr, 4)?;
+        let val = u32::from_le_bytes([vals[0], vals[1], vals[2], vals[3]]) as u64;
+        data.set_rd(val);
         Ok(())
         // $IMPL_END Lwu$
     }
@@ -109,9 +139,14 @@ impl Lwu {
 
 pub struct Ld;
 impl Ld {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Ld$
-        todo!("implement Ld please!");
+        let addr = data.r1().wrapping_add_signed(data.imm()) as usize;
+        let vals = data.vm.mem_range(addr, 8)?;
+        let val = u64::from_le_bytes([
+            vals[0], vals[1], vals[2], vals[3], vals[4], vals[5], vals[6], vals[7],
+        ]);
+        data.set_rd(val);
         Ok(())
         // $IMPL_END Ld$
     }
@@ -119,9 +154,11 @@ impl Ld {
 
 pub struct Sd;
 impl Sd {
-    pub fn run(data: DataS) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataS) -> Result<(), VMRunError> {
         // $IMPL_START Sd$
-        todo!("implement Sd please!");
+        let addr = data.r1().wrapping_add_signed(data.imm()) as usize;
+        let bytes = data.r2().to_le_bytes();
+        data.vm.set_mem_range(addr, &bytes)?;
         Ok(())
         // $IMPL_END Sd$
     }

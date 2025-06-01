@@ -9,9 +9,9 @@ use crate::*;
 
 pub struct Add;
 impl Add {
-    pub fn run(data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
         // $IMPL_START Add$
-        todo!("implement Add please!");
+        data.set_rd(data.r1().wrapping_add(data.r2()));
         Ok(())
         // $IMPL_END Add$
     }
@@ -19,9 +19,9 @@ impl Add {
 
 pub struct Sub;
 impl Sub {
-    pub fn run(data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
         // $IMPL_START Sub$
-        todo!("implement Sub please!");
+        data.set_rd(data.r1().wrapping_sub(data.r2()));
         Ok(())
         // $IMPL_END Sub$
     }
@@ -29,9 +29,9 @@ impl Sub {
 
 pub struct Sll;
 impl Sll {
-    pub fn run(data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
         // $IMPL_START Sll$
-        todo!("implement Sll please!");
+        data.set_rd(data.r1() << (data.r2() & 0b11111));
         Ok(())
         // $IMPL_END Sll$
     }
@@ -39,9 +39,13 @@ impl Sll {
 
 pub struct Slt;
 impl Slt {
-    pub fn run(data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
         // $IMPL_START Slt$
-        todo!("implement Slt please!");
+        if data.r1s() < data.r2s() {
+            data.set_rd(1);
+        } else {
+            data.set_rd(0);
+        }
         Ok(())
         // $IMPL_END Slt$
     }
@@ -49,9 +53,13 @@ impl Slt {
 
 pub struct Sltu;
 impl Sltu {
-    pub fn run(data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
         // $IMPL_START Sltu$
-        todo!("implement Sltu please!");
+        if data.r1() < data.r2() {
+            data.set_rd(1);
+        } else {
+            data.set_rd(0);
+        }
         Ok(())
         // $IMPL_END Sltu$
     }
@@ -59,9 +67,9 @@ impl Sltu {
 
 pub struct Xor;
 impl Xor {
-    pub fn run(data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
         // $IMPL_START Xor$
-        todo!("implement Xor please!");
+        data.set_rd(data.r1() ^ data.r2());
         Ok(())
         // $IMPL_END Xor$
     }
@@ -69,9 +77,9 @@ impl Xor {
 
 pub struct Srl;
 impl Srl {
-    pub fn run(data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
         // $IMPL_START Srl$
-        todo!("implement Srl please!");
+        data.set_rd(data.r1() >> (data.r2() & 0b11111));
         Ok(())
         // $IMPL_END Srl$
     }
@@ -79,9 +87,9 @@ impl Srl {
 
 pub struct Sra;
 impl Sra {
-    pub fn run(data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
         // $IMPL_START Sra$
-        todo!("implement Sra please!");
+        data.set_rd((data.r1s() >> (data.r2() & 0b11111)) as u64);
         Ok(())
         // $IMPL_END Sra$
     }
@@ -89,9 +97,9 @@ impl Sra {
 
 pub struct Or;
 impl Or {
-    pub fn run(data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
         // $IMPL_START Or$
-        todo!("implement Or please!");
+        data.set_rd(data.r1() | data.r2());
         Ok(())
         // $IMPL_END Or$
     }
@@ -99,9 +107,9 @@ impl Or {
 
 pub struct And;
 impl And {
-    pub fn run(data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
         // $IMPL_START And$
-        todo!("implement And please!");
+        data.set_rd(data.r1() & data.r2());
         Ok(())
         // $IMPL_END And$
     }
@@ -109,7 +117,7 @@ impl And {
 
 pub struct SfenceVma;
 impl SfenceVma {
-    pub fn run(data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
         // $IMPL_START SfenceVma$
         todo!("implement SfenceVma please!");
         Ok(())
@@ -119,9 +127,9 @@ impl SfenceVma {
 
 pub struct Addi;
 impl Addi {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Addi$
-        todo!("implement Addi please!");
+        data.set_rd(data.r1().wrapping_add_signed(data.imm()));
         Ok(())
         // $IMPL_END Addi$
     }
@@ -129,9 +137,13 @@ impl Addi {
 
 pub struct Slti;
 impl Slti {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Slti$
-        todo!("implement Slti please!");
+        if data.r1s() < data.imm() {
+            data.set_rd(1);
+        } else {
+            data.set_rd(0);
+        }
         Ok(())
         // $IMPL_END Slti$
     }
@@ -139,9 +151,13 @@ impl Slti {
 
 pub struct Sltiu;
 impl Sltiu {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Sltiu$
-        todo!("implement Sltiu please!");
+        if data.r1() < (data.imm() as u64) {
+            data.set_rd(1);
+        } else {
+            data.set_rd(0);
+        }
         Ok(())
         // $IMPL_END Sltiu$
     }
@@ -149,9 +165,9 @@ impl Sltiu {
 
 pub struct Xori;
 impl Xori {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Xori$
-        todo!("implement Xori please!");
+        data.set_rd(data.r1() ^ data.immu());
         Ok(())
         // $IMPL_END Xori$
     }
@@ -159,9 +175,9 @@ impl Xori {
 
 pub struct Ori;
 impl Ori {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Ori$
-        todo!("implement Ori please!");
+        data.set_rd(data.r1() | data.immu());
         Ok(())
         // $IMPL_END Ori$
     }
@@ -169,9 +185,9 @@ impl Ori {
 
 pub struct Andi;
 impl Andi {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Andi$
-        todo!("implement Andi please!");
+        data.set_rd(data.r1() & data.immu());
         Ok(())
         // $IMPL_END Andi$
     }
@@ -179,9 +195,9 @@ impl Andi {
 
 pub struct Slli;
 impl Slli {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Slli$
-        todo!("implement Slli please!");
+        data.set_rd(data.r1() << (data.immu() & 0b111111));
         Ok(())
         // $IMPL_END Slli$
     }
@@ -189,9 +205,9 @@ impl Slli {
 
 pub struct Srli;
 impl Srli {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Srli$
-        todo!("implement Srli please!");
+        data.set_rd(data.r1() >> (data.immu() & 0b111111));
         Ok(())
         // $IMPL_END Srli$
     }
@@ -199,9 +215,9 @@ impl Srli {
 
 pub struct Srai;
 impl Srai {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Srai$
-        todo!("implement Srai please!");
+        data.set_rd((data.r1s() >> (data.immu() & 0b111111)) as u64);
         Ok(())
         // $IMPL_END Srai$
     }
@@ -209,9 +225,12 @@ impl Srai {
 
 pub struct Lb;
 impl Lb {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Lb$
-        todo!("implement Lb please!");
+        let addr = data.r1().wrapping_add_signed(data.imm()) as usize;
+        let val = data.vm.mem(addr)?;
+        let val = val as i8 as i64; // Sign-extend the byte
+        data.set_rd(val as u64);
         Ok(())
         // $IMPL_END Lb$
     }
@@ -219,9 +238,12 @@ impl Lb {
 
 pub struct Lh;
 impl Lh {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Lh$
-        todo!("implement Lh please!");
+        let addr = data.r1().wrapping_add_signed(data.imm()) as usize;
+        let vals = data.vm.mem_range(addr, 2)?;
+        let val = u16::from_le_bytes([vals[0], vals[1]]) as i16 as i64; // Sign-extend the halfword
+        data.set_rd(val as u64);
         Ok(())
         // $IMPL_END Lh$
     }
@@ -229,9 +251,12 @@ impl Lh {
 
 pub struct Lw;
 impl Lw {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Lw$
-        todo!("implement Lw please!");
+        let addr = data.r1().wrapping_add_signed(data.imm()) as usize;
+        let vals = data.vm.mem_range(addr, 4)?;
+        let val = u32::from_le_bytes([vals[0], vals[1], vals[2], vals[3]]) as i32 as i64; // Sign-extend the word
+        data.set_rd(val as u64);
         Ok(())
         // $IMPL_END Lw$
     }
@@ -239,9 +264,12 @@ impl Lw {
 
 pub struct Lbu;
 impl Lbu {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Lbu$
-        todo!("implement Lbu please!");
+        let addr = data.r1().wrapping_add_signed(data.imm()) as usize;
+        let val = data.vm.mem(addr)?;
+        let val = val as u64; // Zero-extend the byte
+        data.set_rd(val);
         Ok(())
         // $IMPL_END Lbu$
     }
@@ -249,9 +277,12 @@ impl Lbu {
 
 pub struct Lhu;
 impl Lhu {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Lhu$
-        todo!("implement Lhu please!");
+        let addr = data.r1().wrapping_add_signed(data.imm()) as usize;
+        let vals = data.vm.mem_range(addr, 2)?;
+        let val = u16::from_le_bytes([vals[0], vals[1]]) as u64; // Zero-extend the halfword
+        data.set_rd(val);
         Ok(())
         // $IMPL_END Lhu$
     }
@@ -259,9 +290,12 @@ impl Lhu {
 
 pub struct Jalr;
 impl Jalr {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Jalr$
-        todo!("implement Jalr please!");
+        let return_address = data.vm.pc + 4;
+        let addr = data.r1().wrapping_add_signed(data.imm()) as usize;
+        data.vm.jump(addr & !1, true)?; // Jump to the target address
+        data.set_rd(return_address as u64); // Save the return address
         Ok(())
         // $IMPL_END Jalr$
     }
@@ -269,7 +303,7 @@ impl Jalr {
 
 pub struct Fence;
 impl Fence {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Fence$
         todo!("implement Fence please!");
         Ok(())
@@ -279,7 +313,7 @@ impl Fence {
 
 pub struct FenceI;
 impl FenceI {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START FenceI$
         todo!("implement FenceI please!");
         Ok(())
@@ -289,7 +323,7 @@ impl FenceI {
 
 pub struct Csrrw;
 impl Csrrw {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Csrrw$
         todo!("implement Csrrw please!");
         Ok(())
@@ -299,7 +333,7 @@ impl Csrrw {
 
 pub struct Csrrs;
 impl Csrrs {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Csrrs$
         todo!("implement Csrrs please!");
         Ok(())
@@ -309,7 +343,7 @@ impl Csrrs {
 
 pub struct Csrrc;
 impl Csrrc {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Csrrc$
         todo!("implement Csrrc please!");
         Ok(())
@@ -319,7 +353,7 @@ impl Csrrc {
 
 pub struct Csrrwi;
 impl Csrrwi {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Csrrwi$
         todo!("implement Csrrwi please!");
         Ok(())
@@ -329,7 +363,7 @@ impl Csrrwi {
 
 pub struct Csrrsi;
 impl Csrrsi {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Csrrsi$
         todo!("implement Csrrsi please!");
         Ok(())
@@ -339,7 +373,7 @@ impl Csrrsi {
 
 pub struct Csrrci;
 impl Csrrci {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Csrrci$
         todo!("implement Csrrci please!");
         Ok(())
@@ -349,17 +383,17 @@ impl Csrrci {
 
 pub struct Ecall;
 impl Ecall {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Ecall$
-        todo!("implement Ecall please!");
-        Ok(())
+        use crate::Exception;
+        data.vm.raise(Exception::Ecall)
         // $IMPL_END Ecall$
     }
 }
 
 pub struct Ebreak;
 impl Ebreak {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Ebreak$
         todo!("implement Ebreak please!");
         Ok(())
@@ -369,7 +403,7 @@ impl Ebreak {
 
 pub struct Uret;
 impl Uret {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Uret$
         todo!("implement Uret please!");
         Ok(())
@@ -379,7 +413,7 @@ impl Uret {
 
 pub struct Sret;
 impl Sret {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Sret$
         todo!("implement Sret please!");
         Ok(())
@@ -389,7 +423,7 @@ impl Sret {
 
 pub struct Mret;
 impl Mret {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Mret$
         todo!("implement Mret please!");
         Ok(())
@@ -399,7 +433,7 @@ impl Mret {
 
 pub struct Wfi;
 impl Wfi {
-    pub fn run(data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
         // $IMPL_START Wfi$
         todo!("implement Wfi please!");
         Ok(())
@@ -409,9 +443,11 @@ impl Wfi {
 
 pub struct Sb;
 impl Sb {
-    pub fn run(data: DataS) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataS) -> Result<(), VMRunError> {
         // $IMPL_START Sb$
-        todo!("implement Sb please!");
+        let addr = data.r1().wrapping_add_signed(data.imm()) as usize;
+        let val = data.r2() as u8; // Get the least significant byte
+        data.vm.set_mem(addr, val)?;
         Ok(())
         // $IMPL_END Sb$
     }
@@ -419,9 +455,12 @@ impl Sb {
 
 pub struct Sh;
 impl Sh {
-    pub fn run(data: DataS) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataS) -> Result<(), VMRunError> {
         // $IMPL_START Sh$
-        todo!("implement Sh please!");
+        let addr = data.r1().wrapping_add_signed(data.imm()) as usize;
+        let val = data.r2() as u16; // Get the least significant halfword
+        let bytes = val.to_le_bytes();
+        data.vm.set_mem_range(addr, &bytes)?;
         Ok(())
         // $IMPL_END Sh$
     }
@@ -429,9 +468,12 @@ impl Sh {
 
 pub struct Sw;
 impl Sw {
-    pub fn run(data: DataS) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataS) -> Result<(), VMRunError> {
         // $IMPL_START Sw$
-        todo!("implement Sw please!");
+        let addr = data.r1().wrapping_add_signed(data.imm()) as usize;
+        let val = data.r2() as u32; // Get the least significant word
+        let bytes = val.to_le_bytes();
+        data.vm.set_mem_range(addr, &bytes)?;
         Ok(())
         // $IMPL_END Sw$
     }
@@ -439,9 +481,11 @@ impl Sw {
 
 pub struct Beq;
 impl Beq {
-    pub fn run(data: DataB) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataB) -> Result<(), VMRunError> {
         // $IMPL_START Beq$
-        todo!("implement Beq please!");
+        if data.r1() == data.r2() {
+            data.vm.jump_pc_rel(data.imm() as isize, true)?; // Jump to the target address
+        }
         Ok(())
         // $IMPL_END Beq$
     }
@@ -449,9 +493,11 @@ impl Beq {
 
 pub struct Bne;
 impl Bne {
-    pub fn run(data: DataB) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataB) -> Result<(), VMRunError> {
         // $IMPL_START Bne$
-        todo!("implement Bne please!");
+        if data.r1() != data.r2() {
+            data.vm.jump_pc_rel(data.imm() as isize, true)?; // Jump to the target address
+        }
         Ok(())
         // $IMPL_END Bne$
     }
@@ -459,9 +505,11 @@ impl Bne {
 
 pub struct Blt;
 impl Blt {
-    pub fn run(data: DataB) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataB) -> Result<(), VMRunError> {
         // $IMPL_START Blt$
-        todo!("implement Blt please!");
+        if data.r1s() < data.r2s() {
+            data.vm.jump_pc_rel(data.imm() as isize, true)?; // Jump to the target address
+        }
         Ok(())
         // $IMPL_END Blt$
     }
@@ -469,9 +517,11 @@ impl Blt {
 
 pub struct Bge;
 impl Bge {
-    pub fn run(data: DataB) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataB) -> Result<(), VMRunError> {
         // $IMPL_START Bge$
-        todo!("implement Bge please!");
+        if data.r1s() >= data.r2s() {
+            data.vm.jump_pc_rel(data.imm() as isize, true)?; // Jump to the target address
+        }
         Ok(())
         // $IMPL_END Bge$
     }
@@ -479,9 +529,11 @@ impl Bge {
 
 pub struct Bltu;
 impl Bltu {
-    pub fn run(data: DataB) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataB) -> Result<(), VMRunError> {
         // $IMPL_START Bltu$
-        todo!("implement Bltu please!");
+        if data.r1() < data.r2() {
+            data.vm.jump_pc_rel(data.imm() as isize, true)?; // Jump to the target address
+        }
         Ok(())
         // $IMPL_END Bltu$
     }
@@ -489,9 +541,11 @@ impl Bltu {
 
 pub struct Bgeu;
 impl Bgeu {
-    pub fn run(data: DataB) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataB) -> Result<(), VMRunError> {
         // $IMPL_START Bgeu$
-        todo!("implement Bgeu please!");
+        if data.r1() >= data.r2() {
+            data.vm.jump_pc_rel(data.imm() as isize, true)?; // Jump to the target address
+        }
         Ok(())
         // $IMPL_END Bgeu$
     }
@@ -499,9 +553,10 @@ impl Bgeu {
 
 pub struct Lui;
 impl Lui {
-    pub fn run(data: DataU) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataU) -> Result<(), VMRunError> {
         // $IMPL_START Lui$
-        todo!("implement Lui please!");
+        // Load upper immediate (data.immu() has already performed shift-op and sign-extension)
+        data.set_rd(data.immu());
         Ok(())
         // $IMPL_END Lui$
     }
@@ -509,9 +564,10 @@ impl Lui {
 
 pub struct Auipc;
 impl Auipc {
-    pub fn run(data: DataU) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataU) -> Result<(), VMRunError> {
         // $IMPL_START Auipc$
-        todo!("implement Auipc please!");
+        // Add upper immediate to the current PC (data.imm() has already performed shift-op and sign-extension)
+        data.set_rd(data.vm.pc.wrapping_add_signed(data.imm() as isize) as u64);
         Ok(())
         // $IMPL_END Auipc$
     }
@@ -519,9 +575,11 @@ impl Auipc {
 
 pub struct Jal;
 impl Jal {
-    pub fn run(data: DataJ) -> Result<(), VMRunError> {
+    pub fn run(mut data: DataJ) -> Result<(), VMRunError> {
         // $IMPL_START Jal$
-        todo!("implement Jal please!");
+        let return_address = data.vm.pc + 4;
+        data.set_rd(return_address as u64); // Save the return address
+        data.vm.jump_pc_rel(data.imm() as isize, true)?; // Jump to the target address
         Ok(())
         // $IMPL_END Jal$
     }

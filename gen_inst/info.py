@@ -107,7 +107,7 @@ class Inst:
         return f"Inst::{self.symbol} {{ .. }} => \"{self.raw_name}\",\n"
     
     def run_param(self) -> str:
-        return f"data: Data{self.format.upper()}"
+        return f"mut data: Data{self.format.upper()}"
     
     def __str__(self) -> str:
         return f"Inst(name={self.raw_name}, format={self.format}, symbol={self.symbol})"
