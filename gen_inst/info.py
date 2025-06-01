@@ -57,10 +57,26 @@ class Inst:
     
     def decode_arm(self) -> str:
         params = self.decode_args(self.format)
+        dec_data = self.decode_data()
         args: list[str] = list()
+        conds: list[str] = list()
         for param in params:
-            args.append(self.decode_data().get(param[0], "_"))
-        return f"({ ','.join(args) }) => Inst::{self.symbol} {{ {self.enum_args_assign()} }},\n"
+            if param[0] not in dec_data:
+                args.append("_")
+                continue
+            data = dec_data[param[0]]
+            if "if" in data:
+                parts = data.split("if")
+                args.append(parts[0].strip())
+                conds.append(parts[1].strip())
+            else:
+                args.append(data.strip())
+        if len(args) < len(params):
+            args += ["_"] * (len(params) - len(args))
+        if len(conds) == 0:
+            return f"({ ','.join(args) }) => Inst::{self.symbol} {{ {self.enum_args_assign()} }},\n"
+        else:
+            return f"({ ','.join(args) }) if { ' && '.join(conds) } => Inst::{self.symbol} {{ {self.enum_args_assign()} }},\n"
 
     def enum_fields_decl(self) -> str:
         return ",".join([":".join(field) for field in self.enum_fields()])

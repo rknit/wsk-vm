@@ -65,7 +65,7 @@ pub struct DataB<'vm> {
     pub vm: &'vm mut VM,
     pub rs1: u8,
     pub rs2: u8,
-    pub raw_offset: i16,
+    pub raw_imm: i16,
 }
 impl<'vm> DataB<'vm> {
     pub fn r1(&self) -> u64 {
@@ -76,8 +76,8 @@ impl<'vm> DataB<'vm> {
         self.vm.x(self.rs2)
     }
 
-    pub fn offset(&self) -> i64 {
-        sext((self.raw_offset as u64) << 1, 12)
+    pub fn imm(&self) -> i64 {
+        sext((self.raw_imm as u64) << 1, 12)
     }
 }
 
@@ -99,11 +99,11 @@ impl<'vm> DataU<'vm> {
 pub struct DataJ<'vm> {
     pub vm: &'vm mut VM,
     pub rd: u8,
-    pub raw_offset: i32,
+    pub raw_imm: i32,
 }
 impl<'vm> DataJ<'vm> {
-    pub fn offset(&self) -> i64 {
-        sext((self.raw_offset as u64) << 1, 20)
+    pub fn imm(&self) -> i64 {
+        sext((self.raw_imm as u64) << 1, 20)
     }
 
     pub fn set_rd(&mut self, value: u64) {
