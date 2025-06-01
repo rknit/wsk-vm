@@ -30,11 +30,6 @@ pub struct VM {
 
     dbg_syms: HashMap<usize, HashSet<String>>,
 }
-impl Default for VM {
-    fn default() -> Self {
-        Self::new()
-    }
-}
 impl VM {
     pub fn new() -> Self {
         Self {
@@ -345,16 +340,16 @@ impl VM {
         }
     }
 
-    pub(crate) fn raise(&mut self, ex: Exception) -> Result<(), VMRunError> {
+    pub fn raise(&mut self, ex: Exception) -> Result<(), VMRunError> {
         match ex {
             Exception::Ecall => self.syscall(),
         }
     }
 
     pub fn display_regs(&self, out: &mut impl Write) -> io::Result<()> {
-        for i in 0..8 {
-            for j in 0..4 {
-                let idx = j * 4 + i;
+        for j in 0..8 {
+            for i in 0..4 {
+                let idx = i * 8 + j;
                 write!(out, "{}:\t{:16x} | ", x_name(idx), self.x(idx))?;
             }
             writeln!(out)?;
@@ -400,18 +395,14 @@ pub enum VMRunErrorKind {
 }
 impl Display for VMRunErrorKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                Self::Alignment => "address misalignment".to_owned(),
-                Self::UnknownInst(inst) => format!("unknown inst: {inst:08x}"),
-                Self::InvalidAddress(addr) => format!("invalid address {addr:x}"),
-                Self::UnknownSyscall(code) => format!("unknown syscall: {code}"),
-                Self::DivisionByZero => "division by zero".to_owned(),
-                Self::Other(s) => s.clone(),
-            }
-        )
+        match self {
+            Self::Alignment => write!(f, "address misalignment"),
+            Self::UnknownInst(inst) => write!(f, "unknown inst: {inst:08x}"),
+            Self::InvalidAddress(addr) => write!(f, "invalid address {addr:x}"),
+            Self::UnknownSyscall(code) => write!(f, "unknown syscall: {code}"),
+            Self::DivisionByZero => write!(f, "division by zero"),
+            Self::Other(s) => write!(f, "{s}"),
+        }
     }
 }
 

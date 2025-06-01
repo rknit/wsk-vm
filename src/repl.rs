@@ -102,7 +102,7 @@ fn poll<W: Write, R: BufRead>(repl: &mut Repl<W, R>) {
         let mut line = String::new();
         repl.cin.read_line(&mut line).unwrap();
 
-        let mut toks = line.trim().split_whitespace();
+        let mut toks = line.split_whitespace();
         let Some(cmd) = toks.next() else {
             continue;
         };
