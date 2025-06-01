@@ -1,141 +1,108 @@
+from typing import Any
+
 class Inst:
-    def __init__(self, format: str, op: str, f3: str, f7: str, name: str) -> None:
-        self.format = format.lower()
-        self.op = op
-        self.f3 = f3
-        self.f7 = f7
+    def __init__(self, name: str, format: str, data: dict[str, Any]) -> None:
+        assert len(format) == 1, "format must be a single character"
         self.raw_name = name
+        self.format = format.lower()
+        self.data = data
         self.symbol = "".join([part.capitalize() if len(part) > 1 else part.upper() for part in name.strip().lower().split(".")])
-        self.special_match: str = ""
-        self.imm: str = ""
-
-    def enum_fields(self) -> str:
+        self.impl = ""
+        
+    def decode_data(self) -> dict[str, str]:
+        assert "decode" in self.data
+        return self.data["decode"]
+        
+    @staticmethod
+    def decode_args(fmt: str) -> list[tuple[str, str]]:
+        if fmt == "r":
+            return [("opc", "u8"), ("f3", "u8"), ("f7", "u8"), ("rd", "u8"), ("rs1", "u8"), ("rs2", "u8")]
+        if fmt == "i":
+            return [("opc", "u8"), ("f3", "u8"), ("rd", "u8"), ("rs1", "u8"), ("imm", "i16")]
+        if fmt == "s":
+            return [("opc", "u8"), ("f3", "u8"), ("rs1", "u8"), ("rs2", "u8"), ("imm", "i16")]
+        if fmt == "b":
+            return [("opc", "u8"), ("f3", "u8"), ("rs1", "u8"), ("rs2", "u8"), ("imm", "i16")]
+        if fmt == "u":
+            return [("opc", "u8"), ("rd", "u8"), ("imm", "i32")]
+        if fmt == "j":
+            return [("opc", "u8"), ("rd", "u8"), ("imm", "i32")]
+        assert False, f"invalid format {fmt}"
+        
+    @staticmethod
+    def decode_pat(fmt: str) -> str:
+        return ",".join([arg[0] for arg in Inst.decode_args(fmt)])
+    
+    def enum_fields(self) -> list[tuple[str, str]]:
         fmt = self.format
         if fmt == "r":
-            return "rd: u8, rs1: u8, rs2: u8"
+            return [("rd", "u8"), ("rs1", "u8"), ("rs2", "u8")]
         if fmt == "i":
-            return "rd: u8, rs1: u8, imm: i64"
+            return [("rd", "u8"), ("rs1", "u8"), ("imm", "i16")]
         if fmt == "s":
-            return "rs1: u8, rs2: u8, offset: i64"
+            return [("rs1", "u8"), ("rs2", "u8"), ("imm", "i16")]
         if fmt == "b":
-            return "rs1: u8, rs2: u8, offset: i64"
+            return [("rs1", "u8"), ("rs2", "u8"), ("imm", "i16")]
         if fmt == "u":
-            return "rd: u8, imm: i64"
+            return [("rd", "u8"), ("imm", "i32")]
         if fmt == "j":
-            return "rd: u8, offset: i64"
+            return [("rd", "u8"), ("imm", "i32")]
         assert False, f"invalid format {self.format}"
-
-    def enum(self) -> str:
-        s = self.enum_fields()
-        return f"{self.symbol} {{ {s} }},"
-
-    def enum_args(self) -> str:
-        fmt = self.format
-        if fmt == "r":
-            return "rd, rs1, rs2"
-        if fmt == "i":
-            return "rd, rs1, imm"
-        if fmt == "s":
-            return "rs1, rs2, offset"
-        if fmt == "b":
-            return "rs1, rs2, offset"
-        if fmt == "u":
-            return "rd, imm"
-        if fmt == "j":
-            return "rd, offset"
-        assert False, f"invalid format {self.format}"
-
+        
     def enum_args_assign(self) -> str:
-        fmt = self.format
-        if fmt == "r":
-            return "rd, rs1, rs2"
-        if fmt == "i":
-            return "rd, rs1, imm: sext(imm as u64, 11) as i64"
-        if fmt == "s":
-            return "rs1, rs2, offset: sext(imm as u64, 11) as i64"
-        if fmt == "b":
-            return "rs1, rs2, offset: sext((imm as u64) << 1, 12) as i64"
-        if fmt == "u":
-            return "rd, imm: ((imm as i32) << 12) as i64"
-        if fmt == "j":
-            return "rd, offset: sext((imm as u64) << 1, 20) as i64"
-        assert False, f"invalid format {self.format}"
-
-    def get_match_cond(self) -> str:
-        if not self.special_match and not self.imm:
-            return ""
-        
-        if self.imm:
-            assert [c in "01" for c in self.imm], f"invalid immediate {self.imm} for {self.symbol}"
-            return f"if imm == 0b{self.imm}"
-        
-        sm = self.special_match
-        if sm == "slli" or sm == "srli":
-            return "if ext!(imm, u8; 11;6) == 0"
-        if sm == "srai":
-            return "if ext!(imm, u8; 11;6) == 0b010000"
-        
-        assert False, f"invalid special match {self.special_match} for {self.symbol}"
-
+        return ",".join([field[0] for field in self.enum_fields()])
+    
+    def enum_pat(self) -> str:
+        return ",".join([field[0] for field in self.enum_fields()])
+    
     def decode_arm(self) -> str:
-        fmt = self.format
-        sm = self.get_match_cond()
-        if fmt == "r":
-            return f"(0b{self.op}, 0b{self.f3}, 0b{self.f7}){sm} => Inst::{self.symbol} {{ {self.enum_args_assign()} }},\n"
-        if fmt == "i" or fmt == "s" or fmt == "b":
-            return f"(0b{self.op}, 0b{self.f3}){sm} => Inst::{self.symbol} {{ {self.enum_args_assign()} }},\n"
-        if fmt == "u" or fmt == "j":
-            return f"0b{self.op}{sm} => Inst::{self.symbol} {{ {self.enum_args_assign()} }},\n"
-        assert False, f"invalid format {self.format}"
-        
-    def run_params(self) -> str:
-        fmt = self.format
-        if fmt == "r":
-            return "rd: u8, r1: u64, r2: u64"
-        if fmt == "i":
-            return "rd: u8, r1: u64, imm: i64"
-        if fmt == "s":
-            return "r1: u64, r2: u64, offset: i64"
-        if fmt == "b":
-            return "r1: u64, r2: u64, offset: i64"
-        if fmt == "u":
-            return "rd: u8, imm: i64"
-        if fmt == "j":
-            return "rd: u8, offset: i64"
-        assert False, f"invalid format {self.format}"
-        
-    def run_args(self) -> str:
-        fmt = self.format
-        if fmt == "r":
-            return "rd, vm.x(rs1), vm.x(rs2)"
-        if fmt == "i":
-            return "rd, vm.x(rs1), imm"
-        if fmt == "s":
-            return "vm.x(rs1), vm.x(rs2), offset"
-        if fmt == "b":
-            return "vm.x(rs1), vm.x(rs2), offset"
-        if fmt == "u":
-            return "rd, imm"
-        if fmt == "j":
-            return "rd, offset"
-        assert False, f"invalid format {self.format}"
+        params = self.decode_args(self.format)
+        args: list[str] = list()
+        for param in params:
+            args.append(self.decode_data().get(param[0], "_"))
+        return f"({ ','.join(args) }) => Inst::{self.symbol} {{ {self.enum_args_assign()} }},\n"
+
+    def enum_fields_decl(self) -> str:
+        return ",".join([":".join(field) for field in self.enum_fields()])
+
+    def enum_variant(self) -> str:
+        s = self.enum_fields_decl()
+        return f"{self.symbol} {{ {s} }},"
+    
+    def data_args(self) -> str:
+        def data_field(s: str) -> str:
+            if s == "imm":
+                return "raw_imm"
+            if s == "imm":
+                return "raw_imm"
+            return s
+        return ",".join([
+            f"{data_field(field[0])}: {field[0]}" if data_field(field[0]) != field[0] else field[0]
+            for field in self.enum_fields()
+        ])
+    
+    def create_data(self) -> str:
+        return f"Data{self.format.upper()} {{ vm, {self.data_args()} }}"
         
     def run_arm(self) -> str:
-        return f"Inst::{self.symbol} {{ {self.enum_args()} }} => {self.symbol}::run(vm, {self.run_args()}),\n"
+        return f"Inst::{self.symbol} {{ {self.enum_pat()} }} => {self.symbol}::run({self.create_data()}),\n"
     
     def name_arm(self) -> str:
         return f"Inst::{self.symbol} {{ .. }} => \"{self.raw_name}\",\n"
     
+    def run_param(self) -> str:
+        return f"data: Data{self.format.upper()}"
+    
     def __str__(self) -> str:
-        return f"Inst(format={self.format}, op={self.op}, f3={self.f3}, f7={self.f7}, name={self.symbol})"
+        return f"Inst(name={self.raw_name}, format={self.format}, symbol={self.symbol})"
     
     def __eq__(self, value: object) -> bool:
         if not isinstance(value, Inst):
             return False
-        return self.symbol == value.symbol
+        return self.raw_name == value.raw_name
         
     def __hash__(self) -> int:
-        return hash(self.symbol)
+        return hash(self.raw_name)
 
 
 class Module:

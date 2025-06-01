@@ -1,7 +1,9 @@
 from info import Inst, Module, Modules
 import toml
 
-IMPL_TOKEN = "$IMPL"
+INST_TOKEN = "$INST"
+IMPL_START_TOKEN = "$IMPL_START"
+IMPL_END_TOKEN = "$IMPL_END"
 
 def read_insts(path: str) -> Modules:
     modules = Modules()
@@ -14,17 +16,10 @@ def read_insts(path: str) -> Modules:
             for format, inst in format.items():
                 for inst_name, inst_data in inst.items():
                     inst = Inst(
-                        format, 
-                        inst_data["opc"], 
-                        inst_data.get("f3", "-"), 
-                        inst_data.get("f7", "-"),
                         inst_name,
+                        format, 
+                        inst_data
                     )
-                    
-                    # other configs
-                    inst.special_match = inst_data.get("special_match", "")
-                    inst.imm = inst_data.get("imm", "")
-                    
                     module.append(inst)
             modules.append(module)
         
@@ -49,7 +44,7 @@ def gen_main(modules: Modules) -> str:
     for mod_idx, mod in enumerate(modules.mods()):
         gen(f"    // {mod.name.upper()}")
         for inst in mod.insts:
-            gen(f"    {inst.enum()}")
+            gen(f"    {inst.enum_variant()}")
         if mod_idx + 1 != modules.len():
             gen()
     gen("}")
@@ -62,45 +57,45 @@ impl Inst {{
         Some(match fmt {{
             R {{
                 opc,
-                funct3,
-                funct7,
+                f3,
+                f7,
                 rd,
                 rs1,
                 rs2,
-            }} => match (opc, funct3, funct7) {{
+            }} => match ({Inst.decode_pat('r')}) {{
                 {"                ".join([inst.decode_arm() for inst in modules.all_format("r")])}
                 #[allow(unreachable_patterns)]
                 _ => return None,
             }},
             I {{
                 opc,
-                funct3,
+                f3,
                 rd,
                 rs1,
                 imm,
-            }} => match (opc, funct3) {{
+            }} => match ({Inst.decode_pat('i')}) {{
                 {"                ".join([inst.decode_arm() for inst in modules.all_format("i")])}
                 #[allow(unreachable_patterns)]
                 _ => return None,
             }},
             S {{
                 opc,
-                funct3,
+                f3,
                 rs1,
                 rs2,
                 imm,
-            }} => match (opc, funct3) {{
+            }} => match ({Inst.decode_pat('s')}) {{
                 {"                ".join([inst.decode_arm() for inst in modules.all_format("s")])}
                 #[allow(unreachable_patterns)]
                 _ => return None,
             }},
             B {{
                 opc,
-                funct3,
+                f3,
                 rs1,
                 rs2,
                 imm,
-            }} => match (opc, funct3) {{
+            }} => match ({Inst.decode_pat('b')}) {{
                 {"                ".join([inst.decode_arm() for inst in modules.all_format("b")])}
                 #[allow(unreachable_patterns)]
                 _ => return None,
@@ -109,7 +104,7 @@ impl Inst {{
                 opc,
                 rd,
                 imm,
-            }} => match opc {{
+            }} => match ({Inst.decode_pat('u')}) {{
                 {"                ".join([inst.decode_arm() for inst in modules.all_format("u")])}
                 #[allow(unreachable_patterns)]
                 _ => return None,
@@ -118,7 +113,7 @@ impl Inst {{
                 opc,
                 rd,
                 imm,
-            }} => match opc {{
+            }} => match ({Inst.decode_pat('j')}) {{
                 {"                ".join([inst.decode_arm() for inst in modules.all_format("j")])}
                 #[allow(unreachable_patterns)]
                 _ => return None,
@@ -154,29 +149,28 @@ impl Inst {{
     gen("}")
     return out
 
+def get_impl_start_token(inst: Inst) -> str:
+    return f"// {IMPL_START_TOKEN} {inst.symbol}"
 
+def get_impl_end_token(inst: Inst) -> str:
+    return f"// {IMPL_END_TOKEN} {inst.symbol}"
 
-def gen_impl_inst(inst: Inst) -> str:
-    return f"""#[derive(Debug, Clone, Copy)]
+def get_default_impl(inst: Inst) -> str:
+    return f"todo!(\"implement {inst.symbol} please!\");\nOk(())"
+
+def gen_inst_impl(inst: Inst) -> str:
+    return f"""
 pub struct {inst.symbol};
 impl {inst.symbol} {{
-    pub fn run(vm: &mut VM, {inst.run_params()}) -> Result<(), VMRunError> {{
-        todo!("implement {inst.symbol} please!");
-        Ok(())
+    pub fn run({inst.run_param()}) -> Result<(), VMRunError> {{
+        {get_impl_start_token(inst)}
+        {inst.impl if inst.impl else get_default_impl(inst)}
+        {get_impl_end_token(inst)}
     }}
 }}"""
 
-def get_impl_token(inst: Inst) -> str:
-    return f"// {IMPL_TOKEN} {inst.symbol}"
-
-def get_impl_token_full(inst: Inst) -> str:
-    return f"{get_impl_token(inst)} {inst.format}"
-
 def gen_inst(inst: Inst) -> str:
-    return f"""
-{get_impl_token_full(inst)}
-{gen_impl_inst(inst)}
-"""
+    return gen_inst_impl(inst)
 
 def gen_mod(mod: Module) -> dict[Inst, str]:
     out: dict[Inst, str] = dict()

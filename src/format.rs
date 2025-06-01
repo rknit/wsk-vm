@@ -65,7 +65,7 @@ pub struct DataB<'vm> {
     pub vm: &'vm mut VM,
     pub rs1: u8,
     pub rs2: u8,
-    pub raw_imm: i16,
+    pub raw_offset: i16,
 }
 impl<'vm> DataB<'vm> {
     pub fn r1(&self) -> u64 {
@@ -76,8 +76,8 @@ impl<'vm> DataB<'vm> {
         self.vm.x(self.rs2)
     }
 
-    pub fn imm(&self) -> i64 {
-        sext((self.raw_imm as u64) << 1, 12)
+    pub fn offset(&self) -> i64 {
+        sext((self.raw_offset as u64) << 1, 12)
     }
 }
 
@@ -99,11 +99,11 @@ impl<'vm> DataU<'vm> {
 pub struct DataJ<'vm> {
     pub vm: &'vm mut VM,
     pub rd: u8,
-    pub raw_imm: i32,
+    pub raw_offset: i32,
 }
 impl<'vm> DataJ<'vm> {
-    pub fn imm(&self) -> i64 {
-        sext((self.raw_imm as u64) << 1, 20)
+    pub fn offset(&self) -> i64 {
+        sext((self.raw_offset as u64) << 1, 20)
     }
 
     pub fn set_rd(&mut self, value: u64) {
@@ -115,29 +115,29 @@ impl<'vm> DataJ<'vm> {
 pub enum RawFormat {
     R {
         opc: u8,
-        funct3: u8,
-        funct7: u8,
+        f3: u8,
+        f7: u8,
         rd: u8,
         rs1: u8,
         rs2: u8,
     },
     I {
         opc: u8,
-        funct3: u8,
+        f3: u8,
         rd: u8,
         rs1: u8,
         imm: i16,
     },
     S {
         opc: u8,
-        funct3: u8,
+        f3: u8,
         rs1: u8,
         rs2: u8,
         imm: i16,
     },
     B {
         opc: u8,
-        funct3: u8,
+        f3: u8,
         rs1: u8,
         rs2: u8,
         imm: i16,
@@ -198,7 +198,7 @@ impl RawFormat {
                 rd,
                 rs1,
                 imm: imm_i(),
-                funct3,
+                f3: funct3,
             },
             0b00101 | 0b01101 => RawFormat::U {
                 opc,
@@ -210,22 +210,22 @@ impl RawFormat {
                 rs1,
                 rs2,
                 imm: imm_s(),
-                funct3,
+                f3: funct3,
             },
             0b01100 | 0b01110 => RawFormat::R {
                 opc,
                 rd,
                 rs1,
                 rs2,
-                funct3,
-                funct7,
+                f3: funct3,
+                f7: funct7,
             },
             0b11000 => RawFormat::B {
                 opc,
                 rs1,
                 rs2,
                 imm: imm_b(),
-                funct3,
+                f3: funct3,
             },
             0b11011 => RawFormat::J {
                 opc,
