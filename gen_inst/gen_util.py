@@ -150,10 +150,10 @@ impl Inst {{
     return out
 
 def get_impl_start_token(inst: Inst) -> str:
-    return f"// {IMPL_START_TOKEN} {inst.symbol}"
+    return f"// {IMPL_START_TOKEN} {inst.symbol}$"
 
 def get_impl_end_token(inst: Inst) -> str:
-    return f"// {IMPL_END_TOKEN} {inst.symbol}"
+    return f"// {IMPL_END_TOKEN} {inst.symbol}$"
 
 def get_default_impl(inst: Inst) -> str:
     return f"todo!(\"implement {inst.symbol} please!\");\nOk(())"

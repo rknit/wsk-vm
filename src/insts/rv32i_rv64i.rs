@@ -10,19 +10,19 @@ use crate::*;
 pub struct Add;
 impl Add {
     pub fn run(data: DataR) -> Result<(), VMRunError> {
-        // $IMPL_START Add
+        // $IMPL_START Add$
         todo!("implement Add please!");
         Ok(())
-        // $IMPL_END Add
+        // $IMPL_END Add$
     }
 }
 
 pub struct Addi;
 impl Addi {
     pub fn run(data: DataI) -> Result<(), VMRunError> {
-        // $IMPL_START Addi
+        // $IMPL_START Addi$
         todo!("implement Addi please!");
         Ok(())
-        // $IMPL_END Addi
+        // $IMPL_END Addi$
     }
 }
