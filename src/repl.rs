@@ -4,7 +4,7 @@ use std::{
     process::exit,
 };
 
-use crate::{InstReport, VM, VMRunError, format::RawFormat};
+use crate::{InstReport, VM, VMRunError, format::RawFormat, x_name};
 
 #[derive(Clone, Copy)]
 enum RunUntil {
@@ -137,8 +137,14 @@ fn run_cmd<W: Write, R: BufRead>(repl: &mut Repl<W, R>) -> Result<(), VMRunError
         }
         "c" | "cont" => run_vm(repl, RunWith::Report, RunUntil::Halt),
         "b" | "brk" => Ok(toggle_brk(repl)),
+        "i" | "info" => Ok(info(repl)),
         _ => {
-            writeln!(repl.cout, "unknown command '{}'", repl.cmd).unwrap();
+            writeln!(
+                repl.cout,
+                "unknown command '{}', run 'help' to list commands.",
+                repl.cmd
+            )
+            .unwrap();
             Ok(())
         }
     }
@@ -151,13 +157,88 @@ fn help<W: Write, R: BufRead>(repl: &mut Repl<W, R>) {
 h, help              -- list commands.
 q, quit              -- exit REPL.
 r, reset             -- reset REPL.
-s, step <N>          -- advance VM for N steps (N is 1 if unspecified) until interrupted.
+s, step <N>          -- advance VM for N steps until interrupted (N is 1 if unspecified).
 c, cont              -- advance VM until interrupted.
-b, brk  <addr/inst>  -- toggle breakpoint for address ('0x' prefixed) or instruction.
+b, brk  <addr/inst>  -- toggle breakpoint at address or instruction (address is '0x' prefixed).
+i, info <arg>        -- show information about the VM status.
+                        -- arg can be:
+                        --   'pc' for program counter.
+                        --   'm <start>.<end>' for memory dump (end is exclusive).
+                        --   'x' for all registers.
+                        --   'x <index>' for specific register.
 
 "#
     )
     .unwrap();
+}
+
+fn info<W: Write, R: BufRead>(repl: &mut Repl<W, R>) {
+    if repl.args.is_empty() {
+        writeln!(repl, "i: no argument provided").unwrap();
+        return;
+    }
+
+    match repl.args[0].as_str() {
+        "pc" => {
+            let pc = repl.vm.pc;
+            writeln!(repl, "pc = {pc:x}").unwrap()
+        }
+        "m" => {
+            if repl.args.len() < 2 {
+                writeln!(repl, "i: m: expect range <start>.<end>").unwrap();
+                return;
+            }
+            let range: Vec<&str> = repl.args[1].split(".").collect();
+            if range.len() != 2 {
+                writeln!(repl, "i: m: invalid range format").unwrap();
+                return;
+            }
+            let Ok(start) = usize::from_str_radix(range[0], 16) else {
+                writeln!(repl, "i: m: invalid start address").unwrap();
+                return;
+            };
+            let Ok(end) = usize::from_str_radix(range[1], 16) else {
+                writeln!(repl, "i: m: invalid end address").unwrap();
+                return;
+            };
+            let mut addr = start;
+            while addr < end {
+                let Ok(bytes) = repl.vm.mem_range(addr, 16) else {
+                    writeln!(repl, "{addr:04x}: <invalid>").unwrap();
+                    break;
+                };
+
+                let hex = bytes
+                    .iter()
+                    .map(|b| format!("{b:02x}"))
+                    .collect::<Vec<_>>()
+                    .join(" ");
+
+                writeln!(repl, "{addr:04x}: {hex}").unwrap();
+                addr += 16;
+            }
+        }
+        "x" => {
+            if repl.args.len() < 2 {
+                repl.vm.display_regs(&mut repl.cout).unwrap();
+                return;
+            }
+            let reg_index: u8 = match repl.args[1].parse() {
+                Ok(v) => v,
+                Err(e) => {
+                    writeln!(repl, "i: x: {e}").unwrap();
+                    return;
+                }
+            };
+            let reg_name = x_name(reg_index);
+            let val = repl.vm.x(reg_index);
+            writeln!(repl, "{reg_name} = {val:x}").unwrap();
+        }
+        _ => {
+            let s = format!("i: unknown argument '{}'", repl.args[0]);
+            writeln!(repl, "{s}").unwrap()
+        }
+    }
 }
 
 fn reset<W: Write, R: BufRead>(repl: &mut Repl<W, R>) {

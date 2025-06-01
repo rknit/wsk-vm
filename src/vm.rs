@@ -119,7 +119,7 @@ impl VM {
                 self.mem[idx..end_idx].fill(0);
             }
 
-            trace!(
+            info!(
                 "loaded program header: v_addr={mem_begin:x}, v_len={mem_len:x}, offset={bytes_begin:x}, f_len={bytes_len:x}"
             );
         }
@@ -160,7 +160,7 @@ impl VM {
                 sym_cnt += 1;
             }
 
-            trace!("debug symbols: {sym_cnt}");
+            info!("debug symbols: {sym_cnt}");
         }
 
         Ok(())
@@ -314,21 +314,6 @@ impl VM {
         self.regs[i] = val;
     }
 
-    pub fn display(&self, out: &mut impl Write) -> io::Result<()> {
-        writeln!(out, "# state")?;
-        writeln!(out, "ip: {:08x}", self.pc)?;
-        writeln!(out, "sp: {:08x}", self.x(2))?;
-        writeln!(out, "# registers")?;
-        for j in 0..8 {
-            for i in 0..4 {
-                let idx = j * 4 + i;
-                write!(out, "{}: {:16x},\t", x_name(idx), self.x(idx))?;
-            }
-            writeln!(out)?;
-        }
-        Ok(())
-    }
-
     pub fn jump(&mut self, addr: usize, dec_4: bool) -> Result<(), VMRunError> {
         if addr < PROG_LEN {
             if dec_4 {
@@ -364,6 +349,17 @@ impl VM {
         match ex {
             Exception::Ecall => self.syscall(),
         }
+    }
+
+    pub fn display_regs(&self, out: &mut impl Write) -> io::Result<()> {
+        for i in 0..8 {
+            for j in 0..4 {
+                let idx = j * 4 + i;
+                write!(out, "{}:\t{:16x} | ", x_name(idx), self.x(idx))?;
+            }
+            writeln!(out)?;
+        }
+        Ok(())
     }
 }
 
