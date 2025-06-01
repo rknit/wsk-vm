@@ -5,18 +5,6 @@ use util::syscalls;
 
 use crate::{VM, VMRunError, VMRunErrorKind};
 
-const SYSCALL_REG: usize = 17;
-const RET_REG: usize = 10;
-const ARG0_REG: usize = 10;
-const ARG1_REG: usize = 11;
-const ARG2_REG: usize = 12;
-#[allow(dead_code)]
-const ARG3_REG: usize = 13;
-#[allow(dead_code)]
-const ARG4_REG: usize = 14;
-#[allow(dead_code)]
-const ARG5_REG: usize = 15;
-
 syscalls!(
     (vm),
     exit(93) = {
@@ -123,6 +111,23 @@ syscalls!(
     },
 );
 
+#[allow(dead_code)]
+const SYSCALL_REG: u8 = 17;
+#[allow(dead_code)]
+const RET_REG: u8 = 10;
+#[allow(dead_code)]
+const ARG0_REG: u8 = 10;
+#[allow(dead_code)]
+const ARG1_REG: u8 = 11;
+#[allow(dead_code)]
+const ARG2_REG: u8 = 12;
+#[allow(dead_code)]
+const ARG3_REG: u8 = 13;
+#[allow(dead_code)]
+const ARG4_REG: u8 = 14;
+#[allow(dead_code)]
+const ARG5_REG: u8 = 15;
+
 mod util {
     #[macro_export]
     macro_rules! syscalls {
@@ -130,19 +135,19 @@ mod util {
             impl VM {
                 pub(crate) fn syscall(&mut self) -> Result<(), VMRunError> {
                     let $vm = self;
-                    $vm.rep.is_syscall = true;
+                    // $vm.rep.is_syscall = true;
 
                     let code = $vm.x(SYSCALL_REG) as i16;
                     match code {
                         $(
                         $code => {
-                            $vm.rep.syscall_name = stringify!($name);
+                            // $vm.rep.syscall_name = stringify!($name);
                             $body
                         }
                         )*
                         _ => {
                             return Err(VMRunError {
-                                pc: $vm.rep.pc,
+                                err_addr: $vm.pc,
                                 kind: VMRunErrorKind::UnknownSyscall(code),
                                 info: Default::default(),
                             });

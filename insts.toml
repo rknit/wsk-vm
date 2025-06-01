@@ -1,0 +1,106 @@
+[rv32i_rv64i]
+
+[rv32i_rv64i.r]
+add = { decode = { opc = "0b01100", f3 = "0b000", f7 = "0b0000000" } }
+sub = { decode = { opc = "0b01100", f3 = "0b000", f7 = "0b0100000" } }
+sll = { decode = { opc = "0b01100", f3 = "0b001", f7 = "0b0000000" } }
+slt = { decode = { opc = "0b01100", f3 = "0b010", f7 = "0b0000000" } }
+sltu = { decode = { opc = "0b01100", f3 = "0b011", f7 = "0b0000000" } }
+xor = { decode = { opc = "0b01100", f3 = "0b100", f7 = "0b0000000" } }
+srl = { decode = { opc = "0b01100", f3 = "0b101", f7 = "0b0000000" } }
+sra = { decode = { opc = "0b01100", f3 = "0b101", f7 = "0b0100000" } }
+or = { decode = { opc = "0b01100", f3 = "0b110", f7 = "0b0000000" } }
+and = { decode = { opc = "0b01100", f3 = "0b111", f7 = "0b0000000" } }
+'sfence.vma' = { decode = { opc = "0b11100", f3 = "0b000", f7 = "0b0001001" } }
+
+[rv32i_rv64i.i]
+addi = { decode = { opc = "0b00100", f3 = "0b000" } }
+slti = { decode = { opc = "0b00100", f3 = "0b010" } }
+sltiu = { decode = { opc = "0b00100", f3 = "0b011" } }
+xori = { decode = { opc = "0b00100", f3 = "0b100" } }
+ori = { decode = { opc = "0b00100", f3 = "0b110" } }
+andi = { decode = { opc = "0b00100", f3 = "0b111" } }
+slli = { decode = { opc = "0b00100", f3 = "0b001", imm = "imm if ext!(imm, u8; 11;6) == 0" } }
+srli = { decode = { opc = "0b00100", f3 = "0b101", imm = "imm if ext!(imm, u8; 11;6) == 0" } }
+srai = { decode = { opc = "0b00100", f3 = "0b101", imm = "imm if ext!(imm, u8; 11;6) == 0b010000" } }
+lb = { decode = { opc = "0b00000", f3 = "0b000" } }
+lh = { decode = { opc = "0b00000", f3 = "0b001" } }
+lw = { decode = { opc = "0b00000", f3 = "0b010" } }
+lbu = { decode = { opc = "0b00000", f3 = "0b100" } }
+lhu = { decode = { opc = "0b00000", f3 = "0b101" } }
+jalr = { decode = { opc = "0b11001", f3 = "0b000" } }
+fence = { decode = { opc = "0b00011", f3 = "0b000" } }
+'fence.i' = { decode = { opc = "0b00011", f3 = "0b001" } }
+csrrw = { decode = { opc = "0b11100", f3 = "0b001" } }
+csrrs = { decode = { opc = "0b11100", f3 = "0b010" } }
+csrrc = { decode = { opc = "0b11100", f3 = "0b011" } }
+csrrwi = { decode = { opc = "0b11100", f3 = "0b101" } }
+csrrsi = { decode = { opc = "0b11100", f3 = "0b110" } }
+csrrci = { decode = { opc = "0b11100", f3 = "0b111" } }
+ecall = { decode = { opc = "0b11100", f3 = "0b000", imm = "0b000000000000" } }
+ebreak = { decode = { opc = "0b11100", f3 = "0b000", imm = "0b000000000001" } }
+uret = { decode = { opc = "0b11100", f3 = "0b000", imm = "0b000000000010" } }
+sret = { decode = { opc = "0b11100", f3 = "0b000", imm = "0b000100000010" } }
+mret = { decode = { opc = "0b11100", f3 = "0b000", imm = "0b001100000010" } }
+wfi = { decode = { opc = "0b11100", f3 = "0b000", imm = "0b000100000101" } }
+
+[rv32i_rv64i.s]
+sb = { decode = { opc = "0b01000", f3 = "0b000" } }
+sh = { decode = { opc = "0b01000", f3 = "0b001" } }
+sw = { decode = { opc = "0b01000", f3 = "0b010" } }
+
+[rv32i_rv64i.b]
+beq = { decode = { opc = "0b11000", f3 = "0b000" } }
+bne = { decode = { opc = "0b11000", f3 = "0b001" } }
+blt = { decode = { opc = "0b11000", f3 = "0b100" } }
+bge = { decode = { opc = "0b11000", f3 = "0b101" } }
+bltu = { decode = { opc = "0b11000", f3 = "0b110" } }
+bgeu = { decode = { opc = "0b11000", f3 = "0b111" } }
+
+[rv32i_rv64i.u]
+lui = { decode = { opc = "0b01101" } }
+auipc = { decode = { opc = "0b00101" } }
+
+[rv32i_rv64i.j]
+jal = { decode = { opc = "0b11011" } }
+
+[rv64i]
+
+[rv64i.r]
+addw = { decode = { opc = "0b01110", f3 = "0b000", f7 = "0b0000000" } }
+subw = { decode = { opc = "0b01110", f3 = "0b000", f7 = "0b0100000" } }
+sllw = { decode = { opc = "0b01110", f3 = "0b001", f7 = "0b0000000" } }
+srlw = { decode = { opc = "0b01110", f3 = "0b101", f7 = "0b0000000" } }
+sraw = { decode = { opc = "0b01110", f3 = "0b101", f7 = "0b0100000" } }
+
+[rv64i.i]
+addiw = { decode = { opc = "0b00110", f3 = "0b000" } }
+slliw = { decode = { opc = "0b00110", f3 = "0b001", imm = "imm if ext!(imm, u8; 11;5) == 0" } }
+srliw = { decode = { opc = "0b00110", f3 = "0b101", imm = "imm if ext!(imm, u8; 11;5) == 0" } }
+sraiw = { decode = { opc = "0b00110", f3 = "0b101", imm = "imm if ext!(imm, u8; 11;5) == 0b0100000" } }
+lwu = { decode = { opc = "0b00000", f3 = "0b110" } }
+ld = { decode = { opc = "0b00000", f3 = "0b011" } }
+
+[rv64i.s]
+sd = { decode = { opc = "0b01000", f3 = "0b011" } }
+
+[rv32m_rv64m]
+
+[rv32m_rv64m.r]
+mul = { decode = { opc = "0b01100", f3 = "0b000", f7 = "0b0000001" } }
+mulh = { decode = { opc = "0b01100", f3 = "0b001", f7 = "0b0000001" } }
+mulhsu = { decode = { opc = "0b01100", f3 = "0b010", f7 = "0b0000001" } }
+mulhu = { decode = { opc = "0b01100", f3 = "0b011", f7 = "0b0000001" } }
+div = { decode = { opc = "0b01100", f3 = "0b100", f7 = "0b0000001" } }
+divu = { decode = { opc = "0b01100", f3 = "0b101", f7 = "0b0000001" } }
+rem = { decode = { opc = "0b01100", f3 = "0b110", f7 = "0b0000001" } }
+remu = { decode = { opc = "0b01100", f3 = "0b111", f7 = "0b0000001" } }
+
+[rv64m]
+
+[rv64m.r]
+mulw = { decode = { opc = "0b01110", f3 = "0b000", f7 = "0b0000001" } }
+divw = { decode = { opc = "0b01110", f3 = "0b100", f7 = "0b0000001" } }
+divuw = { decode = { opc = "0b01110", f3 = "0b101", f7 = "0b0000001" } }
+remw = { decode = { opc = "0b01110", f3 = "0b110", f7 = "0b0000001" } }
+remuw = { decode = { opc = "0b01110", f3 = "0b111", f7 = "0b0000001" } }

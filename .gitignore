@@ -2,3 +2,6 @@
 /tests/test.s
 /tests/test.bin
 /tests/perf.*
+
+__pycache__
+/gen_inst/insts_old

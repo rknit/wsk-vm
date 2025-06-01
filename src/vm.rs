@@ -6,7 +6,7 @@ use std::{
 
 use log::{info, log_enabled, trace};
 
-use crate::{Exception, INST_LEN, Inst, decode_inst};
+use crate::{Exception, Inst, InstReport, RawFormat};
 
 const REG_COUNT: usize = 32;
 
@@ -28,14 +28,7 @@ pub struct VM {
     pub(crate) halt: bool,
     pub(crate) exit_code: u8,
 
-    pub(crate) rep: Report,
-
     dbg_syms: HashMap<usize, HashSet<String>>,
-}
-impl Default for VM {
-    fn default() -> Self {
-        Self::new()
-    }
 }
 impl VM {
     pub fn new() -> Self {
@@ -46,8 +39,6 @@ impl VM {
 
             halt: false,
             exit_code: 0,
-
-            rep: Default::default(),
 
             dbg_syms: HashMap::new(),
         }
@@ -123,7 +114,7 @@ impl VM {
                 self.mem[idx..end_idx].fill(0);
             }
 
-            trace!(
+            info!(
                 "loaded program header: v_addr={mem_begin:x}, v_len={mem_len:x}, offset={bytes_begin:x}, f_len={bytes_len:x}"
             );
         }
@@ -164,7 +155,7 @@ impl VM {
                 sym_cnt += 1;
             }
 
-            trace!("debug symbols: {sym_cnt}");
+            info!("debug symbols: {sym_cnt}");
         }
 
         Ok(())
@@ -178,32 +169,69 @@ impl VM {
     }
 
     pub fn step(&mut self) -> Result<(), VMRunError> {
-        self.rep = Default::default();
-        self.rep.pc = self.pc;
-
-        let inst = self.fetch_inst()?;
-        inst.run_inst(self)?;
-
-        self.pc = (self.pc + INST_LEN) % (PROG_LEN);
-
         if log_enabled!(log::Level::Trace) {
-            trace!("{}", self.report());
+            let log = |vm: &VM| {
+                let raw_inst = {
+                    let Ok([b1, b2, b3, b4]) = vm.mem_range(vm.pc, 4) else {
+                        return;
+                    };
+                    u32::from_le_bytes([*b1, *b2, *b3, *b4])
+                };
+
+                let format = RawFormat::parse(raw_inst).unwrap();
+
+                let Ok(inst) = vm.fetch_inst(vm.pc) else {
+                    return;
+                };
+
+                trace!(
+                    "{}",
+                    InstReport {
+                        addr: vm.pc,
+                        raw_inst,
+                        inst_name: inst.name(),
+                        format,
+                    }
+                );
+            };
+            log(self);
         }
+
+        let inst = self.fetch_inst(self.pc)?;
+        inst.run(self)?;
+        self.pc = (self.pc + 4) % (PROG_LEN);
         Ok(())
     }
 
-    pub(crate) fn fetch_inst(&mut self) -> Result<Inst, VMRunError> {
-        let inst = u32::from_le_bytes(unsafe {
-            (&self.mem[self.pc..self.pc + INST_LEN])
-                .try_into()
-                .unwrap_unchecked()
-        });
-        self.rep.raw_inst = inst;
-        decode_inst(inst).map_err(|e| VMRunError {
-            pc: self.rep.pc,
-            kind: e,
-            info: "decode",
-        })
+    pub fn fetch_inst(&self, addr: usize) -> Result<Inst, VMRunError> {
+        if addr % 4 != 0 {
+            return Err(VMRunError {
+                err_addr: addr,
+                kind: VMRunErrorKind::Alignment,
+                info: "inst alignment",
+            });
+        }
+
+        let inst = {
+            let [b1, b2, b3, b4] = self.mem[addr..addr + 4] else {
+                unreachable!();
+            };
+            u32::from_le_bytes([b1, b2, b3, b4])
+        };
+
+        let fmt = RawFormat::parse(inst).ok_or_else(|| VMRunError {
+            err_addr: addr,
+            kind: VMRunErrorKind::UnknownInst(inst),
+            info: "fetch_inst (parse)",
+        })?;
+
+        let inst = Inst::decode(fmt).ok_or_else(|| VMRunError {
+            err_addr: addr,
+            kind: VMRunErrorKind::UnknownInst(inst),
+            info: "fetch_inst (decode)",
+        })?;
+
+        Ok(inst)
     }
 
     pub fn mem(&self, addr: usize) -> Result<u8, VMRunError> {
@@ -211,7 +239,7 @@ impl VM {
             Ok(self.mem[addr])
         } else {
             Err(VMRunError {
-                pc: self.rep.pc,
+                err_addr: self.pc,
                 kind: VMRunErrorKind::InvalidAddress(addr),
                 info: "mem",
             })
@@ -223,7 +251,7 @@ impl VM {
             Ok(&self.mem[addr..(addr + len)])
         } else {
             Err(VMRunError {
-                pc: self.rep.pc,
+                err_addr: self.pc,
                 kind: VMRunErrorKind::InvalidAddress(MEM_LEN),
                 info: "mem_range",
             })
@@ -235,7 +263,7 @@ impl VM {
             Ok(&mut self.mem[addr..(addr + len)])
         } else {
             Err(VMRunError {
-                pc: self.rep.pc,
+                err_addr: self.pc,
                 kind: VMRunErrorKind::InvalidAddress(MEM_LEN),
                 info: "mem_range",
             })
@@ -248,49 +276,85 @@ impl VM {
             Ok(())
         } else {
             Err(VMRunError {
-                pc: self.rep.pc,
+                err_addr: self.pc,
                 kind: VMRunErrorKind::InvalidAddress(addr),
                 info: "set_mem",
             })
         }
     }
 
-    pub fn x(&self, i: usize) -> u64 {
+    pub fn set_mem_range(&mut self, addr: usize, val: &[u8]) -> Result<(), VMRunError> {
+        if addr < MEM_LEN {
+            let mem = self.mem_range_mut(addr, val.len()).unwrap();
+            mem.copy_from_slice(val);
+            Ok(())
+        } else {
+            Err(VMRunError {
+                err_addr: self.pc,
+                kind: VMRunErrorKind::InvalidAddress(addr),
+                info: "set_mem_range",
+            })
+        }
+    }
+
+    pub fn x(&self, i: u8) -> u64 {
+        let i = i as usize;
         assert!(i < REG_COUNT, "invalid register");
         if i == 0 { 0 } else { self.regs[i] }
     }
 
-    pub fn set_x(&mut self, i: usize, val: u64) {
+    pub fn set_x(&mut self, i: u8, val: u64) {
+        let i = i as usize;
         assert!(i < REG_COUNT, "invalid register");
         self.regs[i] = val;
     }
 
-    pub fn display(&self, out: &mut impl Write) -> io::Result<()> {
-        writeln!(out, "# state")?;
-        writeln!(out, "ip: {:x}", self.pc)?;
-        writeln!(out, "sp: {:x}", self.x(2))?;
-        writeln!(out, "# registers")?;
+    pub fn jump(&mut self, addr: usize, dec_4: bool) -> Result<(), VMRunError> {
+        if addr < PROG_LEN {
+            if dec_4 {
+                // -4 bytes to account for the instruction fetch
+                self.pc = addr - 4;
+            } else {
+                self.pc = addr;
+            }
+            Ok(())
+        } else {
+            Err(VMRunError {
+                err_addr: self.pc,
+                kind: VMRunErrorKind::InvalidAddress(addr),
+                info: "jump",
+            })
+        }
+    }
+
+    pub fn jump_pc_rel(&mut self, offset: isize, dec_4: bool) -> Result<(), VMRunError> {
+        let addr = self.pc.wrapping_add_signed(offset) & !1;
+        if addr < PROG_LEN {
+            self.jump(addr, dec_4)
+        } else {
+            Err(VMRunError {
+                err_addr: self.pc,
+                kind: VMRunErrorKind::InvalidAddress(addr),
+                info: "jump_rel",
+            })
+        }
+    }
+
+    pub fn raise(&mut self, ex: Exception) -> Result<(), VMRunError> {
+        match ex {
+            Exception::Ecall => self.syscall(),
+        }
+    }
+
+    pub fn display_regs(&self, out: &mut impl Write) -> io::Result<()> {
         for j in 0..8 {
             for i in 0..4 {
-                let idx = j * 4 + i;
-                write!(out, "x{idx}: {:x}, ", self.x(idx))?;
+                let idx = i * 8 + j;
+                write!(out, "{}:\t{:16x} | ", x_name(idx), self.x(idx))?;
             }
             writeln!(out)?;
         }
         Ok(())
-    }
-
-    pub fn report(&self) -> String {
-        format!(
-            "{:x}:\t{:08x}\t{}",
-            self.rep.pc, self.rep.raw_inst, self.rep.inst
-        )
-    }
-
-    pub(crate) fn raise(&mut self, ex: Exception) -> Result<(), VMRunError> {
-        match ex {
-            Exception::EnvCall => self.syscall(),
-        }
     }
 }
 
@@ -306,187 +370,76 @@ pub enum VMLoadError {
 
 #[derive(Debug)]
 pub struct VMRunError {
-    pub pc: usize,
+    pub err_addr: usize,
     pub kind: VMRunErrorKind,
     pub info: &'static str,
 }
 impl Display for VMRunError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if self.info.is_empty() {
-            write!(f, "{:x}: {}", self.pc, self.kind)
+            write!(f, "{:x}: {}", self.err_addr, self.kind)
         } else {
-            write!(f, "{:x}: {}, {}", self.pc, self.kind, self.info)
+            write!(f, "{:x}: {}, {}", self.err_addr, self.kind, self.info)
         }
     }
 }
 
 #[derive(Debug)]
 pub enum VMRunErrorKind {
+    Alignment,
     UnknownInst(u32),
     InvalidAddress(usize),
     UnknownSyscall(i16),
+    DivisionByZero,
     Other(String),
 }
 impl Display for VMRunErrorKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                Self::UnknownInst(inst) => format!("unknown inst: {inst:08x}"),
-                Self::InvalidAddress(addr) => format!("invalid address {addr:x}"),
-                Self::UnknownSyscall(code) => format!("unknown syscall: {code}"),
-                Self::Other(s) => s.clone(),
-            }
-        )
+        match self {
+            Self::Alignment => write!(f, "address misalignment"),
+            Self::UnknownInst(inst) => write!(f, "unknown inst: {inst:08x}"),
+            Self::InvalidAddress(addr) => write!(f, "invalid address {addr:x}"),
+            Self::UnknownSyscall(code) => write!(f, "unknown syscall: {code}"),
+            Self::DivisionByZero => write!(f, "division by zero"),
+            Self::Other(s) => write!(f, "{s}"),
+        }
     }
 }
 
-#[derive(Default)]
-pub(crate) struct Report {
-    pub pc: usize,
-    pub raw_inst: u32,
-    pub inst: String,
-    pub is_syscall: bool,
-    pub syscall_name: &'static str,
-}
-impl Report {
-    pub(crate) fn misc(&mut self, inst: &'static str) {
-        if self.is_syscall {
-            self.inst = format!("{inst}\t# syscall = {}", self.syscall_name)
-        } else {
-            self.inst = inst.to_owned();
-        }
-    }
-
-    pub(crate) fn u(&mut self, inst: &'static str, rd: usize, imm: i64) {
-        self.inst = if imm < 0 {
-            format!("{inst}\t{}, {}", Self::x_name(rd), imm >> 12)
-        } else {
-            format!("{inst}\t{}, {:#x}", Self::x_name(rd), imm >> 12)
-        };
-    }
-
-    pub(crate) fn i(&mut self, inst: &'static str, rd: usize, rs1: usize, imm: i64) {
-        self.inst = if matches!(inst, "jalr") {
-            if imm < 0 {
-                format!("{inst}\t{}, {imm}({})", Self::x_name(rd), Self::x_name(rs1))
-            } else {
-                format!(
-                    "{inst}\t{}, {imm:#x}({})",
-                    Self::x_name(rd),
-                    Self::x_name(rs1)
-                )
-            }
-        } else if imm < 0 {
-            format!("{inst}\t{}, {}, {imm}", Self::x_name(rd), Self::x_name(rs1))
-        } else {
-            format!(
-                "{inst}\t{}, {}, {imm:#x}",
-                Self::x_name(rd),
-                Self::x_name(rs1)
-            )
-        };
-    }
-
-    pub(crate) fn l(&mut self, inst: &'static str, rd: usize, rs1: usize, imm: i64) {
-        self.inst = if imm < 0 {
-            format!("{inst}\t{}, {imm}({})", Self::x_name(rd), Self::x_name(rs1))
-        } else {
-            format!(
-                "{inst}\t{}, {imm:#x}({})",
-                Self::x_name(rd),
-                Self::x_name(rs1)
-            )
-        };
-    }
-
-    pub(crate) fn r(&mut self, inst: &'static str, rd: usize, rs1: usize, rs2: usize) {
-        self.inst = format!(
-            "{inst}\t{}, {}, {}",
-            Self::x_name(rd),
-            Self::x_name(rs1),
-            Self::x_name(rs2)
-        );
-    }
-
-    pub(crate) fn b(&mut self, inst: &'static str, rs1: usize, rs2: usize, imm: i64) {
-        self.inst = if imm < 0 {
-            format!(
-                "{inst}\t{}, {}, {}",
-                Self::x_name(rs1),
-                Self::x_name(rs2),
-                imm >> 1
-            )
-        } else {
-            format!(
-                "{inst}\t{}, {}, {:#x}",
-                Self::x_name(rs1),
-                Self::x_name(rs2),
-                imm >> 1
-            )
-        };
-    }
-
-    pub(crate) fn j(&mut self, inst: &'static str, rd: usize, imm: i64) {
-        self.inst = format!(
-            "{inst}\t{:#x}\t# rd = {}",
-            self.pc.wrapping_add_signed(imm as isize),
-            Self::x_name(rd)
-        );
-    }
-
-    pub(crate) fn s(&mut self, inst: &'static str, rs1: usize, rs2: usize, imm: i64) {
-        self.inst = if imm < 0 {
-            format!(
-                "{inst}\t{}, {imm}({})",
-                Self::x_name(rs2),
-                Self::x_name(rs1)
-            )
-        } else {
-            format!(
-                "{inst}\t{}, {imm:#x}({})",
-                Self::x_name(rs2),
-                Self::x_name(rs1)
-            )
-        };
-    }
-
-    fn x_name(i: usize) -> &'static str {
-        match i {
-            0 => "zero",
-            1 => "ra",
-            2 => "sp",
-            3 => "gp",
-            4 => "tp",
-            5 => "t0",
-            6 => "t1",
-            7 => "t2",
-            8 => "s0",
-            9 => "s1",
-            10 => "a0",
-            11 => "a1",
-            12 => "a2",
-            13 => "a3",
-            14 => "a4",
-            15 => "a5",
-            16 => "a6",
-            17 => "a7",
-            18 => "s2",
-            19 => "s3",
-            20 => "s4",
-            21 => "s5",
-            22 => "s6",
-            23 => "s7",
-            24 => "s8",
-            25 => "s9",
-            26 => "s10",
-            27 => "s11",
-            28 => "t3",
-            29 => "t4",
-            30 => "t5",
-            31 => "t6",
-            _ => panic!("invalid register"),
-        }
+pub(crate) fn x_name(i: u8) -> &'static str {
+    match i {
+        0 => "zero",
+        1 => "ra",
+        2 => "sp",
+        3 => "gp",
+        4 => "tp",
+        5 => "t0",
+        6 => "t1",
+        7 => "t2",
+        8 => "s0",
+        9 => "s1",
+        10 => "a0",
+        11 => "a1",
+        12 => "a2",
+        13 => "a3",
+        14 => "a4",
+        15 => "a5",
+        16 => "a6",
+        17 => "a7",
+        18 => "s2",
+        19 => "s3",
+        20 => "s4",
+        21 => "s5",
+        22 => "s6",
+        23 => "s7",
+        24 => "s8",
+        25 => "s9",
+        26 => "s10",
+        27 => "s11",
+        28 => "t3",
+        29 => "t4",
+        30 => "t5",
+        31 => "t6",
+        _ => panic!("invalid register"),
     }
 }
