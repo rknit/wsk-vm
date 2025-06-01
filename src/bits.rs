@@ -4,20 +4,20 @@ pub const fn mask(len: usize) -> u64 {
 }
 
 #[inline]
-pub const fn sext(v: u64, sign_pos: usize) -> u64 {
+pub const fn sext(v: u64, sign_pos: usize) -> i64 {
     let v_shl = (v << (64 - sign_pos - 1)) as i64;
     let v_shr = v_shl >> (64 - sign_pos - 1);
-    v_shr as u64
+    v_shr
 }
 
 #[inline]
 pub const fn sext_imm_12(v: u64) -> i64 {
-    sext(v, 11) as i64
+    sext(v, 11)
 }
 
 #[inline]
 pub const fn sext_imm_20(v: u64) -> i64 {
-    sext(v, 19) as i64
+    sext(v, 19)
 }
 
 #[inline]

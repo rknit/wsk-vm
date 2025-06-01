@@ -1,5 +1,115 @@
 use super::bits::*;
-use crate::ext;
+use crate::{VM, ext};
+
+pub struct DataR<'vm> {
+    pub vm: &'vm mut VM,
+    pub rd: u8,
+    pub rs1: u8,
+    pub rs2: u8,
+}
+impl<'vm> DataR<'vm> {
+    pub fn r1(&self) -> u64 {
+        self.vm.x(self.rs1)
+    }
+
+    pub fn r2(&self) -> u64 {
+        self.vm.x(self.rs1)
+    }
+
+    pub fn set_rd(&mut self, value: u64) {
+        self.vm.set_x(self.rd, value);
+    }
+}
+
+pub struct DataI<'vm> {
+    pub vm: &'vm mut VM,
+    pub rd: u8,
+    pub rs1: u8,
+    pub raw_imm: i16,
+}
+impl<'vm> DataI<'vm> {
+    pub fn r1(&self) -> u64 {
+        self.vm.x(self.rs1)
+    }
+
+    pub fn imm(&self) -> i64 {
+        sext(self.raw_imm as u64, 11)
+    }
+
+    pub fn set_rd(&mut self, value: u64) {
+        self.vm.set_x(self.rd, value);
+    }
+}
+
+pub struct DataS<'vm> {
+    pub vm: &'vm mut VM,
+    pub rs1: u8,
+    pub rs2: u8,
+    pub raw_imm: i16,
+}
+impl<'vm> DataS<'vm> {
+    pub fn r1(&self) -> u64 {
+        self.vm.x(self.rs1)
+    }
+
+    pub fn r2(&self) -> u64 {
+        self.vm.x(self.rs2)
+    }
+
+    pub fn imm(&self) -> i64 {
+        sext(self.raw_imm as u64, 11)
+    }
+}
+
+pub struct DataB<'vm> {
+    pub vm: &'vm mut VM,
+    pub rs1: u8,
+    pub rs2: u8,
+    pub raw_imm: i16,
+}
+impl<'vm> DataB<'vm> {
+    pub fn r1(&self) -> u64 {
+        self.vm.x(self.rs1)
+    }
+
+    pub fn r2(&self) -> u64 {
+        self.vm.x(self.rs2)
+    }
+
+    pub fn imm(&self) -> i64 {
+        sext((self.raw_imm as u64) << 1, 12)
+    }
+}
+
+pub struct DataU<'vm> {
+    pub vm: &'vm mut VM,
+    pub rd: u8,
+    pub raw_imm: i32,
+}
+impl<'vm> DataU<'vm> {
+    pub fn imm(&self) -> i64 {
+        ((self.raw_imm as u64) << 12) as i32 as i64
+    }
+
+    pub fn set_rd(&mut self, value: u64) {
+        self.vm.set_x(self.rd, value);
+    }
+}
+
+pub struct DataJ<'vm> {
+    pub vm: &'vm mut VM,
+    pub rd: u8,
+    pub raw_imm: i32,
+}
+impl<'vm> DataJ<'vm> {
+    pub fn imm(&self) -> i64 {
+        sext((self.raw_imm as u64) << 1, 20)
+    }
+
+    pub fn set_rd(&mut self, value: u64) {
+        self.vm.set_x(self.rd, value);
+    }
+}
 
 #[derive(Debug, Clone, Copy)]
 pub enum RawFormat {
