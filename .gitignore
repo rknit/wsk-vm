@@ -1,6 +1,6 @@
 /target
-/tests/test.s
-/tests/test.bin
+/tests/*.s
+/tests/*.bin
 /tests/perf.*
 
 __pycache__
