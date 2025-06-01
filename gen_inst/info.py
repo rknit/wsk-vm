@@ -89,8 +89,6 @@ class Inst:
         def data_field(s: str) -> str:
             if s == "imm":
                 return "raw_imm"
-            if s == "imm":
-                return "raw_imm"
             return s
         return ",".join([
             f"{data_field(field[0])}: {field[0]}" if data_field(field[0]) != field[0] else field[0]
