@@ -86,6 +86,7 @@ def gen_module_files(modules: Modules) -> list[str]:
                 for inst in inst_list.values():
                     f.write(inst + "\n\n")
         
+        paths.append(file_path)
         print(f"{Colors.OKGREEN}Generated {len(inst_list)} insts in {file_path}{Colors.ENDC}")
         
     return paths
