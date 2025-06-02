@@ -79,11 +79,7 @@ impl InstReport {
 }
 
 fn imm_to_str(imm: i32) -> String {
-    if imm >= 0 {
-        format!("{imm}")
-    } else {
-        format!("{imm}")
-    }
+    format!("{imm}")
 }
 
 fn imm_to_str_hex(imm: i32) -> String {
