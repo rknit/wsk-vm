@@ -14,7 +14,7 @@ def get_match_pat_from_bit_pat(bit_pat: str) -> list[tuple[int, int, str]]:
     assert len(bit_pat) == 32, "Bit pattern must be 32 bits long"
     
     start = 0
-    end = 0;
+    end = 0
     ranges: list[tuple[int, int, str]] = list()
     while end < len(bit_pat):
         if bit_pat[end] == "X":
