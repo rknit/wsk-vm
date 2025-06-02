@@ -18,7 +18,8 @@ def get_match_pat_from_bit_pat(bit_pat: str) -> list[tuple[int, int, str]]:
     ranges: list[tuple[int, int, str]] = list()
     while end < len(bit_pat):
         if bit_pat[end] == "X":
-            ranges.append((end - 1, start, bit_pat[start:end][::-1]))
+            if end - 1 >= 0:
+                ranges.append((end - 1, start, bit_pat[start:end][::-1]))
             while end < len(bit_pat) and bit_pat[end] == "X":
                 end += 1
             start = end
