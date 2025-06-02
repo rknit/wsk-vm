@@ -293,7 +293,7 @@ impl Jalr {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Jalr$
         let return_address = data.vm.pc + 4;
-        let addr = data.r1().wrapping_add_signed(data.imm_fmt_s()) as usize;
+        let addr = data.r1().wrapping_add_signed(data.imm_fmt_i()) as usize;
         data.vm.jump(addr & !1, true)?; // Jump to the target address
         data.set_rd(return_address as u64); // Save the return address
         Ok(())
