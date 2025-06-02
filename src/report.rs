@@ -1,19 +1,19 @@
 use std::fmt::Display;
 
-use crate::{bits::sext, format::RawFormat, x_name};
+use crate::{format::Format, insts::Inst};
 
 pub struct InstReport {
     pub addr: usize,
-    pub raw_inst: u32,
-    pub inst_name: &'static str,
-    pub format: RawFormat,
+    pub inst: Inst,
 }
 impl Display for InstReport {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
             "{:08x}\t{:08x}\t{}\t",
-            self.addr, self.raw_inst, self.inst_name,
+            self.addr,
+            self.inst.inner().raw(),
+            self.inst.name(),
         )?;
         self.fmt_args(f)
     }
@@ -21,52 +21,109 @@ impl Display for InstReport {
 
 impl InstReport {
     fn fmt_args(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self.format {
-            RawFormat::R { rd, rs1, rs2, .. } => {
-                write!(f, "{}, {}, {}", x_name(rd), x_name(rs1), x_name(rs2))
-            }
-            RawFormat::I { rd, rs1, imm, .. } => {
+        let v = self.inst.inner();
+        match self.inst.format() {
+            Format::R => {
                 write!(
                     f,
                     "{}, {}, {}",
-                    x_name(rd),
-                    x_name(rs1),
-                    imm_to_str(imm as i32)
+                    x_name(v.rd()),
+                    x_name(v.rs1()),
+                    x_name(v.rs2()),
                 )
             }
-            RawFormat::S { rs1, rs2, imm, .. } => {
+            Format::I => {
+                write!(
+                    f,
+                    "{}, {}, {}",
+                    x_name(v.rd()),
+                    x_name(v.rs1()),
+                    imm_to_str(v.imm_fmt_i() as i32),
+                )
+            }
+            Format::S => {
                 write!(
                     f,
                     "{}, {}({})",
-                    x_name(rs2),
-                    imm_to_str(imm as i32),
-                    x_name(rs1)
+                    x_name(v.rs2()),
+                    imm_to_str_hex(v.imm_fmt_s() as i32),
+                    x_name(v.rs1()),
                 )
             }
-            RawFormat::B { rs1, rs2, imm, .. } => write!(
+            Format::B => write!(
                 f,
-                "{}, {}, {:x}",
-                x_name(rs1),
-                x_name(rs2),
-                self.addr
-                    .wrapping_add_signed(sext((imm as u64) << 1, 12) as isize)
+                "{}, {}, 0x{:x}",
+                x_name(v.rs1()),
+                x_name(v.rs2()),
+                self.addr.wrapping_add_signed(v.imm_fmt_b() as isize),
             ),
-            RawFormat::U { rd, imm, .. } => {
-                write!(f, "{}, {}", x_name(rd), imm_to_str(imm))
-            }
-            RawFormat::J { rd, imm, .. } => {
+            Format::U => {
                 write!(
                     f,
-                    "{}, {:x}",
-                    x_name(rd),
-                    self.addr
-                        .wrapping_add_signed(sext((imm as u64) << 1, 20) as isize)
+                    "{}, {}",
+                    x_name(v.rd()),
+                    imm_to_str_hex(v.raw_imm_fmt_u() as i32)
                 )
             }
+            Format::J => {
+                write!(
+                    f,
+                    "{}, 0x{:x}",
+                    x_name(v.rd()),
+                    self.addr.wrapping_add_signed(v.imm_fmt_j() as isize)
+                )
+            }
+            Format::Unknown => write!(f, "<unknown format>"),
         }
     }
 }
 
 fn imm_to_str(imm: i32) -> String {
     format!("{imm}")
+}
+
+fn imm_to_str_hex(imm: i32) -> String {
+    if imm >= 0 {
+        format!("0x{imm:x}")
+    } else {
+        format!("{imm}")
+    }
+}
+
+pub fn x_name(i: u8) -> &'static str {
+    match i {
+        0 => "zero",
+        1 => "ra",
+        2 => "sp",
+        3 => "gp",
+        4 => "tp",
+        5 => "t0",
+        6 => "t1",
+        7 => "t2",
+        8 => "s0",
+        9 => "s1",
+        10 => "a0",
+        11 => "a1",
+        12 => "a2",
+        13 => "a3",
+        14 => "a4",
+        15 => "a5",
+        16 => "a6",
+        17 => "a7",
+        18 => "s2",
+        19 => "s3",
+        20 => "s4",
+        21 => "s5",
+        22 => "s6",
+        23 => "s7",
+        24 => "s8",
+        25 => "s9",
+        26 => "s10",
+        27 => "s11",
+        28 => "t3",
+        29 => "t4",
+        30 => "t5",
+        31 => "t6",
+        _ => panic!("invalid register"),
+    }
 }

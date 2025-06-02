@@ -1,4 +1,4 @@
-// $GEN_VERSION 2
+// $GEN_VERSION 3
 // This auto-generated file provides instruction set implementations.
 // While you can customize the behavior, developers are strictly advised to
 // modify only the `run` method in each instruction.
@@ -9,7 +9,7 @@ use crate::*;
 
 pub struct Addw;
 impl Addw {
-    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Addw$
         let result = data.r1().wrapping_add(data.r2());
         let result = (result & 0xFFFFFFFF) as u32; // Ensure result is 32 bits
@@ -22,7 +22,7 @@ impl Addw {
 
 pub struct Subw;
 impl Subw {
-    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Subw$
         let result = data.r1().wrapping_sub(data.r2());
         let result = (result & 0xFFFFFFFF) as u32; // Ensure result is 32 bits
@@ -35,7 +35,7 @@ impl Subw {
 
 pub struct Sllw;
 impl Sllw {
-    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Sllw$
         let shift = (data.r2() & 0b11111) as u32; // Only the lower 5 bits are used for shift
         let result = ((data.r1() << shift) & 0xFFFFFFFF) as u32; // Ensure result is 32 bits
@@ -48,7 +48,7 @@ impl Sllw {
 
 pub struct Srlw;
 impl Srlw {
-    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Srlw$
         let shift = (data.r2() & 0b11111) as u32; // Only the lower 5 bits are used for shift
         let val = data.r1() as u32; // Convert to 32 bits
@@ -61,7 +61,7 @@ impl Srlw {
 
 pub struct Sraw;
 impl Sraw {
-    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Sraw$
         let shift = (data.r2() & 0b11111) as u32; // Only the lower 5 bits are used for shift
         let val = data.r1() as i32; // Convert to 32 bits
@@ -74,9 +74,9 @@ impl Sraw {
 
 pub struct Addiw;
 impl Addiw {
-    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Addiw$
-        let result = data.r1().wrapping_add_signed(data.imm());
+        let result = data.r1().wrapping_add_signed(data.imm_fmt_i());
         let result = (result & 0xFFFFFFFF) as u32; // Ensure result is 32 bits
         let result = result as i32 as i64; // Sign-extend to 64 bits
         data.set_rd(result as u64);
@@ -87,9 +87,9 @@ impl Addiw {
 
 pub struct Slliw;
 impl Slliw {
-    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Slliw$
-        let shift = data.immu() & 0b11111; // Only the lower 5 bits are used for shift
+        let shift = data.immu_fmt_i() & 0b11111; // Only the lower 5 bits are used for shift
         let result = ((data.r1() << shift) & 0xFFFFFFFF) as u32; // Ensure result is 32 bits
         let result = result as i32 as i64; // Sign-extend to 64 bits
         data.set_rd(result as u64);
@@ -100,9 +100,9 @@ impl Slliw {
 
 pub struct Srliw;
 impl Srliw {
-    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Srliw$
-        let shift = data.immu() & 0b11111; // Only the lower 5 bits are used for shift
+        let shift = data.immu_fmt_i() & 0b11111; // Only the lower 5 bits are used for shift
         let val = data.r1() as u32; // Convert to 32 bits
         let result = (val >> shift) as i32 as i64; // Sign-extend to 64 bits
         data.set_rd(result as u64);
@@ -113,9 +113,9 @@ impl Srliw {
 
 pub struct Sraiw;
 impl Sraiw {
-    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Sraiw$
-        let shift = data.immu() & 0b11111; // Only the lower 5 bits are used for shift
+        let shift = data.immu_fmt_i() & 0b11111; // Only the lower 5 bits are used for shift
         let val = data.r1() as i32; // Convert to 32 bits
         let result = (val >> shift) as i64; // Sign-extend to 64 bits
         data.set_rd(result as u64);
@@ -126,10 +126,10 @@ impl Sraiw {
 
 pub struct Lwu;
 impl Lwu {
-    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Lwu$
-        let addr = data.r1().wrapping_add_signed(data.imm()) as usize;
-        let vals = data.vm.mem_range(addr, 4)?;
+        let addr = data.r1().wrapping_add_signed(data.imm_fmt_i()) as usize;
+        let vals = data.mem_range(addr, 4)?;
         let val = u32::from_le_bytes([vals[0], vals[1], vals[2], vals[3]]) as u64;
         data.set_rd(val);
         Ok(())
@@ -139,10 +139,10 @@ impl Lwu {
 
 pub struct Ld;
 impl Ld {
-    pub fn run(mut data: DataI) -> Result<(), VMRunError> {
+    pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Ld$
-        let addr = data.r1().wrapping_add_signed(data.imm()) as usize;
-        let vals = data.vm.mem_range(addr, 8)?;
+        let addr = data.r1().wrapping_add_signed(data.imm_fmt_i()) as usize;
+        let vals = data.mem_range(addr, 8)?;
         let val = u64::from_le_bytes([
             vals[0], vals[1], vals[2], vals[3], vals[4], vals[5], vals[6], vals[7],
         ]);
@@ -154,11 +154,11 @@ impl Ld {
 
 pub struct Sd;
 impl Sd {
-    pub fn run(mut data: DataS) -> Result<(), VMRunError> {
+    pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Sd$
-        let addr = data.r1().wrapping_add_signed(data.imm()) as usize;
+        let addr = data.r1().wrapping_add_signed(data.imm_fmt_s()) as usize;
         let bytes = data.r2().to_le_bytes();
-        data.vm.set_mem_range(addr, &bytes)?;
+        data.set_mem_range(addr, &bytes)?;
         Ok(())
         // $IMPL_END Sd$
     }

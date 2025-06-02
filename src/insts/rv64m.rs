@@ -1,4 +1,4 @@
-// $GEN_VERSION 2
+// $GEN_VERSION 3
 // This auto-generated file provides instruction set implementations.
 // While you can customize the behavior, developers are strictly advised to
 // modify only the `run` method in each instruction.
@@ -9,7 +9,7 @@ use crate::*;
 
 pub struct Mulw;
 impl Mulw {
-    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Mulw$
         let result = data.r1().wrapping_mul(data.r2()) as i32 as i64;
         data.set_rd(result as u64);
@@ -20,7 +20,7 @@ impl Mulw {
 
 pub struct Divw;
 impl Divw {
-    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Divw$
         if data.r2() == 0 {
             return Err(VMRunError {
@@ -38,7 +38,7 @@ impl Divw {
 
 pub struct Divuw;
 impl Divuw {
-    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Divuw$
         if data.r2() == 0 {
             return Err(VMRunError {
@@ -56,7 +56,7 @@ impl Divuw {
 
 pub struct Remw;
 impl Remw {
-    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Remw$
         if data.r2() == 0 {
             return Err(VMRunError {
@@ -74,7 +74,7 @@ impl Remw {
 
 pub struct Remuw;
 impl Remuw {
-    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Remuw$
         if data.r2() == 0 {
             return Err(VMRunError {

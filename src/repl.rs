@@ -4,7 +4,7 @@ use std::{
     process::exit,
 };
 
-use crate::{InstReport, VM, VMRunError, format::RawFormat, x_name};
+use crate::{InstReport, VM, VMRunError, x_name};
 
 #[derive(Clone, Copy)]
 enum RunUntil {
@@ -157,15 +157,15 @@ fn help<W: Write, R: BufRead>(repl: &mut Repl<W, R>) {
 h, help              -- list commands.
 q, quit              -- exit REPL.
 r, reset             -- reset REPL.
-s, step <N>          -- advance VM for N steps until interrupted (N is 1 if unspecified).
+s, step <N>          -- advance VM for N steps or until interrupted (N is 1 if unspecified).
 c, cont              -- advance VM until interrupted.
-b, brk  <addr/inst>  -- toggle breakpoint at address or instruction (address is '0x' prefixed).
+b, brk  <addr/inst>  -- toggle breakpoint at address or instruction (address must be '0x' prefixed).
 i, info <arg>        -- show information about the VM status.
-                        -- arg can be:
+                        -- <arg> can be:
                         --   'pc' for program counter.
                         --   'm <start>.<end>' for memory dump (end is exclusive).
-                        --   'x' for all registers.
-                        --   'x <index>' for specific register.
+                        --   'x <mode>' for all registers where <mode> = 'hex'(default) / 'dec'.
+                        --   'x <index> <mode>' for specific register where <mode> = 'hex'(default) / 'dec'.
 
 "#
     )
@@ -220,24 +220,59 @@ fn info<W: Write, R: BufRead>(repl: &mut Repl<W, R>) {
         }
         "x" => {
             if repl.args.len() < 2 {
-                repl.vm.display_regs(&mut repl.cout).unwrap();
+                display_regs(repl, true);
                 return;
             }
             let reg_index: u8 = match repl.args[1].parse() {
                 Ok(v) => v,
-                Err(e) => {
-                    writeln!(repl, "i: x: {e}").unwrap();
+                Err(_) => {
+                    match repl.args[1].as_str() {
+                        "dec" => {
+                            display_regs(repl, false);
+                            return;
+                        }
+                        "hex" => {
+                            display_regs(repl, true);
+                            return;
+                        }
+                        _ => (),
+                    }
+
+                    let arg = repl.args[1].to_owned();
+                    writeln!(repl, "i: x: unknown argument '{arg}'").unwrap();
                     return;
                 }
             };
             let reg_name = x_name(reg_index);
             let val = repl.vm.x(reg_index);
-            writeln!(repl, "{reg_name} = {val:x}").unwrap();
+
+            if let Some("dec") = repl.args.get(2).map(|s| s.as_str()) {
+                writeln!(repl, "{reg_name} = {val}").unwrap();
+            } else if matches!(repl.args.get(2).map(|s| s.as_str()), Some("hex") | None) {
+                writeln!(repl, "{reg_name} = {val:x}").unwrap();
+            } else {
+                let arg = repl.args[2].to_owned();
+                writeln!(repl, "i: x: unknown argument '{arg}'").unwrap();
+            }
         }
         _ => {
             let s = format!("i: unknown argument '{}'", repl.args[0]);
             writeln!(repl, "{s}").unwrap()
         }
+    }
+}
+
+fn display_regs<W: Write, R: BufRead>(repl: &mut Repl<W, R>, in_hex: bool) {
+    for j in 0..8 {
+        for i in 0..4 {
+            let idx = i * 8 + j;
+            if in_hex {
+                write!(repl, "{}:\t{:16x} | ", x_name(idx), repl.vm.x(idx)).unwrap();
+            } else {
+                write!(repl, "{}:\t{:16} | ", x_name(idx), repl.vm.x(idx)).unwrap();
+            }
+        }
+        writeln!(repl).unwrap();
     }
 }
 
@@ -317,8 +352,8 @@ fn run_vm<W: Write, R: BufRead>(
             writeln!(repl, "breakpoint hit addr = {:x}", addr).unwrap();
             break;
         } else if let Some(rep) = new_report(repl) {
-            if repl.hit_breakpoint(rep.inst_name.to_owned()) {
-                writeln!(repl, "breakpoint hit inst = {}", rep.inst_name).unwrap();
+            if repl.hit_breakpoint(rep.inst.name().to_owned()) {
+                writeln!(repl, "breakpoint hit inst = {}", rep.inst.name()).unwrap();
                 break;
             }
         }
@@ -343,23 +378,12 @@ fn run_vm<W: Write, R: BufRead>(
 }
 
 fn new_report<W: Write, R: BufRead>(repl: &mut Repl<W, R>) -> Option<InstReport> {
-    let raw_inst = {
-        let Ok([b1, b2, b3, b4]) = repl.vm.mem_range(repl.vm.pc, 4) else {
-            return None;
-        };
-        u32::from_le_bytes([*b1, *b2, *b3, *b4])
-    };
-
-    let format = RawFormat::parse(raw_inst).unwrap();
-
     let Ok(inst) = repl.vm.fetch_inst(repl.vm.pc) else {
         return None;
     };
 
     Some(InstReport {
         addr: repl.vm.pc,
-        raw_inst,
-        inst_name: inst.name(),
-        format,
+        inst,
     })
 }

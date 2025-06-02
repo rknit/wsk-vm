@@ -1,12 +1,11 @@
 use std::{
     collections::{HashMap, HashSet},
     fmt::Display,
-    io::{self, Write},
 };
 
 use log::{info, log_enabled, trace};
 
-use crate::{Exception, Inst, InstReport, RawFormat};
+use crate::{Exception, Inst, InstReport};
 
 const REG_COUNT: usize = 32;
 
@@ -169,35 +168,17 @@ impl VM {
     }
 
     pub fn step(&mut self) -> Result<(), VMRunError> {
+        let inst = self.fetch_inst(self.pc)?;
         if log_enabled!(log::Level::Trace) {
-            let log = |vm: &VM| {
-                let raw_inst = {
-                    let Ok([b1, b2, b3, b4]) = vm.mem_range(vm.pc, 4) else {
-                        return;
-                    };
-                    u32::from_le_bytes([*b1, *b2, *b3, *b4])
-                };
-
-                let format = RawFormat::parse(raw_inst).unwrap();
-
-                let Ok(inst) = vm.fetch_inst(vm.pc) else {
-                    return;
-                };
-
-                trace!(
-                    "{}",
-                    InstReport {
-                        addr: vm.pc,
-                        raw_inst,
-                        inst_name: inst.name(),
-                        format,
-                    }
-                );
-            };
-            log(self);
+            trace!(
+                "{}",
+                InstReport {
+                    addr: self.pc,
+                    inst,
+                }
+            );
         }
 
-        let inst = self.fetch_inst(self.pc)?;
         inst.run(self)?;
         self.pc = (self.pc + 4) % (PROG_LEN);
         Ok(())
@@ -212,22 +193,16 @@ impl VM {
             });
         }
 
-        let inst = {
+        let inst32 = {
             let [b1, b2, b3, b4] = self.mem[addr..addr + 4] else {
                 unreachable!();
             };
             u32::from_le_bytes([b1, b2, b3, b4])
         };
 
-        let fmt = RawFormat::parse(inst).ok_or_else(|| VMRunError {
+        let inst = Inst::decode(inst32).ok_or_else(|| VMRunError {
             err_addr: addr,
-            kind: VMRunErrorKind::UnknownInst(inst),
-            info: "fetch_inst (parse)",
-        })?;
-
-        let inst = Inst::decode(fmt).ok_or_else(|| VMRunError {
-            err_addr: addr,
-            kind: VMRunErrorKind::UnknownInst(inst),
+            kind: VMRunErrorKind::UnknownInst(inst32),
             info: "fetch_inst (decode)",
         })?;
 
@@ -345,17 +320,6 @@ impl VM {
             Exception::Ecall => self.syscall(),
         }
     }
-
-    pub fn display_regs(&self, out: &mut impl Write) -> io::Result<()> {
-        for j in 0..8 {
-            for i in 0..4 {
-                let idx = i * 8 + j;
-                write!(out, "{}:\t{:16x} | ", x_name(idx), self.x(idx))?;
-            }
-            writeln!(out)?;
-        }
-        Ok(())
-    }
 }
 
 #[derive(Debug)]
@@ -403,43 +367,5 @@ impl Display for VMRunErrorKind {
             Self::DivisionByZero => write!(f, "division by zero"),
             Self::Other(s) => write!(f, "{s}"),
         }
-    }
-}
-
-pub(crate) fn x_name(i: u8) -> &'static str {
-    match i {
-        0 => "zero",
-        1 => "ra",
-        2 => "sp",
-        3 => "gp",
-        4 => "tp",
-        5 => "t0",
-        6 => "t1",
-        7 => "t2",
-        8 => "s0",
-        9 => "s1",
-        10 => "a0",
-        11 => "a1",
-        12 => "a2",
-        13 => "a3",
-        14 => "a4",
-        15 => "a5",
-        16 => "a6",
-        17 => "a7",
-        18 => "s2",
-        19 => "s3",
-        20 => "s4",
-        21 => "s5",
-        22 => "s6",
-        23 => "s7",
-        24 => "s8",
-        25 => "s9",
-        26 => "s10",
-        27 => "s11",
-        28 => "t3",
-        29 => "t4",
-        30 => "t5",
-        31 => "t6",
-        _ => panic!("invalid register"),
     }
 }

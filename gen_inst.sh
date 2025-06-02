@@ -1,2 +1,2 @@
 #! /usr/bin/bash
-./gen_inst/gen_inst.py ./insts.toml
+./gen_inst/gen_inst.py ./inst.toml

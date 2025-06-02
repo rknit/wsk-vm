@@ -1,4 +1,4 @@
-// $GEN_VERSION 2
+// $GEN_VERSION 3
 // This auto-generated file provides instruction set implementations.
 // While you can customize the behavior, developers are strictly advised to
 // modify only the `run` method in each instruction.
@@ -9,7 +9,7 @@ use crate::*;
 
 pub struct Mul;
 impl Mul {
-    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Mul$
         data.set_rd(data.r1s().wrapping_mul(data.r2s()) as u64);
         Ok(())
@@ -19,7 +19,7 @@ impl Mul {
 
 pub struct Mulh;
 impl Mulh {
-    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Mulh$
         let r1 = data.r1s() as i128;
         let r2 = data.r2s() as i128;
@@ -32,7 +32,7 @@ impl Mulh {
 
 pub struct Mulhsu;
 impl Mulhsu {
-    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Mulhsu$
         let r1 = data.r1s() as i128;
         let r2 = data.r2() as i128;
@@ -45,7 +45,7 @@ impl Mulhsu {
 
 pub struct Mulhu;
 impl Mulhu {
-    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Mulhu$
         let r1 = data.r1() as u128;
         let r2 = data.r2() as u128;
@@ -58,7 +58,7 @@ impl Mulhu {
 
 pub struct Div;
 impl Div {
-    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Div$
         if data.r2() == 0 {
             return Err(VMRunError {
@@ -76,7 +76,7 @@ impl Div {
 
 pub struct Divu;
 impl Divu {
-    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Divu$
         if data.r2() == 0 {
             return Err(VMRunError {
@@ -94,7 +94,7 @@ impl Divu {
 
 pub struct Rem;
 impl Rem {
-    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Rem$
         if data.r2() == 0 {
             return Err(VMRunError {
@@ -112,7 +112,7 @@ impl Rem {
 
 pub struct Remu;
 impl Remu {
-    pub fn run(mut data: DataR) -> Result<(), VMRunError> {
+    pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Remu$
         if data.r2() == 0 {
             return Err(VMRunError {
