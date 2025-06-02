@@ -6,7 +6,7 @@ from gen_util import get_impl_end_token, get_impl_start_token, read_insts, gen_m
 from info import Modules
 from pathlib import Path
 
-GEN_VERSION = "2"
+GEN_VERSION = "3"
 
 OUTPUT_DIR = "./src/insts"
 
