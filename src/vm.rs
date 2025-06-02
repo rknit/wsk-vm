@@ -1,7 +1,6 @@
 use std::{
     collections::{HashMap, HashSet},
     fmt::Display,
-    io::{self, Write},
 };
 
 use log::{info, log_enabled, trace};
@@ -321,17 +320,6 @@ impl VM {
             Exception::Ecall => self.syscall(),
         }
     }
-
-    pub fn display_regs(&self, out: &mut impl Write) -> io::Result<()> {
-        for j in 0..8 {
-            for i in 0..4 {
-                let idx = i * 8 + j;
-                write!(out, "{}:\t{:16x} | ", x_name(idx), self.x(idx))?;
-            }
-            writeln!(out)?;
-        }
-        Ok(())
-    }
 }
 
 #[derive(Debug)]
@@ -379,43 +367,5 @@ impl Display for VMRunErrorKind {
             Self::DivisionByZero => write!(f, "division by zero"),
             Self::Other(s) => write!(f, "{s}"),
         }
-    }
-}
-
-pub(crate) fn x_name(i: u8) -> &'static str {
-    match i {
-        0 => "zero",
-        1 => "ra",
-        2 => "sp",
-        3 => "gp",
-        4 => "tp",
-        5 => "t0",
-        6 => "t1",
-        7 => "t2",
-        8 => "s0",
-        9 => "s1",
-        10 => "a0",
-        11 => "a1",
-        12 => "a2",
-        13 => "a3",
-        14 => "a4",
-        15 => "a5",
-        16 => "a6",
-        17 => "a7",
-        18 => "s2",
-        19 => "s3",
-        20 => "s4",
-        21 => "s5",
-        22 => "s6",
-        23 => "s7",
-        24 => "s8",
-        25 => "s9",
-        26 => "s10",
-        27 => "s11",
-        28 => "t3",
-        29 => "t4",
-        30 => "t5",
-        31 => "t6",
-        _ => panic!("invalid register"),
     }
 }
