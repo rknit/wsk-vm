@@ -1,6 +1,8 @@
 class Inst:
-    def __init__(self, name: str, bit_pat: str, pats: list[tuple[int, int, str]]) -> None:
+    def __init__(self, name: str, format: str, bit_pat: str, pats: list[tuple[int, int, str]]) -> None:
+        assert len(format) == 1, "format must be a single character"
         self.raw_name = name
+        self.format = format.strip().upper()
         self.symbol = "".join([part.capitalize() if len(part) > 1 else part.upper() for part in name.strip().lower().split(".")])
         self.bit_pat = bit_pat.strip().upper()
         self.pats = pats
@@ -20,6 +22,9 @@ class Inst:
     
     def name_arm(self) -> str:
         return f"Inst::{self.symbol}(_) => \"{self.raw_name}\",\n"
+    
+    def format_arm(self) -> str:
+        return f"Inst::{self.symbol}(_) => Format::{self.format},\n"
     
     def run_param(self) -> str:
         return f"mut data: RunData"

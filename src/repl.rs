@@ -4,7 +4,7 @@ use std::{
     process::exit,
 };
 
-use crate::{InstReport, VM, VMRunError, format::RawFormat, x_name};
+use crate::{InstReport, VM, VMRunError, x_name};
 
 #[derive(Clone, Copy)]
 enum RunUntil {
@@ -317,8 +317,8 @@ fn run_vm<W: Write, R: BufRead>(
             writeln!(repl, "breakpoint hit addr = {:x}", addr).unwrap();
             break;
         } else if let Some(rep) = new_report(repl) {
-            if repl.hit_breakpoint(rep.inst_name.to_owned()) {
-                writeln!(repl, "breakpoint hit inst = {}", rep.inst_name).unwrap();
+            if repl.hit_breakpoint(rep.inst.name().to_owned()) {
+                writeln!(repl, "breakpoint hit inst = {}", rep.inst.name()).unwrap();
                 break;
             }
         }
@@ -343,23 +343,12 @@ fn run_vm<W: Write, R: BufRead>(
 }
 
 fn new_report<W: Write, R: BufRead>(repl: &mut Repl<W, R>) -> Option<InstReport> {
-    let raw_inst = {
-        let Ok([b1, b2, b3, b4]) = repl.vm.mem_range(repl.vm.pc, 4) else {
-            return None;
-        };
-        u32::from_le_bytes([*b1, *b2, *b3, *b4])
-    };
-
-    let format = RawFormat::parse(raw_inst).unwrap();
-
     let Ok(inst) = repl.vm.fetch_inst(repl.vm.pc) else {
         return None;
     };
 
     Some(InstReport {
         addr: repl.vm.pc,
-        raw_inst,
-        inst_name: inst.name(),
-        format,
+        inst,
     })
 }

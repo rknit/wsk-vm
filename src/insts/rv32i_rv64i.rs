@@ -228,7 +228,7 @@ impl Lb {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Lb$
         let addr = data.r1().wrapping_add_signed(data.imm_fmt_i()) as usize;
-        let val = data.vm.mem(addr)?;
+        let val = data.mem(addr)?;
         let val = val as i8 as i64; // Sign-extend the byte
         data.set_rd(val as u64);
         Ok(())
@@ -254,7 +254,7 @@ impl Lw {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Lw$
         let addr = data.r1().wrapping_add_signed(data.imm_fmt_i()) as usize;
-        let vals = data.vm.mem_range(addr, 4)?;
+        let vals = data.mem_range(addr, 4)?;
         let val = u32::from_le_bytes([vals[0], vals[1], vals[2], vals[3]]) as i32 as i64; // Sign-extend the word
         data.set_rd(val as u64);
         Ok(())
@@ -267,7 +267,7 @@ impl Lbu {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Lbu$
         let addr = data.r1().wrapping_add_signed(data.imm_fmt_i()) as usize;
-        let val = data.vm.mem(addr)?;
+        let val = data.mem(addr)?;
         let val = val as u64; // Zero-extend the byte
         data.set_rd(val);
         Ok(())
@@ -280,7 +280,7 @@ impl Lhu {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Lhu$
         let addr = data.r1().wrapping_add_signed(data.imm_fmt_i()) as usize;
-        let vals = data.vm.mem_range(addr, 2)?;
+        let vals = data.mem_range(addr, 2)?;
         let val = u16::from_le_bytes([vals[0], vals[1]]) as u64; // Zero-extend the halfword
         data.set_rd(val);
         Ok(())
@@ -447,7 +447,7 @@ impl Sb {
         // $IMPL_START Sb$
         let addr = data.r1().wrapping_add_signed(data.imm_fmt_s()) as usize;
         let val = data.r2() as u8; // Get the least significant byte
-        data.vm.set_mem(addr, val)?;
+        data.set_mem(addr, val)?;
         Ok(())
         // $IMPL_END Sb$
     }
@@ -460,7 +460,7 @@ impl Sh {
         let addr = data.r1().wrapping_add_signed(data.imm_fmt_s()) as usize;
         let val = data.r2() as u16; // Get the least significant halfword
         let bytes = val.to_le_bytes();
-        data.vm.set_mem_range(addr, &bytes)?;
+        data.set_mem_range(addr, &bytes)?;
         Ok(())
         // $IMPL_END Sh$
     }
@@ -473,7 +473,7 @@ impl Sw {
         let addr = data.r1().wrapping_add_signed(data.imm_fmt_s()) as usize;
         let val = data.r2() as u32; // Get the least significant word
         let bytes = val.to_le_bytes();
-        data.vm.set_mem_range(addr, &bytes)?;
+        data.set_mem_range(addr, &bytes)?;
         Ok(())
         // $IMPL_END Sw$
     }

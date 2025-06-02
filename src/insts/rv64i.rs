@@ -129,7 +129,7 @@ impl Lwu {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Lwu$
         let addr = data.r1().wrapping_add_signed(data.imm_fmt_i()) as usize;
-        let vals = data.vm.mem_range(addr, 4)?;
+        let vals = data.mem_range(addr, 4)?;
         let val = u32::from_le_bytes([vals[0], vals[1], vals[2], vals[3]]) as u64;
         data.set_rd(val);
         Ok(())
@@ -142,7 +142,7 @@ impl Ld {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Ld$
         let addr = data.r1().wrapping_add_signed(data.imm_fmt_i()) as usize;
-        let vals = data.vm.mem_range(addr, 8)?;
+        let vals = data.mem_range(addr, 8)?;
         let val = u64::from_le_bytes([
             vals[0], vals[1], vals[2], vals[3], vals[4], vals[5], vals[6], vals[7],
         ]);
@@ -158,7 +158,7 @@ impl Sd {
         // $IMPL_START Sd$
         let addr = data.r1().wrapping_add_signed(data.imm_fmt_s()) as usize;
         let bytes = data.r2().to_le_bytes();
-        data.vm.set_mem_range(addr, &bytes)?;
+        data.set_mem_range(addr, &bytes)?;
         Ok(())
         // $IMPL_END Sd$
     }

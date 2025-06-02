@@ -13,9 +13,10 @@ def read_insts(path: str) -> Modules:
         
         for mod_name, format in data.items():
             module = Module(mod_name)
-            for inst_name, bit_pat in format.items():
-                pats = get_match_pat_from_bit_pat(bit_pat)
-                module.append(Inst(name=inst_name, bit_pat=bit_pat, pats=pats))
+            for format, inst_data in format.items():
+                for inst_name, bit_pat in inst_data.items():
+                    pats = get_match_pat_from_bit_pat(bit_pat)
+                    module.append(Inst(name=inst_name, format=format, bit_pat=bit_pat, pats=pats))
             modules.append(module)
         
     return modules
@@ -60,12 +61,6 @@ impl Inst {{
     pub fn run(self, vm: &mut VM) -> Result<(), VMRunError> {{
         match self {{
             {"            ".join([inst.run_arm() for inst in modules.all_inst()])}
-            #[allow(unreachable_patterns)]
-            _ => return Err(VMRunError {{
-                err_addr: vm.pc,
-                kind: VMRunErrorKind::Other(format!("{{:?}}", self)),
-                info: "unimplemented inst",
-            }}),
         }}
     }}""")
     
@@ -74,8 +69,22 @@ impl Inst {{
     pub fn name(self) -> &'static str {{
         match self {{
             {"            ".join([inst.name_arm() for inst in modules.all_inst()])}
-            #[allow(unreachable_patterns)]
-            _ => "unknown",
+        }}
+    }}""")
+    
+    # format function
+    gen(f"""
+    pub fn format(self) -> Format {{
+        match self {{
+            {"            ".join([inst.format_arm() for inst in modules.all_inst()])}
+        }}
+    }}""")
+    
+    # util functions
+    gen(f"""
+    pub fn inner(self) -> RawInst {{
+        match self {{
+            {"            ".join([f"Inst::{inst.symbol}(v) => v," for inst in modules.all_inst()])}
         }}
     }}""")
 

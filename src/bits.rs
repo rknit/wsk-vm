@@ -11,16 +11,6 @@ pub const fn sext(v: u64, sign_pos: usize) -> i64 {
 }
 
 #[inline]
-pub const fn sext_imm_12(v: u64) -> i64 {
-    sext(v, 11)
-}
-
-#[inline]
-pub const fn sext_imm_20(v: u64) -> i64 {
-    sext(v, 19)
-}
-
-#[inline]
 pub const fn opcode(v: u32) -> u8 {
     ext!(v, u8; 6;2)
 }

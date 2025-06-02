@@ -6,7 +6,7 @@ use std::{
 
 use log::{info, log_enabled, trace};
 
-use crate::{Exception, Inst, InstReport, RawFormat, format::RawInst};
+use crate::{Exception, Inst, InstReport};
 
 const REG_COUNT: usize = 32;
 
@@ -169,35 +169,17 @@ impl VM {
     }
 
     pub fn step(&mut self) -> Result<(), VMRunError> {
+        let inst = self.fetch_inst(self.pc)?;
         if log_enabled!(log::Level::Trace) {
-            let log = |vm: &VM| {
-                let raw_inst = {
-                    let Ok([b1, b2, b3, b4]) = vm.mem_range(vm.pc, 4) else {
-                        return;
-                    };
-                    u32::from_le_bytes([*b1, *b2, *b3, *b4])
-                };
-
-                let format = RawFormat::parse(raw_inst).unwrap();
-
-                let Ok(inst) = vm.fetch_inst(vm.pc) else {
-                    return;
-                };
-
-                trace!(
-                    "{}",
-                    InstReport {
-                        addr: vm.pc,
-                        raw_inst,
-                        inst_name: inst.name(),
-                        format,
-                    }
-                );
-            };
-            log(self);
+            trace!(
+                "{}",
+                InstReport {
+                    addr: self.pc,
+                    inst,
+                }
+            );
         }
 
-        let inst = self.fetch_inst(self.pc)?;
         inst.run(self)?;
         self.pc = (self.pc + 4) % (PROG_LEN);
         Ok(())
