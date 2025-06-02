@@ -6,7 +6,7 @@ use std::{
 
 use log::{info, log_enabled, trace};
 
-use crate::{Exception, Inst, InstReport, RawFormat};
+use crate::{Exception, Inst, InstReport, RawFormat, format::RawInst};
 
 const REG_COUNT: usize = 32;
 
@@ -212,22 +212,16 @@ impl VM {
             });
         }
 
-        let inst = {
+        let inst32 = {
             let [b1, b2, b3, b4] = self.mem[addr..addr + 4] else {
                 unreachable!();
             };
             u32::from_le_bytes([b1, b2, b3, b4])
         };
 
-        let fmt = RawFormat::parse(inst).ok_or_else(|| VMRunError {
+        let inst = Inst::decode(inst32).ok_or_else(|| VMRunError {
             err_addr: addr,
-            kind: VMRunErrorKind::UnknownInst(inst),
-            info: "fetch_inst (parse)",
-        })?;
-
-        let inst = Inst::decode(fmt).ok_or_else(|| VMRunError {
-            err_addr: addr,
-            kind: VMRunErrorKind::UnknownInst(inst),
+            kind: VMRunErrorKind::UnknownInst(inst32),
             info: "fetch_inst (decode)",
         })?;
 

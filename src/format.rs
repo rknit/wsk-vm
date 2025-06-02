@@ -98,6 +98,11 @@ impl<'vm> RunData<'vm> {
     }
 
     #[inline]
+    pub const fn immu_fmt_i(&self) -> u64 {
+        self.inst.immu_fmt_i()
+    }
+
+    #[inline]
     pub const fn imm_fmt_s(&self) -> i64 {
         self.inst.imm_fmt_s()
     }
@@ -113,11 +118,17 @@ impl<'vm> RunData<'vm> {
     }
 
     #[inline]
+    pub const fn immu_fmt_u(&self) -> u64 {
+        self.inst.immu_fmt_u()
+    }
+
+    #[inline]
     pub const fn imm_fmt_j(&self) -> i64 {
         self.inst.imm_fmt_j()
     }
 }
 
+#[derive(Debug, Clone, Copy)]
 pub struct RawInst(u32);
 impl RawInst {
     pub fn new(inst: u32) -> Self {
@@ -170,6 +181,11 @@ impl RawInst {
     }
 
     #[inline]
+    pub const fn immu_fmt_i(&self) -> u64 {
+        self.imm_fmt_i() as u64
+    }
+
+    #[inline]
     pub const fn imm_fmt_s(&self) -> i64 {
         sext(self.immu(31, 25) << 5 | self.immu(11, 7), 11)
     }
@@ -201,6 +217,11 @@ impl RawInst {
     }
 
     #[inline]
+    pub const fn immu_fmt_u(&self) -> u64 {
+        self.imm_fmt_u() as u64
+    }
+
+    #[inline]
     pub const fn raw_imm_fmt_j(&self) -> i64 {
         sext(
             (self.immu(31, 31) << 19)
@@ -214,6 +235,11 @@ impl RawInst {
     #[inline]
     pub const fn imm_fmt_j(&self) -> i64 {
         self.raw_imm_fmt_j() << 1
+    }
+}
+impl From<u32> for RawInst {
+    fn from(inst: u32) -> Self {
+        RawInst::new(inst)
     }
 }
 

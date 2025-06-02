@@ -10,16 +10,16 @@ class Inst:
         return " && ".join([f"ext!(v, u32; {hi};{lo}) == 0b{pat}" for hi, lo, pat in self.pats])
     
     def decode_arm(self) -> str:
-        return f"v if {self.decode_cond()} => Inst::{self.symbol},"
+        return f"v if {self.decode_cond()} => Inst::{self.symbol}(inst.into()),"
 
     def enum_variant(self) -> str:
-        return f"{self.symbol},"
+        return f"{self.symbol}(RawInst),"
         
     def run_arm(self) -> str:
-        return f"Inst::{self.symbol} => {self.symbol}::run(RunData::new(inst, vm)),\n"
+        return f"Inst::{self.symbol}(inst) => {self.symbol}::run(RunData::new(inst, vm)),\n"
     
     def name_arm(self) -> str:
-        return f"Inst::{self.symbol} => \"{self.raw_name}\",\n"
+        return f"Inst::{self.symbol}(_) => \"{self.raw_name}\",\n"
     
     def run_param(self) -> str:
         return f"mut data: RunData"

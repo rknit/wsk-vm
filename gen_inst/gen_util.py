@@ -57,7 +57,7 @@ impl Inst {{
 
     # run function
     gen(f"""
-    pub fn run(self, inst: RawInst, vm: &mut VM) -> Result<(), VMRunError> {{
+    pub fn run(self, vm: &mut VM) -> Result<(), VMRunError> {{
         match self {{
             {"            ".join([inst.run_arm() for inst in modules.all_inst()])}
             #[allow(unreachable_patterns)]
