@@ -9,7 +9,7 @@ class Inst:
         self.impl = ""
         
     def decode_cond(self) -> str:
-        return " && ".join([f"ext!(v, u32; {hi};{lo}) == 0b{pat}" for hi, lo, pat in self.pats])
+        return " && ".join([f"ext!(v, word; {hi};{lo}) == 0b{pat}" for hi, lo, pat in self.pats])
     
     def decode_arm(self) -> str:
         return f"v if {self.decode_cond()} => Inst::{self.symbol}(inst.into()),"

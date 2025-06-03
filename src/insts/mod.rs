@@ -10,7 +10,7 @@
 )]
 use crate::bits::*;
 use crate::format::*;
-use crate::{VM, VMRunError, VMRunErrorKind};
+use crate::*;
 
 mod rv32i_rv64i;
 use rv32i_rv64i::*;
@@ -113,333 +113,335 @@ pub enum Inst {
 }
 
 impl Inst {
-    pub fn decode(inst: u32) -> Option<Self> {
+    pub fn decode(inst: word) -> Option<Self> {
         Some(match inst {
-            v if ext!(v, u32; 6;0) == 0b0110011
-                && ext!(v, u32; 14;12) == 0b000
-                && ext!(v, u32; 31;25) == 0b0000000 =>
+            v if ext!(v, word; 6;0) == 0b0110011
+                && ext!(v, word; 14;12) == 0b000
+                && ext!(v, word; 31;25) == 0b0000000 =>
             {
                 Inst::Add(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0110011
-                && ext!(v, u32; 14;12) == 0b000
-                && ext!(v, u32; 31;25) == 0b0100000 =>
+            v if ext!(v, word; 6;0) == 0b0110011
+                && ext!(v, word; 14;12) == 0b000
+                && ext!(v, word; 31;25) == 0b0100000 =>
             {
                 Inst::Sub(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0110011
-                && ext!(v, u32; 14;12) == 0b001
-                && ext!(v, u32; 31;25) == 0b0000000 =>
+            v if ext!(v, word; 6;0) == 0b0110011
+                && ext!(v, word; 14;12) == 0b001
+                && ext!(v, word; 31;25) == 0b0000000 =>
             {
                 Inst::Sll(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0110011
-                && ext!(v, u32; 14;12) == 0b010
-                && ext!(v, u32; 31;25) == 0b0000000 =>
+            v if ext!(v, word; 6;0) == 0b0110011
+                && ext!(v, word; 14;12) == 0b010
+                && ext!(v, word; 31;25) == 0b0000000 =>
             {
                 Inst::Slt(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0110011
-                && ext!(v, u32; 14;12) == 0b011
-                && ext!(v, u32; 31;25) == 0b0000000 =>
+            v if ext!(v, word; 6;0) == 0b0110011
+                && ext!(v, word; 14;12) == 0b011
+                && ext!(v, word; 31;25) == 0b0000000 =>
             {
                 Inst::Sltu(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0110011
-                && ext!(v, u32; 14;12) == 0b100
-                && ext!(v, u32; 31;25) == 0b0000000 =>
+            v if ext!(v, word; 6;0) == 0b0110011
+                && ext!(v, word; 14;12) == 0b100
+                && ext!(v, word; 31;25) == 0b0000000 =>
             {
                 Inst::Xor(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0110011
-                && ext!(v, u32; 14;12) == 0b101
-                && ext!(v, u32; 31;25) == 0b0000000 =>
+            v if ext!(v, word; 6;0) == 0b0110011
+                && ext!(v, word; 14;12) == 0b101
+                && ext!(v, word; 31;25) == 0b0000000 =>
             {
                 Inst::Srl(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0110011
-                && ext!(v, u32; 14;12) == 0b101
-                && ext!(v, u32; 31;25) == 0b0100000 =>
+            v if ext!(v, word; 6;0) == 0b0110011
+                && ext!(v, word; 14;12) == 0b101
+                && ext!(v, word; 31;25) == 0b0100000 =>
             {
                 Inst::Sra(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0110011
-                && ext!(v, u32; 14;12) == 0b110
-                && ext!(v, u32; 31;25) == 0b0000000 =>
+            v if ext!(v, word; 6;0) == 0b0110011
+                && ext!(v, word; 14;12) == 0b110
+                && ext!(v, word; 31;25) == 0b0000000 =>
             {
                 Inst::Or(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0110011
-                && ext!(v, u32; 14;12) == 0b111
-                && ext!(v, u32; 31;25) == 0b0000000 =>
+            v if ext!(v, word; 6;0) == 0b0110011
+                && ext!(v, word; 14;12) == 0b111
+                && ext!(v, word; 31;25) == 0b0000000 =>
             {
                 Inst::And(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b1110011
-                && ext!(v, u32; 14;12) == 0b000
-                && ext!(v, u32; 31;25) == 0b0001001 =>
+            v if ext!(v, word; 6;0) == 0b1110011
+                && ext!(v, word; 14;12) == 0b000
+                && ext!(v, word; 31;25) == 0b0001001 =>
             {
                 Inst::SfenceVma(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0010011 && ext!(v, u32; 14;12) == 0b000 => {
+            v if ext!(v, word; 6;0) == 0b0010011 && ext!(v, word; 14;12) == 0b000 => {
                 Inst::Addi(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0010011 && ext!(v, u32; 14;12) == 0b010 => {
+            v if ext!(v, word; 6;0) == 0b0010011 && ext!(v, word; 14;12) == 0b010 => {
                 Inst::Slti(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0010011 && ext!(v, u32; 14;12) == 0b011 => {
+            v if ext!(v, word; 6;0) == 0b0010011 && ext!(v, word; 14;12) == 0b011 => {
                 Inst::Sltiu(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0010011 && ext!(v, u32; 14;12) == 0b100 => {
+            v if ext!(v, word; 6;0) == 0b0010011 && ext!(v, word; 14;12) == 0b100 => {
                 Inst::Xori(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0010011 && ext!(v, u32; 14;12) == 0b110 => {
+            v if ext!(v, word; 6;0) == 0b0010011 && ext!(v, word; 14;12) == 0b110 => {
                 Inst::Ori(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0010011 && ext!(v, u32; 14;12) == 0b111 => {
+            v if ext!(v, word; 6;0) == 0b0010011 && ext!(v, word; 14;12) == 0b111 => {
                 Inst::Andi(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0010011
-                && ext!(v, u32; 14;12) == 0b001
-                && ext!(v, u32; 31;26) == 0b000000 =>
+            v if ext!(v, word; 6;0) == 0b0010011
+                && ext!(v, word; 14;12) == 0b001
+                && ext!(v, word; 31;26) == 0b000000 =>
             {
                 Inst::Slli(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0010011
-                && ext!(v, u32; 14;12) == 0b101
-                && ext!(v, u32; 31;26) == 0b000000 =>
+            v if ext!(v, word; 6;0) == 0b0010011
+                && ext!(v, word; 14;12) == 0b101
+                && ext!(v, word; 31;26) == 0b000000 =>
             {
                 Inst::Srli(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0010011
-                && ext!(v, u32; 14;12) == 0b101
-                && ext!(v, u32; 31;26) == 0b010000 =>
+            v if ext!(v, word; 6;0) == 0b0010011
+                && ext!(v, word; 14;12) == 0b101
+                && ext!(v, word; 31;26) == 0b010000 =>
             {
                 Inst::Srai(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0000011 && ext!(v, u32; 14;12) == 0b000 => {
+            v if ext!(v, word; 6;0) == 0b0000011 && ext!(v, word; 14;12) == 0b000 => {
                 Inst::Lb(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0000011 && ext!(v, u32; 14;12) == 0b001 => {
+            v if ext!(v, word; 6;0) == 0b0000011 && ext!(v, word; 14;12) == 0b001 => {
                 Inst::Lh(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0000011 && ext!(v, u32; 14;12) == 0b010 => {
+            v if ext!(v, word; 6;0) == 0b0000011 && ext!(v, word; 14;12) == 0b010 => {
                 Inst::Lw(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0000011 && ext!(v, u32; 14;12) == 0b100 => {
+            v if ext!(v, word; 6;0) == 0b0000011 && ext!(v, word; 14;12) == 0b100 => {
                 Inst::Lbu(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0000011 && ext!(v, u32; 14;12) == 0b101 => {
+            v if ext!(v, word; 6;0) == 0b0000011 && ext!(v, word; 14;12) == 0b101 => {
                 Inst::Lhu(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b1100111 && ext!(v, u32; 14;12) == 0b000 => {
+            v if ext!(v, word; 6;0) == 0b1100111 && ext!(v, word; 14;12) == 0b000 => {
                 Inst::Jalr(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0001111 && ext!(v, u32; 14;12) == 0b000 => {
+            v if ext!(v, word; 6;0) == 0b0001111 && ext!(v, word; 14;12) == 0b000 => {
                 Inst::Fence(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0001111 && ext!(v, u32; 14;12) == 0b001 => {
+            v if ext!(v, word; 6;0) == 0b0001111 && ext!(v, word; 14;12) == 0b001 => {
                 Inst::FenceI(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b1110011 && ext!(v, u32; 14;12) == 0b001 => {
+            v if ext!(v, word; 6;0) == 0b1110011 && ext!(v, word; 14;12) == 0b001 => {
                 Inst::Csrrw(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b1110011 && ext!(v, u32; 14;12) == 0b010 => {
+            v if ext!(v, word; 6;0) == 0b1110011 && ext!(v, word; 14;12) == 0b010 => {
                 Inst::Csrrs(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b1110011 && ext!(v, u32; 14;12) == 0b011 => {
+            v if ext!(v, word; 6;0) == 0b1110011 && ext!(v, word; 14;12) == 0b011 => {
                 Inst::Csrrc(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b1110011 && ext!(v, u32; 14;12) == 0b101 => {
+            v if ext!(v, word; 6;0) == 0b1110011 && ext!(v, word; 14;12) == 0b101 => {
                 Inst::Csrrwi(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b1110011 && ext!(v, u32; 14;12) == 0b110 => {
+            v if ext!(v, word; 6;0) == 0b1110011 && ext!(v, word; 14;12) == 0b110 => {
                 Inst::Csrrsi(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b1110011 && ext!(v, u32; 14;12) == 0b111 => {
+            v if ext!(v, word; 6;0) == 0b1110011 && ext!(v, word; 14;12) == 0b111 => {
                 Inst::Csrrci(inst.into())
             }
-            v if ext!(v, u32; 31;0) == 0b00000000000000000000000001110011 => {
+            v if ext!(v, word; 31;0) == 0b00000000000000000000000001110011 => {
                 Inst::Ecall(inst.into())
             }
-            v if ext!(v, u32; 31;0) == 0b00000000000100000000000001110011 => {
+            v if ext!(v, word; 31;0) == 0b00000000000100000000000001110011 => {
                 Inst::Ebreak(inst.into())
             }
-            v if ext!(v, u32; 31;0) == 0b00000000001000000000000001110011 => {
+            v if ext!(v, word; 31;0) == 0b00000000001000000000000001110011 => {
                 Inst::Uret(inst.into())
             }
-            v if ext!(v, u32; 31;0) == 0b00010000001000000000000001110011 => {
+            v if ext!(v, word; 31;0) == 0b00010000001000000000000001110011 => {
                 Inst::Sret(inst.into())
             }
-            v if ext!(v, u32; 31;0) == 0b00110000001000000000000001110011 => {
+            v if ext!(v, word; 31;0) == 0b00110000001000000000000001110011 => {
                 Inst::Mret(inst.into())
             }
-            v if ext!(v, u32; 31;0) == 0b00010000010100000000000001110011 => Inst::Wfi(inst.into()),
-            v if ext!(v, u32; 6;0) == 0b0100011 && ext!(v, u32; 14;12) == 0b000 => {
+            v if ext!(v, word; 31;0) == 0b00010000010100000000000001110011 => {
+                Inst::Wfi(inst.into())
+            }
+            v if ext!(v, word; 6;0) == 0b0100011 && ext!(v, word; 14;12) == 0b000 => {
                 Inst::Sb(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0100011 && ext!(v, u32; 14;12) == 0b001 => {
+            v if ext!(v, word; 6;0) == 0b0100011 && ext!(v, word; 14;12) == 0b001 => {
                 Inst::Sh(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0100011 && ext!(v, u32; 14;12) == 0b010 => {
+            v if ext!(v, word; 6;0) == 0b0100011 && ext!(v, word; 14;12) == 0b010 => {
                 Inst::Sw(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b1100011 && ext!(v, u32; 14;12) == 0b000 => {
+            v if ext!(v, word; 6;0) == 0b1100011 && ext!(v, word; 14;12) == 0b000 => {
                 Inst::Beq(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b1100011 && ext!(v, u32; 14;12) == 0b001 => {
+            v if ext!(v, word; 6;0) == 0b1100011 && ext!(v, word; 14;12) == 0b001 => {
                 Inst::Bne(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b1100011 && ext!(v, u32; 14;12) == 0b100 => {
+            v if ext!(v, word; 6;0) == 0b1100011 && ext!(v, word; 14;12) == 0b100 => {
                 Inst::Blt(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b1100011 && ext!(v, u32; 14;12) == 0b101 => {
+            v if ext!(v, word; 6;0) == 0b1100011 && ext!(v, word; 14;12) == 0b101 => {
                 Inst::Bge(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b1100011 && ext!(v, u32; 14;12) == 0b110 => {
+            v if ext!(v, word; 6;0) == 0b1100011 && ext!(v, word; 14;12) == 0b110 => {
                 Inst::Bltu(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b1100011 && ext!(v, u32; 14;12) == 0b111 => {
+            v if ext!(v, word; 6;0) == 0b1100011 && ext!(v, word; 14;12) == 0b111 => {
                 Inst::Bgeu(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0110111 => Inst::Lui(inst.into()),
-            v if ext!(v, u32; 6;0) == 0b0010111 => Inst::Auipc(inst.into()),
-            v if ext!(v, u32; 6;0) == 0b1101111 => Inst::Jal(inst.into()),
-            v if ext!(v, u32; 6;0) == 0b0111011
-                && ext!(v, u32; 14;12) == 0b000
-                && ext!(v, u32; 31;25) == 0b0000000 =>
+            v if ext!(v, word; 6;0) == 0b0110111 => Inst::Lui(inst.into()),
+            v if ext!(v, word; 6;0) == 0b0010111 => Inst::Auipc(inst.into()),
+            v if ext!(v, word; 6;0) == 0b1101111 => Inst::Jal(inst.into()),
+            v if ext!(v, word; 6;0) == 0b0111011
+                && ext!(v, word; 14;12) == 0b000
+                && ext!(v, word; 31;25) == 0b0000000 =>
             {
                 Inst::Addw(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0111011
-                && ext!(v, u32; 14;12) == 0b000
-                && ext!(v, u32; 31;25) == 0b0100000 =>
+            v if ext!(v, word; 6;0) == 0b0111011
+                && ext!(v, word; 14;12) == 0b000
+                && ext!(v, word; 31;25) == 0b0100000 =>
             {
                 Inst::Subw(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0111011
-                && ext!(v, u32; 14;12) == 0b001
-                && ext!(v, u32; 31;25) == 0b0000000 =>
+            v if ext!(v, word; 6;0) == 0b0111011
+                && ext!(v, word; 14;12) == 0b001
+                && ext!(v, word; 31;25) == 0b0000000 =>
             {
                 Inst::Sllw(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0111011
-                && ext!(v, u32; 14;12) == 0b101
-                && ext!(v, u32; 31;25) == 0b0000000 =>
+            v if ext!(v, word; 6;0) == 0b0111011
+                && ext!(v, word; 14;12) == 0b101
+                && ext!(v, word; 31;25) == 0b0000000 =>
             {
                 Inst::Srlw(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0111011
-                && ext!(v, u32; 14;12) == 0b101
-                && ext!(v, u32; 31;25) == 0b0100000 =>
+            v if ext!(v, word; 6;0) == 0b0111011
+                && ext!(v, word; 14;12) == 0b101
+                && ext!(v, word; 31;25) == 0b0100000 =>
             {
                 Inst::Sraw(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0011011 && ext!(v, u32; 14;12) == 0b000 => {
+            v if ext!(v, word; 6;0) == 0b0011011 && ext!(v, word; 14;12) == 0b000 => {
                 Inst::Addiw(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0011011
-                && ext!(v, u32; 14;12) == 0b001
-                && ext!(v, u32; 31;25) == 0b0000000 =>
+            v if ext!(v, word; 6;0) == 0b0011011
+                && ext!(v, word; 14;12) == 0b001
+                && ext!(v, word; 31;25) == 0b0000000 =>
             {
                 Inst::Slliw(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0011011
-                && ext!(v, u32; 14;12) == 0b101
-                && ext!(v, u32; 31;25) == 0b0000000 =>
+            v if ext!(v, word; 6;0) == 0b0011011
+                && ext!(v, word; 14;12) == 0b101
+                && ext!(v, word; 31;25) == 0b0000000 =>
             {
                 Inst::Srliw(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0011011
-                && ext!(v, u32; 14;12) == 0b101
-                && ext!(v, u32; 31;25) == 0b0100000 =>
+            v if ext!(v, word; 6;0) == 0b0011011
+                && ext!(v, word; 14;12) == 0b101
+                && ext!(v, word; 31;25) == 0b0100000 =>
             {
                 Inst::Sraiw(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0000011 && ext!(v, u32; 14;12) == 0b110 => {
+            v if ext!(v, word; 6;0) == 0b0000011 && ext!(v, word; 14;12) == 0b110 => {
                 Inst::Lwu(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0000011 && ext!(v, u32; 14;12) == 0b011 => {
+            v if ext!(v, word; 6;0) == 0b0000011 && ext!(v, word; 14;12) == 0b011 => {
                 Inst::Ld(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0100011 && ext!(v, u32; 14;12) == 0b011 => {
+            v if ext!(v, word; 6;0) == 0b0100011 && ext!(v, word; 14;12) == 0b011 => {
                 Inst::Sd(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0110011
-                && ext!(v, u32; 14;12) == 0b000
-                && ext!(v, u32; 31;25) == 0b0000001 =>
+            v if ext!(v, word; 6;0) == 0b0110011
+                && ext!(v, word; 14;12) == 0b000
+                && ext!(v, word; 31;25) == 0b0000001 =>
             {
                 Inst::Mul(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0110011
-                && ext!(v, u32; 14;12) == 0b001
-                && ext!(v, u32; 31;25) == 0b0000001 =>
+            v if ext!(v, word; 6;0) == 0b0110011
+                && ext!(v, word; 14;12) == 0b001
+                && ext!(v, word; 31;25) == 0b0000001 =>
             {
                 Inst::Mulh(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0110011
-                && ext!(v, u32; 14;12) == 0b010
-                && ext!(v, u32; 31;25) == 0b0000001 =>
+            v if ext!(v, word; 6;0) == 0b0110011
+                && ext!(v, word; 14;12) == 0b010
+                && ext!(v, word; 31;25) == 0b0000001 =>
             {
                 Inst::Mulhsu(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0110011
-                && ext!(v, u32; 14;12) == 0b011
-                && ext!(v, u32; 31;25) == 0b0000001 =>
+            v if ext!(v, word; 6;0) == 0b0110011
+                && ext!(v, word; 14;12) == 0b011
+                && ext!(v, word; 31;25) == 0b0000001 =>
             {
                 Inst::Mulhu(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0110011
-                && ext!(v, u32; 14;12) == 0b100
-                && ext!(v, u32; 31;25) == 0b0000001 =>
+            v if ext!(v, word; 6;0) == 0b0110011
+                && ext!(v, word; 14;12) == 0b100
+                && ext!(v, word; 31;25) == 0b0000001 =>
             {
                 Inst::Div(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0110011
-                && ext!(v, u32; 14;12) == 0b101
-                && ext!(v, u32; 31;25) == 0b0000001 =>
+            v if ext!(v, word; 6;0) == 0b0110011
+                && ext!(v, word; 14;12) == 0b101
+                && ext!(v, word; 31;25) == 0b0000001 =>
             {
                 Inst::Divu(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0110011
-                && ext!(v, u32; 14;12) == 0b110
-                && ext!(v, u32; 31;25) == 0b0000001 =>
+            v if ext!(v, word; 6;0) == 0b0110011
+                && ext!(v, word; 14;12) == 0b110
+                && ext!(v, word; 31;25) == 0b0000001 =>
             {
                 Inst::Rem(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0110011
-                && ext!(v, u32; 14;12) == 0b111
-                && ext!(v, u32; 31;25) == 0b0000001 =>
+            v if ext!(v, word; 6;0) == 0b0110011
+                && ext!(v, word; 14;12) == 0b111
+                && ext!(v, word; 31;25) == 0b0000001 =>
             {
                 Inst::Remu(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0111011
-                && ext!(v, u32; 14;12) == 0b000
-                && ext!(v, u32; 31;25) == 0b0000001 =>
+            v if ext!(v, word; 6;0) == 0b0111011
+                && ext!(v, word; 14;12) == 0b000
+                && ext!(v, word; 31;25) == 0b0000001 =>
             {
                 Inst::Mulw(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0111011
-                && ext!(v, u32; 14;12) == 0b100
-                && ext!(v, u32; 31;25) == 0b0000001 =>
+            v if ext!(v, word; 6;0) == 0b0111011
+                && ext!(v, word; 14;12) == 0b100
+                && ext!(v, word; 31;25) == 0b0000001 =>
             {
                 Inst::Divw(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0111011
-                && ext!(v, u32; 14;12) == 0b101
-                && ext!(v, u32; 31;25) == 0b0000001 =>
+            v if ext!(v, word; 6;0) == 0b0111011
+                && ext!(v, word; 14;12) == 0b101
+                && ext!(v, word; 31;25) == 0b0000001 =>
             {
                 Inst::Divuw(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0111011
-                && ext!(v, u32; 14;12) == 0b110
-                && ext!(v, u32; 31;25) == 0b0000001 =>
+            v if ext!(v, word; 6;0) == 0b0111011
+                && ext!(v, word; 14;12) == 0b110
+                && ext!(v, word; 31;25) == 0b0000001 =>
             {
                 Inst::Remw(inst.into())
             }
-            v if ext!(v, u32; 6;0) == 0b0111011
-                && ext!(v, u32; 14;12) == 0b111
-                && ext!(v, u32; 31;25) == 0b0000001 =>
+            v if ext!(v, word; 6;0) == 0b0111011
+                && ext!(v, word; 14;12) == 0b111
+                && ext!(v, word; 31;25) == 0b0000001 =>
             {
                 Inst::Remuw(inst.into())
             }
@@ -774,5 +776,9 @@ impl Inst {
             Inst::Remw(v) => v,
             Inst::Remuw(v) => v,
         }
+    }
+
+    pub fn raw(self) -> word {
+        self.inner().raw()
     }
 }

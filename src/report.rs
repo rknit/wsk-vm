@@ -1,9 +1,9 @@
 use std::fmt::Display;
 
-use crate::{format::Format, insts::Inst};
+use crate::{byte, format::Format, iarch, insts::Inst, sword, uarch};
 
 pub struct InstReport {
-    pub addr: usize,
+    pub addr: uarch,
     pub inst: Inst,
 }
 impl Display for InstReport {
@@ -38,7 +38,7 @@ impl InstReport {
                     "{}, {}, {}",
                     x_name(v.rd()),
                     x_name(v.rs1()),
-                    imm_to_str(v.imm_fmt_i() as i32),
+                    imm_to_str(v.imm_fmt_i() as sword),
                 )
             }
             Format::S => {
@@ -46,7 +46,7 @@ impl InstReport {
                     f,
                     "{}, {}({})",
                     x_name(v.rs2()),
-                    imm_to_str_hex(v.imm_fmt_s() as i32),
+                    imm_to_str_hex(v.imm_fmt_s() as sword),
                     x_name(v.rs1()),
                 )
             }
@@ -55,14 +55,14 @@ impl InstReport {
                 "{}, {}, 0x{:x}",
                 x_name(v.rs1()),
                 x_name(v.rs2()),
-                self.addr.wrapping_add_signed(v.imm_fmt_b() as isize),
+                self.addr.wrapping_add_signed(v.imm_fmt_b() as iarch),
             ),
             Format::U => {
                 write!(
                     f,
                     "{}, {}",
                     x_name(v.rd()),
-                    imm_to_str_hex(v.raw_imm_fmt_u() as i32)
+                    imm_to_str_hex(v.raw_imm_fmt_u() as sword)
                 )
             }
             Format::J => {
@@ -70,7 +70,7 @@ impl InstReport {
                     f,
                     "{}, 0x{:x}",
                     x_name(v.rd()),
-                    self.addr.wrapping_add_signed(v.imm_fmt_j() as isize)
+                    self.addr.wrapping_add_signed(v.imm_fmt_j() as iarch)
                 )
             }
             Format::Unknown => write!(f, "<unknown format>"),
@@ -78,11 +78,11 @@ impl InstReport {
     }
 }
 
-fn imm_to_str(imm: i32) -> String {
+fn imm_to_str(imm: sword) -> String {
     format!("{imm}")
 }
 
-fn imm_to_str_hex(imm: i32) -> String {
+fn imm_to_str_hex(imm: sword) -> String {
     if imm >= 0 {
         format!("0x{imm:x}")
     } else {
@@ -90,7 +90,7 @@ fn imm_to_str_hex(imm: i32) -> String {
     }
 }
 
-pub fn x_name(i: u8) -> &'static str {
+pub fn x_name(i: byte) -> &'static str {
     match i {
         0 => "zero",
         1 => "ra",

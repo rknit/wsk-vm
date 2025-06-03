@@ -11,8 +11,8 @@ pub struct Mulw;
 impl Mulw {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Mulw$
-        let result = data.r1().wrapping_mul(data.r2()) as i32 as i64;
-        data.set_rd(result as u64);
+        let result = data.r1().wrapping_mul(data.r2()) as sword as iarch;
+        data.set_rd(result as uarch);
         Ok(())
         // $IMPL_END Mulw$
     }
@@ -29,8 +29,10 @@ impl Divw {
                 info: "division by zero",
             });
         }
-        let result = data.r1s().wrapping_div(data.r2s());
-        data.set_rd(result as u64);
+        let r1 = data.r1s() as sword;
+        let r2 = data.r2s() as sword;
+        let result = r1.wrapping_div(r2) as iarch;
+        data.set_rd(result as uarch);
         Ok(())
         // $IMPL_END Divw$
     }
@@ -47,8 +49,10 @@ impl Divuw {
                 info: "division by zero",
             });
         }
-        let result = data.r1().wrapping_div(data.r2());
-        data.set_rd(result);
+        let r1 = data.r1() as word;
+        let r2 = data.r2() as word;
+        let result = r1.wrapping_div(r2) as sword as iarch;
+        data.set_rd(result as uarch);
         Ok(())
         // $IMPL_END Divuw$
     }
@@ -65,8 +69,10 @@ impl Remw {
                 info: "division by zero",
             });
         }
-        let result = data.r1s().wrapping_rem(data.r2s());
-        data.set_rd(result as u64);
+        let r1 = data.r1s() as sword;
+        let r2 = data.r2s() as sword;
+        let result = r1.wrapping_rem(r2) as iarch;
+        data.set_rd(result as uarch);
         Ok(())
         // $IMPL_END Remw$
     }
@@ -83,8 +89,10 @@ impl Remuw {
                 info: "division by zero",
             });
         }
-        let result = data.r1().wrapping_rem(data.r2());
-        data.set_rd(result);
+        let r1 = data.r1s() as word;
+        let r2 = data.r2s() as word;
+        let result = r1.wrapping_rem(r2) as sword as iarch;
+        data.set_rd(result as uarch);
         Ok(())
         // $IMPL_END Remuw$
     }

@@ -4,7 +4,7 @@ use std::{
     process::exit,
 };
 
-use crate::{InstReport, VM, VMRunError, x_name};
+use crate::{InstReport, VM, VMRunError, byte, uarch, x_name};
 
 #[derive(Clone, Copy)]
 enum RunUntil {
@@ -19,11 +19,11 @@ enum RunWith {
 
 #[derive(PartialEq, Eq, Hash)]
 enum Breakpoint {
-    Addr(usize),
+    Addr(uarch),
     Inst(String),
 }
-impl From<usize> for Breakpoint {
-    fn from(value: usize) -> Self {
+impl From<uarch> for Breakpoint {
+    fn from(value: uarch) -> Self {
         Breakpoint::Addr(value)
     }
 }
@@ -38,7 +38,7 @@ struct Repl<W: Write, R: BufRead> {
     cout: W,
     exit: bool,
     vm: VM,
-    start_addr: usize,
+    start_addr: uarch,
     brk: HashSet<Breakpoint>,
     cmd: String,
     args: Vec<String>,
@@ -63,7 +63,7 @@ impl<W: Write, R: BufRead> Write for Repl<W, R> {
     }
 }
 
-pub fn run_repl(prog: &[u8]) -> Result<u8, VMRunError> {
+pub fn run_repl(prog: &[byte]) -> Result<byte, VMRunError> {
     let mut repl = Repl {
         cin: BufReader::new(stdin()),
         cout: BufWriter::new(stdout()),
@@ -193,11 +193,11 @@ fn info<W: Write, R: BufRead>(repl: &mut Repl<W, R>) {
                 writeln!(repl, "i: m: invalid range format").unwrap();
                 return;
             }
-            let Ok(start) = usize::from_str_radix(range[0], 16) else {
+            let Ok(start) = uarch::from_str_radix(range[0], 16) else {
                 writeln!(repl, "i: m: invalid start address").unwrap();
                 return;
             };
-            let Ok(end) = usize::from_str_radix(range[1], 16) else {
+            let Ok(end) = uarch::from_str_radix(range[1], 16) else {
                 writeln!(repl, "i: m: invalid end address").unwrap();
                 return;
             };
@@ -297,7 +297,7 @@ fn toggle_brk<W: Write, R: BufRead>(repl: &mut Repl<W, R>) {
         return;
     };
     if let Some(addr) = brk.strip_prefix("0x") {
-        let addr: usize = match usize::from_str_radix(addr, 16) {
+        let addr = match uarch::from_str_radix(addr, 16) {
             Ok(v) => v,
             Err(e) => {
                 writeln!(repl, "brk: invalid address: {e}").unwrap();

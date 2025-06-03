@@ -2,6 +2,7 @@
 
 ---
 
+- [ ] virtual address
 - [ ] priviledges
   - [ ] u mode
   - [ ] s mode
