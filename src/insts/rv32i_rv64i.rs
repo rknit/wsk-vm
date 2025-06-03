@@ -89,7 +89,7 @@ pub struct Sra;
 impl Sra {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Sra$
-        data.set_rd((data.r1s() >> (data.r2() & 0b11111)) as uarch);
+        data.set_rd((data.r1s() >> (data.r2() & 0b11111)) as UArch);
         Ok(())
         // $IMPL_END Sra$
     }
@@ -217,7 +217,7 @@ pub struct Srai;
 impl Srai {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Srai$
-        data.set_rd((data.r1s() >> (data.immu_fmt_i() & 0b111111)) as uarch);
+        data.set_rd((data.r1s() >> (data.immu_fmt_i() & 0b111111)) as UArch);
         Ok(())
         // $IMPL_END Srai$
     }
@@ -229,8 +229,8 @@ impl Lb {
         // $IMPL_START Lb$
         let addr = data.r1().wrapping_add_signed(data.imm_fmt_i());
         let val = data.mem(addr)?;
-        let val = val as sbyte as iarch; // Sign-extend the byte
-        data.set_rd(val as uarch);
+        let val = val as SByte as SArch; // Sign-extend the byte
+        data.set_rd(val as UArch);
         Ok(())
         // $IMPL_END Lb$
     }
@@ -242,8 +242,8 @@ impl Lh {
         // $IMPL_START Lh$
         let addr = data.r1().wrapping_add_signed(data.imm_fmt_i());
         let vals = data.vm.mem_range(addr, 2)?;
-        let val = half::from_le_bytes([vals[0], vals[1]]) as shalf as iarch; // Sign-extend the halfword
-        data.set_rd(val as uarch);
+        let val = Half::from_le_bytes([vals[0], vals[1]]) as SHalf as SArch; // Sign-extend the halfword
+        data.set_rd(val as UArch);
         Ok(())
         // $IMPL_END Lh$
     }
@@ -255,8 +255,8 @@ impl Lw {
         // $IMPL_START Lw$
         let addr = data.r1().wrapping_add_signed(data.imm_fmt_i());
         let vals = data.mem_range(addr, 4)?;
-        let val = word::from_le_bytes([vals[0], vals[1], vals[2], vals[3]]) as sword as iarch; // Sign-extend the word
-        data.set_rd(val as uarch);
+        let val = Word::from_le_bytes([vals[0], vals[1], vals[2], vals[3]]) as SWord as SArch; // Sign-extend the word
+        data.set_rd(val as UArch);
         Ok(())
         // $IMPL_END Lw$
     }
@@ -268,7 +268,7 @@ impl Lbu {
         // $IMPL_START Lbu$
         let addr = data.r1().wrapping_add_signed(data.imm_fmt_i());
         let val = data.mem(addr)?;
-        let val = val as uarch; // Zero-extend the byte
+        let val = val as UArch; // Zero-extend the byte
         data.set_rd(val);
         Ok(())
         // $IMPL_END Lbu$
@@ -281,7 +281,7 @@ impl Lhu {
         // $IMPL_START Lhu$
         let addr = data.r1().wrapping_add_signed(data.imm_fmt_i());
         let vals = data.mem_range(addr, 2)?;
-        let val = half::from_le_bytes([vals[0], vals[1]]) as uarch; // Zero-extend the halfword
+        let val = Half::from_le_bytes([vals[0], vals[1]]) as UArch; // Zero-extend the halfword
         data.set_rd(val);
         Ok(())
         // $IMPL_END Lhu$
@@ -446,7 +446,7 @@ impl Sb {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Sb$
         let addr = data.r1().wrapping_add_signed(data.imm_fmt_s());
-        let val = data.r2() as byte; // Get the least significant byte
+        let val = data.r2() as Byte; // Get the least significant byte
         data.set_mem(addr, val)?;
         Ok(())
         // $IMPL_END Sb$
@@ -458,7 +458,7 @@ impl Sh {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Sh$
         let addr = data.r1().wrapping_add_signed(data.imm_fmt_s());
-        let val = data.r2() as half; // Get the least significant halfword
+        let val = data.r2() as Half; // Get the least significant halfword
         let bytes = val.to_le_bytes();
         data.set_mem_range(addr, &bytes)?;
         Ok(())
@@ -471,7 +471,7 @@ impl Sw {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Sw$
         let addr = data.r1().wrapping_add_signed(data.imm_fmt_s());
-        let val = data.r2() as word; // Get the least significant word
+        let val = data.r2() as Word; // Get the least significant word
         let bytes = val.to_le_bytes();
         data.set_mem_range(addr, &bytes)?;
         Ok(())

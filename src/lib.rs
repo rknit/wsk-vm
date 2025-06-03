@@ -1,5 +1,3 @@
-// #![allow(dead_code)]
-
 mod bits;
 mod exception;
 mod format;
@@ -15,37 +13,24 @@ use insts::*;
 pub use report::*;
 pub use vm::*;
 
-#[allow(non_camel_case_types)]
-pub type byte = u8;
-#[allow(non_camel_case_types)]
-pub type sbyte = i8;
-#[allow(non_camel_case_types)]
-pub type half = u16;
-#[allow(non_camel_case_types)]
-pub type shalf = i16;
-#[allow(non_camel_case_types)]
-pub type word = u32;
-#[allow(non_camel_case_types)]
-pub type sword = i32;
-#[allow(non_camel_case_types)]
-pub type dword = u64;
-#[allow(non_camel_case_types)]
-pub type sdword = i64;
-#[allow(non_camel_case_types)]
-pub type qword = u128;
-#[allow(non_camel_case_types)]
-pub type sqword = i128;
+// common integer types used across the project
+pub type Byte = u8;
+pub type SByte = i8;
+pub type Half = u16;
+pub type SHalf = i16;
+pub type Word = u32;
+pub type SWord = i32;
+pub type Dword = u64;
+pub type SDword = i64;
+pub type Qword = u128;
+pub type SQword = i128;
 
-#[allow(non_camel_case_types)]
-pub type uarch = u64;
-#[allow(non_camel_case_types)]
-pub type iarch = i64;
-#[allow(non_camel_case_types)]
-pub type udarch = u128;
-#[allow(non_camel_case_types)]
-pub type idarch = i128;
+// architecture-specific integer types of the VM
+pub type UArch = Dword;
+pub type SArch = SDword;
+pub type UDArch = Qword;
+pub type SDArch = SQword;
 
-#[allow(non_camel_case_types)]
-pub type uhsize = usize;
-#[allow(non_camel_case_types)]
-pub type ihsize = isize;
+// architecture-specific integer types of the host machine
+pub type UHSize = usize;
+pub type SHSize = isize;

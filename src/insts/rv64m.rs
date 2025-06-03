@@ -11,8 +11,8 @@ pub struct Mulw;
 impl Mulw {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Mulw$
-        let result = data.r1().wrapping_mul(data.r2()) as sword as iarch;
-        data.set_rd(result as uarch);
+        let result = data.r1().wrapping_mul(data.r2()) as SWord as SArch;
+        data.set_rd(result as UArch);
         Ok(())
         // $IMPL_END Mulw$
     }
@@ -29,10 +29,10 @@ impl Divw {
                 info: "division by zero",
             });
         }
-        let r1 = data.r1s() as sword;
-        let r2 = data.r2s() as sword;
-        let result = r1.wrapping_div(r2) as iarch;
-        data.set_rd(result as uarch);
+        let r1 = data.r1s() as SWord;
+        let r2 = data.r2s() as SWord;
+        let result = r1.wrapping_div(r2) as SArch;
+        data.set_rd(result as UArch);
         Ok(())
         // $IMPL_END Divw$
     }
@@ -49,10 +49,10 @@ impl Divuw {
                 info: "division by zero",
             });
         }
-        let r1 = data.r1() as word;
-        let r2 = data.r2() as word;
-        let result = r1.wrapping_div(r2) as sword as iarch;
-        data.set_rd(result as uarch);
+        let r1 = data.r1() as Word;
+        let r2 = data.r2() as Word;
+        let result = r1.wrapping_div(r2) as SWord as SArch;
+        data.set_rd(result as UArch);
         Ok(())
         // $IMPL_END Divuw$
     }
@@ -69,10 +69,10 @@ impl Remw {
                 info: "division by zero",
             });
         }
-        let r1 = data.r1s() as sword;
-        let r2 = data.r2s() as sword;
-        let result = r1.wrapping_rem(r2) as iarch;
-        data.set_rd(result as uarch);
+        let r1 = data.r1s() as SWord;
+        let r2 = data.r2s() as SWord;
+        let result = r1.wrapping_rem(r2) as SArch;
+        data.set_rd(result as UArch);
         Ok(())
         // $IMPL_END Remw$
     }
@@ -89,10 +89,10 @@ impl Remuw {
                 info: "division by zero",
             });
         }
-        let r1 = data.r1s() as word;
-        let r2 = data.r2s() as word;
-        let result = r1.wrapping_rem(r2) as sword as iarch;
-        data.set_rd(result as uarch);
+        let r1 = data.r1s() as Word;
+        let r2 = data.r2s() as Word;
+        let result = r1.wrapping_rem(r2) as SWord as SArch;
+        data.set_rd(result as UArch);
         Ok(())
         // $IMPL_END Remuw$
     }

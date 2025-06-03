@@ -5,35 +5,35 @@ use std::{
 
 use log::{info, log_enabled, trace};
 
-use crate::{Exception, Inst, InstReport, byte, iarch, shalf, uarch, uhsize, word};
+use crate::{Byte, Exception, Inst, InstReport, SArch, SHalf, UArch, UHSize, Word};
 
 const REG_COUNT: usize = 32;
 
-const MEM_LEN: uarch = 64 * MEGABYTE;
+const MEM_LEN: UArch = 64 * MEGABYTE;
 
-const STACK_BEGIN: uarch = MEM_LEN - (8 * MEGABYTE);
-const STACK_LEN: uarch = 8 * MEGABYTE;
+const STACK_BEGIN: UArch = MEM_LEN - (8 * MEGABYTE);
+const STACK_LEN: UArch = 8 * MEGABYTE;
 
-const PROG_LEN: uarch = MEM_LEN - STACK_LEN;
-const PROG_BEGIN: uarch = 0;
+const PROG_LEN: UArch = MEM_LEN - STACK_LEN;
+const PROG_BEGIN: UArch = 0;
 
-const MEGABYTE: uarch = 1024 * 1024;
+const MEGABYTE: UArch = 1024 * 1024;
 
 pub struct VM {
-    regs: [uarch; REG_COUNT],
-    mem: Box<[byte]>,
-    pub pc: uarch,
+    regs: [UArch; REG_COUNT],
+    mem: Box<[Byte]>,
+    pub pc: UArch,
 
     pub(crate) halt: bool,
-    pub(crate) exit_code: byte,
+    pub(crate) exit_code: Byte,
 
-    dbg_syms: HashMap<uarch, HashSet<String>>,
+    dbg_syms: HashMap<UArch, HashSet<String>>,
 }
 impl VM {
     pub fn new() -> Self {
         Self {
             regs: Default::default(),
-            mem: vec![0; MEM_LEN as uhsize].into_boxed_slice(),
+            mem: vec![0; MEM_LEN as UHSize].into_boxed_slice(),
             pc: PROG_BEGIN,
 
             halt: false,
@@ -53,11 +53,11 @@ impl VM {
         self.halt
     }
 
-    pub fn exit_code(&self) -> byte {
+    pub fn exit_code(&self) -> Byte {
         self.exit_code
     }
 
-    pub fn load_executable_bytes(&mut self, bytes: &[byte]) -> Result<(), VMLoadError> {
+    pub fn load_executable_bytes(&mut self, bytes: &[Byte]) -> Result<(), VMLoadError> {
         use goblin::Object;
         use goblin::elf::section_header as sh;
 
@@ -97,11 +97,11 @@ impl VM {
                 _ => unimplemented!("p_type {:#x}", p.p_type),
             };
 
-            let bytes_begin = p.p_offset as uhsize;
-            let bytes_len = p.p_filesz as uhsize;
+            let bytes_begin = p.p_offset as UHSize;
+            let bytes_len = p.p_filesz as UHSize;
 
-            let mem_begin = p.p_vaddr as uhsize;
-            let mem_len = p.p_memsz as uhsize;
+            let mem_begin = p.p_vaddr as UHSize;
+            let mem_len = p.p_memsz as UHSize;
 
             let min_len = bytes_len.min(mem_len);
             self.mem[mem_begin..(mem_begin + min_len)]
@@ -120,7 +120,7 @@ impl VM {
 
         // trace!("{:#?}", elf.program_headers);
 
-        self.pc = elf.entry as uarch;
+        self.pc = elf.entry as UArch;
         self.set_x(2, STACK_BEGIN);
 
         info!("start address: {:#x}", self.pc);
@@ -146,7 +146,7 @@ impl VM {
                     continue;
                 }
 
-                let v = self.dbg_syms.entry(sym.st_value as uarch).or_default();
+                let v = self.dbg_syms.entry(sym.st_value as UArch).or_default();
                 if !v.insert(name.to_owned()) {
                     panic!("duplicate '{name}' at {:x}", sym.st_value);
                 }
@@ -160,7 +160,7 @@ impl VM {
         Ok(())
     }
 
-    pub fn run(&mut self) -> Result<byte, VMRunError> {
+    pub fn run(&mut self) -> Result<Byte, VMRunError> {
         while !self.halt {
             self.step()?;
         }
@@ -184,7 +184,7 @@ impl VM {
         Ok(())
     }
 
-    pub fn fetch_inst(&self, addr: uarch) -> Result<Inst, VMRunError> {
+    pub fn fetch_inst(&self, addr: UArch) -> Result<Inst, VMRunError> {
         if addr % 4 != 0 {
             return Err(VMRunError {
                 err_addr: addr,
@@ -194,7 +194,7 @@ impl VM {
         }
 
         let inst32 = {
-            let [b1, b2, b3, b4] = self.mem[addr as uhsize..addr as uhsize + 4] else {
+            let [b1, b2, b3, b4] = self.mem[addr as UHSize..addr as UHSize + 4] else {
                 unreachable!();
             };
             u32::from_le_bytes([b1, b2, b3, b4])
@@ -209,9 +209,9 @@ impl VM {
         Ok(inst)
     }
 
-    pub fn mem(&self, addr: uarch) -> Result<byte, VMRunError> {
+    pub fn mem(&self, addr: UArch) -> Result<Byte, VMRunError> {
         if addr < MEM_LEN {
-            Ok(self.mem[addr as uhsize])
+            Ok(self.mem[addr as UHSize])
         } else {
             Err(VMRunError {
                 err_addr: self.pc,
@@ -221,9 +221,9 @@ impl VM {
         }
     }
 
-    pub fn mem_range(&self, addr: uarch, len: uarch) -> Result<&[byte], VMRunError> {
+    pub fn mem_range(&self, addr: UArch, len: UArch) -> Result<&[Byte], VMRunError> {
         if addr + len < MEM_LEN {
-            Ok(&self.mem[addr as uhsize..(addr + len) as uhsize])
+            Ok(&self.mem[addr as UHSize..(addr + len) as UHSize])
         } else {
             Err(VMRunError {
                 err_addr: self.pc,
@@ -233,9 +233,9 @@ impl VM {
         }
     }
 
-    pub fn mem_range_mut(&mut self, addr: uarch, len: uarch) -> Result<&mut [byte], VMRunError> {
+    pub fn mem_range_mut(&mut self, addr: UArch, len: UArch) -> Result<&mut [Byte], VMRunError> {
         if addr + len < MEM_LEN {
-            Ok(&mut self.mem[addr as uhsize..(addr + len) as uhsize])
+            Ok(&mut self.mem[addr as UHSize..(addr + len) as UHSize])
         } else {
             Err(VMRunError {
                 err_addr: self.pc,
@@ -245,9 +245,9 @@ impl VM {
         }
     }
 
-    pub fn set_mem(&mut self, addr: uarch, value: byte) -> Result<(), VMRunError> {
+    pub fn set_mem(&mut self, addr: UArch, value: Byte) -> Result<(), VMRunError> {
         if addr < MEM_LEN {
-            self.mem[addr as uhsize] = value;
+            self.mem[addr as UHSize] = value;
             Ok(())
         } else {
             Err(VMRunError {
@@ -258,9 +258,9 @@ impl VM {
         }
     }
 
-    pub fn set_mem_range(&mut self, addr: uarch, values: &[byte]) -> Result<(), VMRunError> {
+    pub fn set_mem_range(&mut self, addr: UArch, values: &[Byte]) -> Result<(), VMRunError> {
         if addr < MEM_LEN {
-            let mem = self.mem_range_mut(addr, values.len() as uarch).unwrap();
+            let mem = self.mem_range_mut(addr, values.len() as UArch).unwrap();
             mem.copy_from_slice(values);
             Ok(())
         } else {
@@ -272,19 +272,19 @@ impl VM {
         }
     }
 
-    pub fn x(&self, i: byte) -> uarch {
+    pub fn x(&self, i: Byte) -> UArch {
         let i = i as usize;
         assert!(i < REG_COUNT, "invalid register");
         if i == 0 { 0 } else { self.regs[i] }
     }
 
-    pub fn set_x(&mut self, i: byte, val: uarch) {
+    pub fn set_x(&mut self, i: Byte, val: UArch) {
         let i = i as usize;
         assert!(i < REG_COUNT, "invalid register");
         self.regs[i] = val;
     }
 
-    pub fn jump(&mut self, addr: uarch, dec_4: bool) -> Result<(), VMRunError> {
+    pub fn jump(&mut self, addr: UArch, dec_4: bool) -> Result<(), VMRunError> {
         if addr < PROG_LEN {
             if dec_4 {
                 // -4 bytes to account for the instruction fetch
@@ -302,7 +302,7 @@ impl VM {
         }
     }
 
-    pub fn jump_pc_rel(&mut self, offset: iarch, dec_4: bool) -> Result<(), VMRunError> {
+    pub fn jump_pc_rel(&mut self, offset: SArch, dec_4: bool) -> Result<(), VMRunError> {
         let addr = self.pc.wrapping_add_signed(offset) & !1;
         if addr < PROG_LEN {
             self.jump(addr, dec_4)
@@ -334,7 +334,7 @@ pub enum VMLoadError {
 
 #[derive(Debug)]
 pub struct VMRunError {
-    pub err_addr: uarch,
+    pub err_addr: UArch,
     pub kind: VMRunErrorKind,
     pub info: &'static str,
 }
@@ -351,9 +351,9 @@ impl Display for VMRunError {
 #[derive(Debug)]
 pub enum VMRunErrorKind {
     Alignment,
-    UnknownInst(word),
-    InvalidAddress(uarch),
-    UnknownSyscall(shalf),
+    UnknownInst(Word),
+    InvalidAddress(UArch),
+    UnknownSyscall(SHalf),
     DivisionByZero,
     Other(String),
 }

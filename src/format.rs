@@ -1,5 +1,5 @@
 use super::bits::*;
-use crate::{VM, VMRunError, byte, ext, iarch, sword, uarch, word};
+use crate::{Byte, SArch, SWord, UArch, VM, VMRunError, Word, ext};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Format {
@@ -24,191 +24,191 @@ impl<'vm> RunData<'vm> {
     }
 
     #[inline]
-    pub fn x(&self, reg: byte) -> uarch {
+    pub fn x(&self, reg: Byte) -> UArch {
         self.vm.x(reg)
     }
 
     #[inline]
-    pub fn xs(&self, reg: byte) -> iarch {
+    pub fn xs(&self, reg: Byte) -> SArch {
         self.vm.x(reg) as i64
     }
 
     #[inline]
-    pub fn set_x(&mut self, reg: byte, value: uarch) {
+    pub fn set_x(&mut self, reg: Byte, value: UArch) {
         self.vm.set_x(reg, value);
     }
 
     #[inline]
-    pub fn set_xs(&mut self, reg: byte, value: iarch) {
-        self.vm.set_x(reg, value as uarch);
+    pub fn set_xs(&mut self, reg: Byte, value: SArch) {
+        self.vm.set_x(reg, value as UArch);
     }
 
     #[inline]
-    pub fn mem(&self, addr: uarch) -> Result<byte, VMRunError> {
+    pub fn mem(&self, addr: UArch) -> Result<Byte, VMRunError> {
         self.vm.mem(addr)
     }
 
     #[inline]
-    pub fn set_mem(&mut self, addr: uarch, value: byte) -> Result<(), VMRunError> {
+    pub fn set_mem(&mut self, addr: UArch, value: Byte) -> Result<(), VMRunError> {
         self.vm.set_mem(addr, value)
     }
 
     #[inline]
-    pub fn mem_range(&self, addr: uarch, len: uarch) -> Result<&[byte], VMRunError> {
+    pub fn mem_range(&self, addr: UArch, len: UArch) -> Result<&[Byte], VMRunError> {
         self.vm.mem_range(addr, len)
     }
 
     #[inline]
-    pub fn set_mem_range(&mut self, addr: uarch, data: &[byte]) -> Result<(), VMRunError> {
+    pub fn set_mem_range(&mut self, addr: UArch, data: &[Byte]) -> Result<(), VMRunError> {
         self.vm.set_mem_range(addr, data)
     }
 
     #[inline]
-    pub fn set_rd(&mut self, value: uarch) {
+    pub fn set_rd(&mut self, value: UArch) {
         self.vm.set_x(self.inst.rd(), value);
     }
 
     #[inline]
-    pub fn set_rds(&mut self, value: iarch) {
-        self.vm.set_x(self.inst.rd(), value as uarch);
+    pub fn set_rds(&mut self, value: SArch) {
+        self.vm.set_x(self.inst.rd(), value as UArch);
     }
 
     #[inline]
-    pub fn r1(&self) -> uarch {
+    pub fn r1(&self) -> UArch {
         self.vm.x(self.inst.rs1())
     }
 
     #[inline]
-    pub fn r1s(&self) -> iarch {
-        self.vm.x(self.inst.rs1()) as iarch
+    pub fn r1s(&self) -> SArch {
+        self.vm.x(self.inst.rs1()) as SArch
     }
 
     #[inline]
-    pub fn r2(&self) -> uarch {
+    pub fn r2(&self) -> UArch {
         self.vm.x(self.inst.rs2())
     }
 
     #[inline]
-    pub fn r2s(&self) -> iarch {
-        self.vm.x(self.inst.rs2()) as iarch
+    pub fn r2s(&self) -> SArch {
+        self.vm.x(self.inst.rs2()) as SArch
     }
 
     #[inline]
-    pub const fn immu(&self, hi: uarch, lo: uarch) -> uarch {
+    pub const fn immu(&self, hi: UArch, lo: UArch) -> UArch {
         self.inst.immu(hi, lo)
     }
 
     #[inline]
-    pub const fn imm(&self, hi: uarch, lo: uarch) -> iarch {
+    pub const fn imm(&self, hi: UArch, lo: UArch) -> SArch {
         self.inst.imm(hi, lo)
     }
 
     #[inline]
-    pub const fn imm_fmt_i(&self) -> iarch {
+    pub const fn imm_fmt_i(&self) -> SArch {
         self.inst.imm_fmt_i()
     }
 
     #[inline]
-    pub const fn immu_fmt_i(&self) -> uarch {
+    pub const fn immu_fmt_i(&self) -> UArch {
         self.inst.immu_fmt_i()
     }
 
     #[inline]
-    pub const fn imm_fmt_s(&self) -> iarch {
+    pub const fn imm_fmt_s(&self) -> SArch {
         self.inst.imm_fmt_s()
     }
 
     #[inline]
-    pub const fn imm_fmt_b(&self) -> iarch {
+    pub const fn imm_fmt_b(&self) -> SArch {
         self.inst.imm_fmt_b()
     }
 
     #[inline]
-    pub const fn imm_fmt_u(&self) -> iarch {
+    pub const fn imm_fmt_u(&self) -> SArch {
         self.inst.imm_fmt_u()
     }
 
     #[inline]
-    pub const fn immu_fmt_u(&self) -> uarch {
+    pub const fn immu_fmt_u(&self) -> UArch {
         self.inst.immu_fmt_u()
     }
 
     #[inline]
-    pub const fn imm_fmt_j(&self) -> iarch {
+    pub const fn imm_fmt_j(&self) -> SArch {
         self.inst.imm_fmt_j()
     }
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct RawInst(word);
+pub struct RawInst(Word);
 impl RawInst {
     #[inline]
-    pub const fn new(inst: word) -> Self {
+    pub const fn new(inst: Word) -> Self {
         RawInst(inst)
     }
 
     #[inline]
-    pub const fn raw(&self) -> word {
+    pub const fn raw(&self) -> Word {
         self.0
     }
 
     #[inline]
-    pub const fn opcode(&self) -> byte {
+    pub const fn opcode(&self) -> Byte {
         opcode(self.0)
     }
 
     #[inline]
-    pub const fn funct3(&self) -> byte {
+    pub const fn funct3(&self) -> Byte {
         funct3_14_12(self.0)
     }
 
     #[inline]
-    pub const fn funct7(&self) -> byte {
+    pub const fn funct7(&self) -> Byte {
         funct7_31_25(self.0)
     }
 
     #[inline]
-    pub const fn rd(&self) -> byte {
+    pub const fn rd(&self) -> Byte {
         rd_11_7(self.0)
     }
 
     #[inline]
-    pub const fn rs1(&self) -> byte {
+    pub const fn rs1(&self) -> Byte {
         rs1_19_15(self.0)
     }
 
     #[inline]
-    pub const fn rs2(&self) -> byte {
+    pub const fn rs2(&self) -> Byte {
         rs2_24_20(self.0)
     }
 
     #[inline]
-    pub const fn immu(&self, hi: uarch, lo: uarch) -> uarch {
-        ext!(self.0, uarch; hi; lo)
+    pub const fn immu(&self, hi: UArch, lo: UArch) -> UArch {
+        ext!(self.0, UArch; hi; lo)
     }
 
     #[inline]
-    pub const fn imm(&self, hi: uarch, lo: uarch) -> iarch {
+    pub const fn imm(&self, hi: UArch, lo: UArch) -> SArch {
         sext(self.immu(hi, lo), hi - lo)
     }
 
     #[inline]
-    pub const fn imm_fmt_i(&self) -> iarch {
+    pub const fn imm_fmt_i(&self) -> SArch {
         self.imm(31, 20)
     }
 
     #[inline]
-    pub const fn immu_fmt_i(&self) -> uarch {
-        self.imm_fmt_i() as uarch
+    pub const fn immu_fmt_i(&self) -> UArch {
+        self.imm_fmt_i() as UArch
     }
 
     #[inline]
-    pub const fn imm_fmt_s(&self) -> iarch {
+    pub const fn imm_fmt_s(&self) -> SArch {
         sext(self.immu(31, 25) << 5 | self.immu(11, 7), 11)
     }
 
     #[inline]
-    pub const fn raw_imm_fmt_b(&self) -> iarch {
+    pub const fn raw_imm_fmt_b(&self) -> SArch {
         sext(
             (self.immu(31, 31) << 11)
                 | (self.immu(7, 7) << 10)
@@ -219,27 +219,27 @@ impl RawInst {
     }
 
     #[inline]
-    pub const fn imm_fmt_b(&self) -> iarch {
+    pub const fn imm_fmt_b(&self) -> SArch {
         self.raw_imm_fmt_b() << 1
     }
 
     #[inline]
-    pub const fn raw_imm_fmt_u(&self) -> iarch {
+    pub const fn raw_imm_fmt_u(&self) -> SArch {
         sext(self.immu(31, 12), 19)
     }
 
     #[inline]
-    pub const fn imm_fmt_u(&self) -> iarch {
-        (self.raw_imm_fmt_u() << 12) as sword as iarch
+    pub const fn imm_fmt_u(&self) -> SArch {
+        (self.raw_imm_fmt_u() << 12) as SWord as SArch
     }
 
     #[inline]
-    pub const fn immu_fmt_u(&self) -> uarch {
-        self.imm_fmt_u() as uarch
+    pub const fn immu_fmt_u(&self) -> UArch {
+        self.imm_fmt_u() as UArch
     }
 
     #[inline]
-    pub const fn raw_imm_fmt_j(&self) -> iarch {
+    pub const fn raw_imm_fmt_j(&self) -> SArch {
         sext(
             (self.immu(31, 31) << 19)
                 | (self.immu(19, 12) << 11)
@@ -250,12 +250,12 @@ impl RawInst {
     }
 
     #[inline]
-    pub const fn imm_fmt_j(&self) -> iarch {
+    pub const fn imm_fmt_j(&self) -> SArch {
         self.raw_imm_fmt_j() << 1
     }
 }
-impl From<word> for RawInst {
-    fn from(inst: word) -> Self {
+impl From<Word> for RawInst {
+    fn from(inst: Word) -> Self {
         RawInst::new(inst)
     }
 }
