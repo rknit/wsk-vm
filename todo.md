@@ -7,7 +7,7 @@
   - [ ] s mode
   - [ ] m mode
 - [ ] complete rv64imafdc
-  - [ ] rv32i, rv64i
+  - [-] rv32i, rv64i
   - [x] rv64i
   - [x] rv32m, rv64m
   - [x] rv64m
