@@ -47,11 +47,14 @@ def gen_main(modules: Modules) -> str:
 
     # create Inst enum
     gen("#[derive(Debug, Clone, Copy)]")
+    gen("#[repr(u8)]")
     gen("pub enum Inst {")
+    i = 0
     for mod_idx, mod in enumerate(modules.mods()):
         gen(f"    // {mod.name.upper()}")
         for inst in mod.insts:
-            gen(f"    {inst.enum_variant()}")
+            gen(f"    {inst.enum_variant()} = {i},")
+            i += 1
         if mod_idx + 1 != modules.len():
             gen()
     gen("}")
@@ -72,8 +75,14 @@ impl Inst {{
     gen(f"""
     #[inline]
     pub fn run(self, vm: &mut VM) -> Result<(), VMRunError> {{
-        match self {{
-            {"            ".join([inst.run_arm() for inst in modules.all_inst()])}
+        static RUN_TABLE: [fn(RawInst, &mut VM) -> Result<(), VMRunError>; {len(modules.all_inst())}] = [
+            {"            ".join([inst.jump_table_entry() for inst in modules.all_inst()])}
+        ];
+        
+        let id = self.discriminant() as usize;
+        let raw_inst = self.inner();
+        unsafe {{
+            RUN_TABLE.get_unchecked(id)(raw_inst, vm)
         }}
     }}""")
     
@@ -103,10 +112,17 @@ impl Inst {{
             {"            ".join([f"Inst::{inst.symbol}(v) => v," for inst in modules.all_inst()])}
         }}
     }}""")
+    
     gen(f"""
     #[inline]
     pub const fn raw(self) -> Word {{
         self.inner().raw()
+    }}""")
+    
+    gen(f"""
+    #[inline]
+    pub const fn discriminant(&self) -> u8 {{
+        unsafe {{ *(self as *const Self as *const u8) }}
     }}""")
 
     # finish impl
