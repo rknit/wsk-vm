@@ -27,3 +27,4 @@
 - [ ] tree-based decoder (tri-ary tree)
 - [ ] copying implementations into run function (to avoid making a stackframe)
 - [ ] prefetching instructions (branch predictions)
+- [ ] remove RunData and use RawInst and VM directly?

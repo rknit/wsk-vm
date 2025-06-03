@@ -47,14 +47,11 @@ def gen_main(modules: Modules) -> str:
 
     # create Inst enum
     gen("#[derive(Debug, Clone, Copy)]")
-    gen("#[repr(u8)]")
     gen("pub enum Inst {")
-    i = 0
     for mod_idx, mod in enumerate(modules.mods()):
         gen(f"    // {mod.name.upper()}")
         for inst in mod.insts:
-            gen(f"    {inst.enum_variant()} = {i},")
-            i += 1
+            gen(f"    {inst.enum_variant()},")
         if mod_idx + 1 != modules.len():
             gen()
     gen("}")
@@ -75,21 +72,19 @@ impl Inst {{
     gen(f"""
     #[inline]
     pub fn run(self, vm: &mut VM) -> Result<(), VMRunError> {{
-        static RUN_TABLE: [fn(RawInst, &mut VM) -> Result<(), VMRunError>; {len(modules.all_inst())}] = [
+        const RUN_TABLE: [fn(RawInst, &mut VM) -> Result<(), VMRunError>; {len(modules.all_inst())}] = [
             {"            ".join([inst.jump_table_entry() for inst in modules.all_inst()])}
         ];
         
-        let id = self.discriminant() as usize;
+        let id = self.discriminant();
         let raw_inst = self.inner();
-        unsafe {{
-            RUN_TABLE.get_unchecked(id)(raw_inst, vm)
-        }}
+        RUN_TABLE[id](raw_inst, vm)
     }}""")
     
     # name function
     gen(f"""
     #[inline]
-    pub const fn name(self) -> &'static str {{
+    pub const fn name(&self) -> &'static str {{
         match self {{
             {"            ".join([inst.name_arm() for inst in modules.all_inst()])}
         }}
@@ -98,7 +93,7 @@ impl Inst {{
     # format function
     gen(f"""
     #[inline]
-    pub const fn format(self) -> Format {{
+    pub const fn format(&self) -> Format {{
         match self {{
             {"            ".join([inst.format_arm() for inst in modules.all_inst()])}
         }}
@@ -121,8 +116,10 @@ impl Inst {{
     
     gen(f"""
     #[inline]
-    pub const fn discriminant(&self) -> u8 {{
-        unsafe {{ *(self as *const Self as *const u8) }}
+    pub const fn discriminant(&self) -> UHSize {{
+        match self {{
+            {"            ".join([f"Inst::{inst.symbol}(_) => {i}," for i, inst in enumerate(modules.all_inst())])}
+        }}
     }}""")
 
     # finish impl

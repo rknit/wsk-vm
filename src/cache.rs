@@ -15,23 +15,20 @@ impl<V: Default + Copy> Cache<V> {
         }
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn get(&mut self, key: UArch) -> Option<&V> {
         let idx = (key & self.cap) as UHSize;
-
-        if unsafe { *self.keys.get_unchecked(idx) } == key {
+        if self.keys[idx] == key {
             Some(&self.values[idx])
         } else {
             None
         }
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn put(&mut self, key: UArch, value: V) {
         let idx = (key & self.cap) as UHSize;
-        unsafe {
-            *self.keys.get_unchecked_mut(idx) = key;
-            *self.values.get_unchecked_mut(idx) = value;
-        }
+        self.keys[idx] = key;
+        self.values[idx] = value;
     }
 }

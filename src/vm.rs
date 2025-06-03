@@ -9,7 +9,7 @@ use crate::{
     Byte, Exception, Half, Inst, InstReport, SArch, SHalf, UArch, UHSize, Word, cache::Cache,
 };
 
-const REG_COUNT: usize = 32;
+const REG_COUNT: UHSize = 32;
 
 const MEM_LEN: UArch = 64 * MEGABYTE;
 
@@ -23,6 +23,7 @@ const MEGABYTE: UArch = 1024 * 1024;
 
 const CACHE_CAPACITY: UArch = 16384;
 
+#[repr(align(64))]
 pub struct VM {
     regs: [UArch; REG_COUNT],
     mem: Box<[Byte]>,
@@ -167,6 +168,7 @@ impl VM {
         Ok(())
     }
 
+    #[inline]
     pub fn run(&mut self) -> Result<Byte, VMRunError> {
         while !self.halt {
             self.step()?;
@@ -246,6 +248,7 @@ impl VM {
         ]))
     }
 
+    #[inline]
     pub fn mem(&self, addr: UArch) -> Result<Byte, VMRunError> {
         if addr < MEM_LEN {
             Ok(self.mem[addr as UHSize])
@@ -258,6 +261,7 @@ impl VM {
         }
     }
 
+    #[inline]
     pub fn mem_range(&self, addr: UArch, len: UArch) -> Result<&[Byte], VMRunError> {
         if addr + len < MEM_LEN {
             Ok(&self.mem[addr as UHSize..(addr + len) as UHSize])
@@ -270,6 +274,7 @@ impl VM {
         }
     }
 
+    #[inline]
     pub fn mem_range_mut(&mut self, addr: UArch, len: UArch) -> Result<&mut [Byte], VMRunError> {
         if addr + len < MEM_LEN {
             Ok(&mut self.mem[addr as UHSize..(addr + len) as UHSize])
@@ -282,6 +287,7 @@ impl VM {
         }
     }
 
+    #[inline]
     pub fn set_mem(&mut self, addr: UArch, value: Byte) -> Result<(), VMRunError> {
         if addr < MEM_LEN {
             self.mem[addr as UHSize] = value;
@@ -295,6 +301,7 @@ impl VM {
         }
     }
 
+    #[inline]
     pub fn set_mem_range(&mut self, addr: UArch, values: &[Byte]) -> Result<(), VMRunError> {
         if addr < MEM_LEN {
             let mem = self.mem_range_mut(addr, values.len() as UArch).unwrap();
@@ -309,18 +316,27 @@ impl VM {
         }
     }
 
+    #[inline(always)]
     pub fn x(&self, i: Byte) -> UArch {
-        let i = i as usize;
-        assert!(i < REG_COUNT, "invalid register");
-        if i == 0 { 0 } else { self.regs[i] }
+        debug_assert!((i as UHSize) < REG_COUNT, "invalid register");
+        if i == 0 {
+            return 0;
+        } else {
+            self.regs[i as UHSize]
+        }
     }
 
+    #[inline(always)]
     pub fn set_x(&mut self, i: Byte, val: UArch) {
-        let i = i as usize;
-        assert!(i < REG_COUNT, "invalid register");
-        self.regs[i] = val;
+        debug_assert!((i as UHSize) < REG_COUNT, "invalid register");
+        if i == 0 {
+            self.regs[i as UHSize] = 0;
+        } else {
+            self.regs[i as UHSize] = val;
+        }
     }
 
+    #[inline]
     pub fn jump(&mut self, addr: UArch, dec_4: bool) -> Result<(), VMRunError> {
         if addr < PROG_LEN {
             if dec_4 {
@@ -339,6 +355,7 @@ impl VM {
         }
     }
 
+    #[inline]
     pub fn jump_pc_rel(&mut self, offset: SArch, dec_4: bool) -> Result<(), VMRunError> {
         let addr = self.pc.wrapping_add_signed(offset) & !1;
         if addr < PROG_LEN {
@@ -352,6 +369,7 @@ impl VM {
         }
     }
 
+    #[inline]
     pub fn raise(&mut self, ex: Exception) -> Result<(), VMRunError> {
         match ex {
             Exception::Ecall => self.syscall(),
