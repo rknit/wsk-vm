@@ -1,6 +1,6 @@
 class Inst:
     def __init__(self, name: str, format: str, bit_pat: str, pats: list[tuple[int, int, str]]) -> None:
-        assert len(format) == 1, "format must be a single character"
+        assert 0 < len(format) <= 3, "format must be 1-3 characters long"
         self.raw_name = name
         self.format = format.strip().upper()
         self.symbol = "".join([part.capitalize() if len(part) > 1 else part.upper() for part in name.strip().lower().split(".")])
@@ -46,10 +46,15 @@ class Module:
         self.name = name
         self.file_name = name.lower()
         self.insts: list[Inst] = list()
+        self.bit_len = 32
 
     def append(self, inst: Inst):
-        assert inst not in self.insts, "duplicate inst"
+        assert inst not in self.insts, f"duplicate inst {inst.raw_name}: {inst.bit_pat}"
         self.insts.append(inst)
+
+    @staticmethod
+    def is_module_info(tag: str) -> bool:
+        return tag in { "bit_len" }
 
 
 class Modules:

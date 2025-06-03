@@ -10,6 +10,16 @@ pub enum Format {
     B,
     U,
     J,
+
+    CR,
+    CI,
+    CSS,
+    CIW,
+    CL,
+    CS,
+    CA,
+    CB,
+    CJ,
 }
 
 pub struct RunData<'vm> {

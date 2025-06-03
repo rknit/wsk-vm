@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::{Byte, format::Format, SArch, insts::Inst, SWord, UArch};
+use crate::{Byte, SArch, SWord, UArch, format::Format, insts::Inst};
 
 pub struct InstReport {
     pub addr: UArch,
@@ -74,6 +74,7 @@ impl InstReport {
                 )
             }
             Format::Unknown => write!(f, "<unknown format>"),
+            _ => todo!(),
         }
     }
 }

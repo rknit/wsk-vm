@@ -208,3 +208,61 @@ fsd = "XXXXX_XX_XXXXX_XXXXX_011_XXXXX_01001_11"
 'fcvt.d.l' = "11010_01_00010_XXXXX_XXX_XXXXX_10100_11"
 'fcvt.d.lu' = "11010_01_00011_XXXXX_XXX_XXXXX_10100_11"
 'fmv.d.x' = "11110_01_00000_XXXXX_000_XXXXX_10100_11"
+
+[rv64c]
+bit_len = 16
+
+[rv64c.cr]
+'c.jr' = "1000_XXXXX_00000_10"
+'c.mv' = "1000_XXXXX_XXXXX_10"
+'c.ebreak' = "1001_00000_00000_10"
+'c.jalr' = "1001_XXXXX_00000_10"
+'c.add' = "1001_XXXXX_XXXXX_10"
+
+[rv64c.ci]
+'c.nop' = "000_X_00000_XXXXX_01"
+'c.addi' = "000_X_XXXXX_XXXXX_01"
+'c.addiw' = "001_X_XXXXX_XXXXX_01"
+'c.li' = "010_X_XXXXX_XXXXX_01"
+'c.addi16sp' = "011_X_00010_XXXXX_01"
+'c.lui' = "011_X_XXXXX_XXXXX_01"
+'c.srli' = "100_X_00_XXX_XXXXX_01"
+'c.srai' = "100_X_01_XXX_XXXXX_01"
+'c.andi' = "100_X_10_XXX_XXXXX_01"
+'c.slli' = "000_X_XXXXX_XXXXX_10"
+'c.fldsp' = "001_X_XXXXX_XXXXX_10"
+'c.lwsp' = "010_X_XXXXX_XXXXX_10"
+'c.ldsp' = "011_X_XXXXX_XXXXX_10"
+
+[rv64c.css]
+'c.fsdsp' = "101_XXXXXX_XXXXX_10"
+'c.swsp' = "110_XXXXXX_XXXXX_10"
+'c.sdsp' = "111_XXXXXX_XXXXX_10"
+
+[rv64c.ciw]
+'c.addi4spn' = "000_XXXXXXXX_XXX_00"
+
+[rv64c.cl]
+'c.fld' = "001_XXX_XXX_XX_XXX_00"
+'c.lw' = "010_XXX_XXX_XX_XXX_00"
+'c.ld' = "011_XXX_XXX_XX_XXX_00"
+
+[rv64c.cs]
+'c.fsd' = "101_XXX_XXX_XX_XXX_00"
+'c.sw' = "110_XXX_XXX_XX_XXX_00"
+'c.sd' = "111_XXX_XXX_XX_XXX_00"
+
+[rv64c.ca]
+'c.sub' = "100011_XXX_00_XXX_01"
+'c.xor' = "100011_XXX_01_XXX_01"
+'c.or' = "100011_XXX_10_XXX_01"
+'c.and' = "100011_XXX_11_XXX_01"
+'c.subw' = "100111_XXX_00_XXX_01"
+'c.addw' = "100111_XXX_01_XXX_01"
+
+[rv64c.cb]
+'c.beqz' = "110_XXX_XXX_XXXXX_01"
+'c.bnez' = "111_XXX_XXX_XXXXX_01"
+
+[rv64c.cj]
+'c.j' = "101_XXXXXXXXXXX_01"

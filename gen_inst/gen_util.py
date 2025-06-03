@@ -11,10 +11,21 @@ def read_insts(path: str) -> Modules:
     with open(path, "r") as file:
         data = toml.load(file)
         
-        for mod_name, format in data.items():
+        for mod_name, mod_data in data.items():
             module = Module(mod_name)
-            for format, inst_data in format.items():
+            
+            module.bit_len = mod_data.get("bit_len", 32)
+            assert module.bit_len in {16, 32}, "bit_len must be either 16 or 32"
+            
+            for tag, tag_data in mod_data.items():
+                if Module.is_module_info(tag):
+                    continue
+                format, inst_data = tag, tag_data
+                
                 for inst_name, bit_pat in inst_data.items():
+                    if module.bit_len != 32:
+                        bit_pat = "0" * (32 - module.bit_len) + bit_pat
+                    
                     pats = get_match_pat_from_bit_pat(bit_pat)
                     module.append(Inst(name=inst_name, format=format, bit_pat=bit_pat, pats=pats))
             modules.append(module)

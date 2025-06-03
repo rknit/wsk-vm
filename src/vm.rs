@@ -5,7 +5,7 @@ use std::{
 
 use log::{info, log_enabled, trace};
 
-use crate::{Byte, Exception, Inst, InstReport, SArch, SHalf, UArch, UHSize, Word};
+use crate::{Byte, Exception, Half, Inst, InstReport, SArch, SHalf, UArch, UHSize, Word};
 
 const REG_COUNT: usize = 32;
 
@@ -23,6 +23,7 @@ pub struct VM {
     regs: [UArch; REG_COUNT],
     mem: Box<[Byte]>,
     pub pc: UArch,
+    inst_alignment: InstAlignmentMode,
 
     pub(crate) halt: bool,
     pub(crate) exit_code: Byte,
@@ -35,6 +36,7 @@ impl VM {
             regs: Default::default(),
             mem: vec![0; MEM_LEN as UHSize].into_boxed_slice(),
             pc: PROG_BEGIN,
+            inst_alignment: InstAlignmentMode::Word,
 
             halt: false,
             exit_code: 0,
@@ -168,7 +170,7 @@ impl VM {
     }
 
     pub fn step(&mut self) -> Result<(), VMRunError> {
-        let inst = self.fetch_inst(self.pc)?;
+        let (inst, align) = self.fetch_inst(self.pc)?;
         if log_enabled!(log::Level::Trace) {
             trace!(
                 "{}",
@@ -180,33 +182,96 @@ impl VM {
         }
 
         inst.run(self)?;
-        self.pc = (self.pc + 4) % (PROG_LEN);
+
+        self.inst_alignment = align;
+        self.pc = (self.pc + self.inst_alignment.len()) % (PROG_LEN);
         Ok(())
     }
 
-    pub fn fetch_inst(&self, addr: UArch) -> Result<Inst, VMRunError> {
-        if addr % 4 != 0 {
+    pub fn fetch_inst(&self, addr: UArch) -> Result<(Inst, InstAlignmentMode), VMRunError> {
+        if addr % self.inst_alignment.len() != 0 {
             return Err(VMRunError {
                 err_addr: addr,
-                kind: VMRunErrorKind::Alignment,
-                info: "inst alignment",
+                kind: VMRunErrorKind::Misalignment(self.inst_alignment.len()),
+                info: "inst address alignment",
             });
         }
 
-        let inst32 = {
-            let [b1, b2, b3, b4] = self.mem[addr as UHSize..addr as UHSize + 4] else {
-                unreachable!();
-            };
-            u32::from_le_bytes([b1, b2, b3, b4])
-        };
+        let (inst, align) = self.solve_alignment(
+            addr,
+            match self.inst_alignment {
+                InstAlignmentMode::Word => self.fetch_word(addr)?,
+                InstAlignmentMode::Half => self.fetch_half(addr)? as Word,
+            },
+        )?;
 
-        let inst = Inst::decode(inst32).ok_or_else(|| VMRunError {
+        let inst = Inst::decode(inst).ok_or_else(|| VMRunError {
             err_addr: addr,
-            kind: VMRunErrorKind::UnknownInst(inst32),
+            kind: VMRunErrorKind::UnknownInst(inst),
             info: "fetch_inst (decode)",
         })?;
 
-        Ok(inst)
+        Ok((inst, align))
+    }
+
+    fn solve_alignment(
+        &self,
+        addr: UArch,
+        inst: Word,
+    ) -> Result<(Word, InstAlignmentMode), VMRunError> {
+        match self.inst_alignment {
+            InstAlignmentMode::Word => {
+                if inst & 0b11 == 0b11 {
+                    return Ok((inst, InstAlignmentMode::Word));
+                }
+
+                let inst16 = inst >> 16;
+                if inst16 & 0b11 != 0b11 {
+                    return Ok((inst16, InstAlignmentMode::Half));
+                }
+
+                Err(VMRunError {
+                    err_addr: addr,
+                    kind: VMRunErrorKind::Misalignment(self.inst_alignment.len()),
+                    info: "fail to solve alignment for word",
+                })
+            }
+            InstAlignmentMode::Half => {
+                if inst & 0b11 != 0b11 {
+                    return Ok((inst, InstAlignmentMode::Half));
+                }
+
+                let Ok(word) = self.fetch_word(addr) else {
+                    return Err(VMRunError {
+                        err_addr: addr,
+                        kind: VMRunErrorKind::Misalignment(self.inst_alignment.len()),
+                        info: "fail to solve alignment for half (out of bound)",
+                    });
+                };
+
+                if word & 0b11 == 0b11 {
+                    return Ok((word, InstAlignmentMode::Word));
+                }
+
+                Err(VMRunError {
+                    err_addr: addr,
+                    kind: VMRunErrorKind::Misalignment(self.inst_alignment.len()),
+                    info: "fail to solve alignment for half",
+                })
+            }
+        }
+    }
+
+    fn fetch_word(&self, addr: UArch) -> Result<Word, VMRunError> {
+        let bytes = self.mem_range(addr, 4)?;
+        Ok(Word::from_le_bytes([
+            bytes[0], bytes[1], bytes[2], bytes[3],
+        ]))
+    }
+
+    fn fetch_half(&self, addr: UArch) -> Result<Half, VMRunError> {
+        let bytes = self.mem_range(addr, 2)?;
+        Ok(Half::from_le_bytes([bytes[0], bytes[1]]))
     }
 
     pub fn mem(&self, addr: UArch) -> Result<Byte, VMRunError> {
@@ -322,6 +387,19 @@ impl VM {
     }
 }
 
+pub enum InstAlignmentMode {
+    Word,
+    Half,
+}
+impl InstAlignmentMode {
+    fn len(&self) -> UArch {
+        match self {
+            Self::Word => 4,
+            Self::Half => 2,
+        }
+    }
+}
+
 #[derive(Debug)]
 pub enum VMLoadError {
     Unknown(String),
@@ -350,7 +428,7 @@ impl Display for VMRunError {
 
 #[derive(Debug)]
 pub enum VMRunErrorKind {
-    Alignment,
+    Misalignment(UArch),
     UnknownInst(Word),
     InvalidAddress(UArch),
     UnknownSyscall(SHalf),
@@ -360,7 +438,7 @@ pub enum VMRunErrorKind {
 impl Display for VMRunErrorKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Alignment => write!(f, "address misalignment"),
+            Self::Misalignment(align) => write!(f, "address misalignment to multiple of {align}"),
             Self::UnknownInst(inst) => write!(f, "unknown inst: {inst:08x}"),
             Self::InvalidAddress(addr) => write!(f, "invalid address {addr:x}"),
             Self::UnknownSyscall(code) => write!(f, "unknown syscall: {code}"),

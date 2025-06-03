@@ -39,6 +39,9 @@ use rv64f::*;
 mod rv64d;
 use rv64d::*;
 
+mod rv64c;
+use rv64c::*;
+
 #[derive(Debug, Clone, Copy)]
 pub enum Inst {
     // RV32I_RV64I
@@ -219,6 +222,45 @@ pub enum Inst {
     FcvtDL(RawInst),
     FcvtDLu(RawInst),
     FmvDX(RawInst),
+
+    // RV64C
+    CJr(RawInst),
+    CMv(RawInst),
+    CEbreak(RawInst),
+    CJalr(RawInst),
+    CAdd(RawInst),
+    CNop(RawInst),
+    CAddi(RawInst),
+    CAddiw(RawInst),
+    CLi(RawInst),
+    CAddi16sp(RawInst),
+    CLui(RawInst),
+    CSrli(RawInst),
+    CSrai(RawInst),
+    CAndi(RawInst),
+    CSlli(RawInst),
+    CFldsp(RawInst),
+    CLwsp(RawInst),
+    CLdsp(RawInst),
+    CFsdsp(RawInst),
+    CSwsp(RawInst),
+    CSdsp(RawInst),
+    CAddi4spn(RawInst),
+    CFld(RawInst),
+    CLw(RawInst),
+    CLd(RawInst),
+    CFsd(RawInst),
+    CSw(RawInst),
+    CSd(RawInst),
+    CSub(RawInst),
+    CXor(RawInst),
+    COr(RawInst),
+    CAnd(RawInst),
+    CSubw(RawInst),
+    CAddw(RawInst),
+    CBeqz(RawInst),
+    CBnez(RawInst),
+    CJ(RawInst),
 }
 
 impl Inst {
@@ -940,6 +982,154 @@ impl Inst {
             {
                 Inst::FmvDX(inst.into())
             }
+            v if ext!(v, Word; 6;0) == 0b0000010
+                && ext!(v, Word; 31;12) == 0b00000000000000001000 =>
+            {
+                Inst::CJr(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b10 && ext!(v, Word; 31;12) == 0b00000000000000001000 => {
+                Inst::CMv(inst.into())
+            }
+            v if ext!(v, Word; 31;0) == 0b00000000000000001001000000000010 => {
+                Inst::CEbreak(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b0000010
+                && ext!(v, Word; 31;12) == 0b00000000000000001001 =>
+            {
+                Inst::CJalr(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b10 && ext!(v, Word; 31;12) == 0b00000000000000001001 => {
+                Inst::CAdd(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b01
+                && ext!(v, Word; 11;7) == 0b00000
+                && ext!(v, Word; 31;13) == 0b0000000000000000000 =>
+            {
+                Inst::CNop(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b01 && ext!(v, Word; 31;13) == 0b0000000000000000000 => {
+                Inst::CAddi(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b01 && ext!(v, Word; 31;13) == 0b0000000000000000001 => {
+                Inst::CAddiw(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b01 && ext!(v, Word; 31;13) == 0b0000000000000000010 => {
+                Inst::CLi(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b01
+                && ext!(v, Word; 11;7) == 0b00010
+                && ext!(v, Word; 31;13) == 0b0000000000000000011 =>
+            {
+                Inst::CAddi16sp(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b01 && ext!(v, Word; 31;13) == 0b0000000000000000011 => {
+                Inst::CLui(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b01
+                && ext!(v, Word; 11;10) == 0b00
+                && ext!(v, Word; 31;13) == 0b0000000000000000100 =>
+            {
+                Inst::CSrli(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b01
+                && ext!(v, Word; 11;10) == 0b01
+                && ext!(v, Word; 31;13) == 0b0000000000000000100 =>
+            {
+                Inst::CSrai(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b01
+                && ext!(v, Word; 11;10) == 0b10
+                && ext!(v, Word; 31;13) == 0b0000000000000000100 =>
+            {
+                Inst::CAndi(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b10 && ext!(v, Word; 31;13) == 0b0000000000000000000 => {
+                Inst::CSlli(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b10 && ext!(v, Word; 31;13) == 0b0000000000000000001 => {
+                Inst::CFldsp(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b10 && ext!(v, Word; 31;13) == 0b0000000000000000010 => {
+                Inst::CLwsp(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b10 && ext!(v, Word; 31;13) == 0b0000000000000000011 => {
+                Inst::CLdsp(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b10 && ext!(v, Word; 31;13) == 0b0000000000000000101 => {
+                Inst::CFsdsp(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b10 && ext!(v, Word; 31;13) == 0b0000000000000000110 => {
+                Inst::CSwsp(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b10 && ext!(v, Word; 31;13) == 0b0000000000000000111 => {
+                Inst::CSdsp(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b00 && ext!(v, Word; 31;13) == 0b0000000000000000000 => {
+                Inst::CAddi4spn(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b00 && ext!(v, Word; 31;13) == 0b0000000000000000001 => {
+                Inst::CFld(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b00 && ext!(v, Word; 31;13) == 0b0000000000000000010 => {
+                Inst::CLw(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b00 && ext!(v, Word; 31;13) == 0b0000000000000000011 => {
+                Inst::CLd(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b00 && ext!(v, Word; 31;13) == 0b0000000000000000101 => {
+                Inst::CFsd(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b00 && ext!(v, Word; 31;13) == 0b0000000000000000110 => {
+                Inst::CSw(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b00 && ext!(v, Word; 31;13) == 0b0000000000000000111 => {
+                Inst::CSd(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b01
+                && ext!(v, Word; 6;5) == 0b00
+                && ext!(v, Word; 31;10) == 0b0000000000000000100011 =>
+            {
+                Inst::CSub(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b01
+                && ext!(v, Word; 6;5) == 0b01
+                && ext!(v, Word; 31;10) == 0b0000000000000000100011 =>
+            {
+                Inst::CXor(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b01
+                && ext!(v, Word; 6;5) == 0b10
+                && ext!(v, Word; 31;10) == 0b0000000000000000100011 =>
+            {
+                Inst::COr(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b01
+                && ext!(v, Word; 6;5) == 0b11
+                && ext!(v, Word; 31;10) == 0b0000000000000000100011 =>
+            {
+                Inst::CAnd(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b01
+                && ext!(v, Word; 6;5) == 0b00
+                && ext!(v, Word; 31;10) == 0b0000000000000000100111 =>
+            {
+                Inst::CSubw(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b01
+                && ext!(v, Word; 6;5) == 0b01
+                && ext!(v, Word; 31;10) == 0b0000000000000000100111 =>
+            {
+                Inst::CAddw(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b01 && ext!(v, Word; 31;13) == 0b0000000000000000110 => {
+                Inst::CBeqz(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b01 && ext!(v, Word; 31;13) == 0b0000000000000000111 => {
+                Inst::CBnez(inst.into())
+            }
+            v if ext!(v, Word; 1;0) == 0b01 && ext!(v, Word; 31;13) == 0b0000000000000000101 => {
+                Inst::CJ(inst.into())
+            }
             #[allow(unreachable_patterns)]
             _ => return None,
         })
@@ -1108,6 +1298,43 @@ impl Inst {
             Inst::FcvtDL(inst) => FcvtDL::run(RunData::new(inst, vm)),
             Inst::FcvtDLu(inst) => FcvtDLu::run(RunData::new(inst, vm)),
             Inst::FmvDX(inst) => FmvDX::run(RunData::new(inst, vm)),
+            Inst::CJr(inst) => CJr::run(RunData::new(inst, vm)),
+            Inst::CMv(inst) => CMv::run(RunData::new(inst, vm)),
+            Inst::CEbreak(inst) => CEbreak::run(RunData::new(inst, vm)),
+            Inst::CJalr(inst) => CJalr::run(RunData::new(inst, vm)),
+            Inst::CAdd(inst) => CAdd::run(RunData::new(inst, vm)),
+            Inst::CNop(inst) => CNop::run(RunData::new(inst, vm)),
+            Inst::CAddi(inst) => CAddi::run(RunData::new(inst, vm)),
+            Inst::CAddiw(inst) => CAddiw::run(RunData::new(inst, vm)),
+            Inst::CLi(inst) => CLi::run(RunData::new(inst, vm)),
+            Inst::CAddi16sp(inst) => CAddi16sp::run(RunData::new(inst, vm)),
+            Inst::CLui(inst) => CLui::run(RunData::new(inst, vm)),
+            Inst::CSrli(inst) => CSrli::run(RunData::new(inst, vm)),
+            Inst::CSrai(inst) => CSrai::run(RunData::new(inst, vm)),
+            Inst::CAndi(inst) => CAndi::run(RunData::new(inst, vm)),
+            Inst::CSlli(inst) => CSlli::run(RunData::new(inst, vm)),
+            Inst::CFldsp(inst) => CFldsp::run(RunData::new(inst, vm)),
+            Inst::CLwsp(inst) => CLwsp::run(RunData::new(inst, vm)),
+            Inst::CLdsp(inst) => CLdsp::run(RunData::new(inst, vm)),
+            Inst::CFsdsp(inst) => CFsdsp::run(RunData::new(inst, vm)),
+            Inst::CSwsp(inst) => CSwsp::run(RunData::new(inst, vm)),
+            Inst::CSdsp(inst) => CSdsp::run(RunData::new(inst, vm)),
+            Inst::CAddi4spn(inst) => CAddi4spn::run(RunData::new(inst, vm)),
+            Inst::CFld(inst) => CFld::run(RunData::new(inst, vm)),
+            Inst::CLw(inst) => CLw::run(RunData::new(inst, vm)),
+            Inst::CLd(inst) => CLd::run(RunData::new(inst, vm)),
+            Inst::CFsd(inst) => CFsd::run(RunData::new(inst, vm)),
+            Inst::CSw(inst) => CSw::run(RunData::new(inst, vm)),
+            Inst::CSd(inst) => CSd::run(RunData::new(inst, vm)),
+            Inst::CSub(inst) => CSub::run(RunData::new(inst, vm)),
+            Inst::CXor(inst) => CXor::run(RunData::new(inst, vm)),
+            Inst::COr(inst) => COr::run(RunData::new(inst, vm)),
+            Inst::CAnd(inst) => CAnd::run(RunData::new(inst, vm)),
+            Inst::CSubw(inst) => CSubw::run(RunData::new(inst, vm)),
+            Inst::CAddw(inst) => CAddw::run(RunData::new(inst, vm)),
+            Inst::CBeqz(inst) => CBeqz::run(RunData::new(inst, vm)),
+            Inst::CBnez(inst) => CBnez::run(RunData::new(inst, vm)),
+            Inst::CJ(inst) => CJ::run(RunData::new(inst, vm)),
         }
     }
 
@@ -1274,6 +1501,43 @@ impl Inst {
             Inst::FcvtDL(_) => "fcvt.d.l",
             Inst::FcvtDLu(_) => "fcvt.d.lu",
             Inst::FmvDX(_) => "fmv.d.x",
+            Inst::CJr(_) => "c.jr",
+            Inst::CMv(_) => "c.mv",
+            Inst::CEbreak(_) => "c.ebreak",
+            Inst::CJalr(_) => "c.jalr",
+            Inst::CAdd(_) => "c.add",
+            Inst::CNop(_) => "c.nop",
+            Inst::CAddi(_) => "c.addi",
+            Inst::CAddiw(_) => "c.addiw",
+            Inst::CLi(_) => "c.li",
+            Inst::CAddi16sp(_) => "c.addi16sp",
+            Inst::CLui(_) => "c.lui",
+            Inst::CSrli(_) => "c.srli",
+            Inst::CSrai(_) => "c.srai",
+            Inst::CAndi(_) => "c.andi",
+            Inst::CSlli(_) => "c.slli",
+            Inst::CFldsp(_) => "c.fldsp",
+            Inst::CLwsp(_) => "c.lwsp",
+            Inst::CLdsp(_) => "c.ldsp",
+            Inst::CFsdsp(_) => "c.fsdsp",
+            Inst::CSwsp(_) => "c.swsp",
+            Inst::CSdsp(_) => "c.sdsp",
+            Inst::CAddi4spn(_) => "c.addi4spn",
+            Inst::CFld(_) => "c.fld",
+            Inst::CLw(_) => "c.lw",
+            Inst::CLd(_) => "c.ld",
+            Inst::CFsd(_) => "c.fsd",
+            Inst::CSw(_) => "c.sw",
+            Inst::CSd(_) => "c.sd",
+            Inst::CSub(_) => "c.sub",
+            Inst::CXor(_) => "c.xor",
+            Inst::COr(_) => "c.or",
+            Inst::CAnd(_) => "c.and",
+            Inst::CSubw(_) => "c.subw",
+            Inst::CAddw(_) => "c.addw",
+            Inst::CBeqz(_) => "c.beqz",
+            Inst::CBnez(_) => "c.bnez",
+            Inst::CJ(_) => "c.j",
         }
     }
 
@@ -1440,6 +1704,43 @@ impl Inst {
             Inst::FcvtDL(_) => Format::R,
             Inst::FcvtDLu(_) => Format::R,
             Inst::FmvDX(_) => Format::R,
+            Inst::CJr(_) => Format::CR,
+            Inst::CMv(_) => Format::CR,
+            Inst::CEbreak(_) => Format::CR,
+            Inst::CJalr(_) => Format::CR,
+            Inst::CAdd(_) => Format::CR,
+            Inst::CNop(_) => Format::CI,
+            Inst::CAddi(_) => Format::CI,
+            Inst::CAddiw(_) => Format::CI,
+            Inst::CLi(_) => Format::CI,
+            Inst::CAddi16sp(_) => Format::CI,
+            Inst::CLui(_) => Format::CI,
+            Inst::CSrli(_) => Format::CI,
+            Inst::CSrai(_) => Format::CI,
+            Inst::CAndi(_) => Format::CI,
+            Inst::CSlli(_) => Format::CI,
+            Inst::CFldsp(_) => Format::CI,
+            Inst::CLwsp(_) => Format::CI,
+            Inst::CLdsp(_) => Format::CI,
+            Inst::CFsdsp(_) => Format::CSS,
+            Inst::CSwsp(_) => Format::CSS,
+            Inst::CSdsp(_) => Format::CSS,
+            Inst::CAddi4spn(_) => Format::CIW,
+            Inst::CFld(_) => Format::CL,
+            Inst::CLw(_) => Format::CL,
+            Inst::CLd(_) => Format::CL,
+            Inst::CFsd(_) => Format::CS,
+            Inst::CSw(_) => Format::CS,
+            Inst::CSd(_) => Format::CS,
+            Inst::CSub(_) => Format::CA,
+            Inst::CXor(_) => Format::CA,
+            Inst::COr(_) => Format::CA,
+            Inst::CAnd(_) => Format::CA,
+            Inst::CSubw(_) => Format::CA,
+            Inst::CAddw(_) => Format::CA,
+            Inst::CBeqz(_) => Format::CB,
+            Inst::CBnez(_) => Format::CB,
+            Inst::CJ(_) => Format::CJ,
         }
     }
 
@@ -1606,6 +1907,43 @@ impl Inst {
             Inst::FcvtDL(v) => v,
             Inst::FcvtDLu(v) => v,
             Inst::FmvDX(v) => v,
+            Inst::CJr(v) => v,
+            Inst::CMv(v) => v,
+            Inst::CEbreak(v) => v,
+            Inst::CJalr(v) => v,
+            Inst::CAdd(v) => v,
+            Inst::CNop(v) => v,
+            Inst::CAddi(v) => v,
+            Inst::CAddiw(v) => v,
+            Inst::CLi(v) => v,
+            Inst::CAddi16sp(v) => v,
+            Inst::CLui(v) => v,
+            Inst::CSrli(v) => v,
+            Inst::CSrai(v) => v,
+            Inst::CAndi(v) => v,
+            Inst::CSlli(v) => v,
+            Inst::CFldsp(v) => v,
+            Inst::CLwsp(v) => v,
+            Inst::CLdsp(v) => v,
+            Inst::CFsdsp(v) => v,
+            Inst::CSwsp(v) => v,
+            Inst::CSdsp(v) => v,
+            Inst::CAddi4spn(v) => v,
+            Inst::CFld(v) => v,
+            Inst::CLw(v) => v,
+            Inst::CLd(v) => v,
+            Inst::CFsd(v) => v,
+            Inst::CSw(v) => v,
+            Inst::CSd(v) => v,
+            Inst::CSub(v) => v,
+            Inst::CXor(v) => v,
+            Inst::COr(v) => v,
+            Inst::CAnd(v) => v,
+            Inst::CSubw(v) => v,
+            Inst::CAddw(v) => v,
+            Inst::CBeqz(v) => v,
+            Inst::CBnez(v) => v,
+            Inst::CJ(v) => v,
         }
     }
 

@@ -378,7 +378,7 @@ fn run_vm<W: Write, R: BufRead>(
 }
 
 fn new_report<W: Write, R: BufRead>(repl: &mut Repl<W, R>) -> Option<InstReport> {
-    let Ok(inst) = repl.vm.fetch_inst(repl.vm.pc) else {
+    let Ok((inst, _)) = repl.vm.fetch_inst(repl.vm.pc) else {
         return None;
     };
 
