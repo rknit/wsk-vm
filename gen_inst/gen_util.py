@@ -142,6 +142,7 @@ def gen_inst_impl(inst: Inst) -> str:
     return f"""
 pub struct {inst.symbol};
 impl {inst.symbol} {{
+    #[inline]
     pub fn run({inst.run_param()}) -> Result<(), VMRunError> {{
         {get_impl_start_token(inst)}
         {inst.impl if inst.impl else get_default_impl(inst)}

@@ -1964,6 +1964,6 @@ impl Inst {
 
     #[inline]
     pub const fn discriminant(&self) -> u8 {
-        unsafe { *(self as *const Self as *const u8) }
+        unsafe { std::mem::transmute_copy::<Self, u8>(self) }
     }
 }

@@ -9,6 +9,7 @@ use crate::*;
 
 pub struct Mul;
 impl Mul {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Mul$
         data.set_rd(data.r1s().wrapping_mul(data.r2s()) as UArch);
@@ -19,6 +20,7 @@ impl Mul {
 
 pub struct Mulh;
 impl Mulh {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Mulh$
         let r1 = data.r1s() as SDArch;
@@ -32,6 +34,7 @@ impl Mulh {
 
 pub struct Mulhsu;
 impl Mulhsu {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Mulhsu$
         let r1 = data.r1s() as SDArch;
@@ -45,6 +48,7 @@ impl Mulhsu {
 
 pub struct Mulhu;
 impl Mulhu {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Mulhu$
         let r1 = data.r1() as UDArch;
@@ -58,6 +62,7 @@ impl Mulhu {
 
 pub struct Div;
 impl Div {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Div$
         if data.r2() == 0 {
@@ -76,6 +81,7 @@ impl Div {
 
 pub struct Divu;
 impl Divu {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Divu$
         if data.r2() == 0 {
@@ -94,6 +100,7 @@ impl Divu {
 
 pub struct Rem;
 impl Rem {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Rem$
         if data.r2() == 0 {
@@ -112,6 +119,7 @@ impl Rem {
 
 pub struct Remu;
 impl Remu {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Remu$
         if data.r2() == 0 {

@@ -28,7 +28,7 @@ pub struct RunData<'vm> {
 }
 #[allow(dead_code)]
 impl<'vm> RunData<'vm> {
-    #[inline]
+    #[inline(always)]
     pub const fn new(inst: RawInst, vm: &'vm mut VM) -> Self {
         RunData { inst, vm }
     }

@@ -21,7 +21,7 @@ const PROG_BEGIN: UArch = 0;
 
 const MEGABYTE: UArch = 1024 * 1024;
 
-const CACHE_CAPACITY: UArch = 8192;
+const CACHE_CAPACITY: UArch = 16384;
 
 pub struct VM {
     regs: [UArch; REG_COUNT],
@@ -171,10 +171,6 @@ impl VM {
         while !self.halt {
             self.step()?;
         }
-        info!(
-            "VM inst cache hit rate: {:.2}%",
-            self.inst_cache.hit_ratio() * 100.0
-        );
         Ok(self.exit_code())
     }
 
