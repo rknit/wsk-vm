@@ -1,12 +1,12 @@
 #[inline]
 pub const fn mask(len: UArch) -> UArch {
-    !(0 as UArch) >> (8 * 8 - len)
+    !(0 as UArch) >> ((size_of::<UArch>() as UArch * 8) - len)
 }
 
 #[inline]
 pub const fn sext(v: UArch, sign_pos: UArch) -> SArch {
-    let v_shl = (v << (64 - sign_pos - 1)) as SArch;
-    let v_shr = v_shl >> (64 - sign_pos - 1);
+    let v_shl = (v << ((size_of::<UArch>() as UArch * 8) - sign_pos - 1)) as SArch;
+    let v_shr = v_shl >> ((size_of::<UArch>() as UArch * 8) - sign_pos - 1);
     v_shr
 }
 

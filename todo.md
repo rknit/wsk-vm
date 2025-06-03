@@ -16,9 +16,7 @@
   - [-] rv32f, rv64d
   - [-] rv64f
   - [-] rv64d
-  - [ ] rv32c, rv64c
-- [ ] 16 bits instruction mode
-  - [ ] if not 0b11 in 32 bits inst mode, then check for 16 bits mode.
-  - [ ] Inst::decode can behave as normal and top 16 bits is zeroed when decoding 16 bits inst
+  - [-] rv64c
+- [x] 16 bits instruction detection
 - [ ] load debug symbols
   - [ ] break at symbol
