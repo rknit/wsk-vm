@@ -89,7 +89,7 @@ pub struct Sra;
 impl Sra {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Sra$
-        data.set_rd((data.r1s() >> (data.r2() & 0b11111)) as u64);
+        data.set_rd((data.r1s() >> (data.r2() & 0b11111)) as UArch);
         Ok(())
         // $IMPL_END Sra$
     }
@@ -217,7 +217,7 @@ pub struct Srai;
 impl Srai {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Srai$
-        data.set_rd((data.r1s() >> (data.immu_fmt_i() & 0b111111)) as u64);
+        data.set_rd((data.r1s() >> (data.immu_fmt_i() & 0b111111)) as UArch);
         Ok(())
         // $IMPL_END Srai$
     }
@@ -227,10 +227,10 @@ pub struct Lb;
 impl Lb {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Lb$
-        let addr = data.r1().wrapping_add_signed(data.imm_fmt_i()) as usize;
+        let addr = data.r1().wrapping_add_signed(data.imm_fmt_i());
         let val = data.mem(addr)?;
-        let val = val as i8 as i64; // Sign-extend the byte
-        data.set_rd(val as u64);
+        let val = val as SByte as SArch; // Sign-extend the byte
+        data.set_rd(val as UArch);
         Ok(())
         // $IMPL_END Lb$
     }
@@ -240,10 +240,10 @@ pub struct Lh;
 impl Lh {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Lh$
-        let addr = data.r1().wrapping_add_signed(data.imm_fmt_i()) as usize;
+        let addr = data.r1().wrapping_add_signed(data.imm_fmt_i());
         let vals = data.vm.mem_range(addr, 2)?;
-        let val = u16::from_le_bytes([vals[0], vals[1]]) as i16 as i64; // Sign-extend the halfword
-        data.set_rd(val as u64);
+        let val = Half::from_le_bytes([vals[0], vals[1]]) as SHalf as SArch; // Sign-extend the halfword
+        data.set_rd(val as UArch);
         Ok(())
         // $IMPL_END Lh$
     }
@@ -253,10 +253,10 @@ pub struct Lw;
 impl Lw {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Lw$
-        let addr = data.r1().wrapping_add_signed(data.imm_fmt_i()) as usize;
+        let addr = data.r1().wrapping_add_signed(data.imm_fmt_i());
         let vals = data.mem_range(addr, 4)?;
-        let val = u32::from_le_bytes([vals[0], vals[1], vals[2], vals[3]]) as i32 as i64; // Sign-extend the word
-        data.set_rd(val as u64);
+        let val = Word::from_le_bytes([vals[0], vals[1], vals[2], vals[3]]) as SWord as SArch; // Sign-extend the word
+        data.set_rd(val as UArch);
         Ok(())
         // $IMPL_END Lw$
     }
@@ -266,9 +266,9 @@ pub struct Lbu;
 impl Lbu {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Lbu$
-        let addr = data.r1().wrapping_add_signed(data.imm_fmt_i()) as usize;
+        let addr = data.r1().wrapping_add_signed(data.imm_fmt_i());
         let val = data.mem(addr)?;
-        let val = val as u64; // Zero-extend the byte
+        let val = val as UArch; // Zero-extend the byte
         data.set_rd(val);
         Ok(())
         // $IMPL_END Lbu$
@@ -279,9 +279,9 @@ pub struct Lhu;
 impl Lhu {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Lhu$
-        let addr = data.r1().wrapping_add_signed(data.imm_fmt_i()) as usize;
+        let addr = data.r1().wrapping_add_signed(data.imm_fmt_i());
         let vals = data.mem_range(addr, 2)?;
-        let val = u16::from_le_bytes([vals[0], vals[1]]) as u64; // Zero-extend the halfword
+        let val = Half::from_le_bytes([vals[0], vals[1]]) as UArch; // Zero-extend the halfword
         data.set_rd(val);
         Ok(())
         // $IMPL_END Lhu$
@@ -293,9 +293,9 @@ impl Jalr {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Jalr$
         let return_address = data.vm.pc + 4;
-        let addr = data.r1().wrapping_add_signed(data.imm_fmt_i()) as usize;
+        let addr = data.r1().wrapping_add_signed(data.imm_fmt_i());
         data.vm.jump(addr & !1, true)?; // Jump to the target address
-        data.set_rd(return_address as u64); // Save the return address
+        data.set_rd(return_address); // Save the return address
         Ok(())
         // $IMPL_END Jalr$
     }
@@ -445,8 +445,8 @@ pub struct Sb;
 impl Sb {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Sb$
-        let addr = data.r1().wrapping_add_signed(data.imm_fmt_s()) as usize;
-        let val = data.r2() as u8; // Get the least significant byte
+        let addr = data.r1().wrapping_add_signed(data.imm_fmt_s());
+        let val = data.r2() as Byte; // Get the least significant byte
         data.set_mem(addr, val)?;
         Ok(())
         // $IMPL_END Sb$
@@ -457,8 +457,8 @@ pub struct Sh;
 impl Sh {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Sh$
-        let addr = data.r1().wrapping_add_signed(data.imm_fmt_s()) as usize;
-        let val = data.r2() as u16; // Get the least significant halfword
+        let addr = data.r1().wrapping_add_signed(data.imm_fmt_s());
+        let val = data.r2() as Half; // Get the least significant halfword
         let bytes = val.to_le_bytes();
         data.set_mem_range(addr, &bytes)?;
         Ok(())
@@ -470,8 +470,8 @@ pub struct Sw;
 impl Sw {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Sw$
-        let addr = data.r1().wrapping_add_signed(data.imm_fmt_s()) as usize;
-        let val = data.r2() as u32; // Get the least significant word
+        let addr = data.r1().wrapping_add_signed(data.imm_fmt_s());
+        let val = data.r2() as Word; // Get the least significant word
         let bytes = val.to_le_bytes();
         data.set_mem_range(addr, &bytes)?;
         Ok(())
@@ -484,7 +484,7 @@ impl Beq {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Beq$
         if data.r1() == data.r2() {
-            data.vm.jump_pc_rel(data.imm_fmt_b() as isize, true)?; // Jump to the target address
+            data.vm.jump_pc_rel(data.imm_fmt_b(), true)?; // Jump to the target address
         }
         Ok(())
         // $IMPL_END Beq$
@@ -496,7 +496,7 @@ impl Bne {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Bne$
         if data.r1() != data.r2() {
-            data.vm.jump_pc_rel(data.imm_fmt_b() as isize, true)?; // Jump to the target address
+            data.vm.jump_pc_rel(data.imm_fmt_b(), true)?; // Jump to the target address
         }
         Ok(())
         // $IMPL_END Bne$
@@ -508,7 +508,7 @@ impl Blt {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Blt$
         if data.r1s() < data.r2s() {
-            data.vm.jump_pc_rel(data.imm_fmt_b() as isize, true)?; // Jump to the target address
+            data.vm.jump_pc_rel(data.imm_fmt_b(), true)?; // Jump to the target address
         }
         Ok(())
         // $IMPL_END Blt$
@@ -520,7 +520,7 @@ impl Bge {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Bge$
         if data.r1s() >= data.r2s() {
-            data.vm.jump_pc_rel(data.imm_fmt_b() as isize, true)?; // Jump to the target address
+            data.vm.jump_pc_rel(data.imm_fmt_b(), true)?; // Jump to the target address
         }
         Ok(())
         // $IMPL_END Bge$
@@ -532,7 +532,7 @@ impl Bltu {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Bltu$
         if data.r1() < data.r2() {
-            data.vm.jump_pc_rel(data.imm_fmt_b() as isize, true)?; // Jump to the target address
+            data.vm.jump_pc_rel(data.imm_fmt_b(), true)?; // Jump to the target address
         }
         Ok(())
         // $IMPL_END Bltu$
@@ -544,7 +544,7 @@ impl Bgeu {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Bgeu$
         if data.r1() >= data.r2() {
-            data.vm.jump_pc_rel(data.imm_fmt_b() as isize, true)?; // Jump to the target address
+            data.vm.jump_pc_rel(data.imm_fmt_b(), true)?; // Jump to the target address
         }
         Ok(())
         // $IMPL_END Bgeu$
@@ -567,7 +567,7 @@ impl Auipc {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Auipc$
         // Add upper immediate to the current PC (data.imm() has already performed shift-op and sign-extension)
-        data.set_rd(data.vm.pc.wrapping_add_signed(data.imm_fmt_u() as isize) as u64);
+        data.set_rd(data.vm.pc.wrapping_add_signed(data.imm_fmt_u()));
         Ok(())
         // $IMPL_END Auipc$
     }
@@ -579,7 +579,7 @@ impl Jal {
         // $IMPL_START Jal$
         let return_address = data.vm.pc + 4;
         data.set_rd(return_address as u64); // Save the return address
-        data.vm.jump_pc_rel(data.imm_fmt_j() as isize, true)?; // Jump to the target address
+        data.vm.jump_pc_rel(data.imm_fmt_j(), true)?; // Jump to the target address
         Ok(())
         // $IMPL_END Jal$
     }

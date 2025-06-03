@@ -3,21 +3,21 @@ use std::io;
 use log::warn;
 use util::syscalls;
 
-use crate::{VM, VMRunError, VMRunErrorKind};
+use crate::{Byte, SArch, SWord, UArch, UHSize, VM, VMRunError, VMRunErrorKind};
 
 syscalls!(
     (vm),
     exit(93) = {
         vm.halt = true;
-        vm.exit_code = vm.x(ARG0_REG) as u8;
+        vm.exit_code = vm.x(ARG0_REG) as Byte;
     },
     write(64) = {
-        let fd = vm.x(ARG0_REG) as i32;
-        let buf_ptr = vm.x(ARG1_REG) as usize;
-        let buf_len = vm.x(ARG2_REG) as usize;
+        let fd = vm.x(ARG0_REG) as SWord;
+        let buf_ptr = vm.x(ARG1_REG) as UArch;
+        let buf_len = vm.x(ARG2_REG) as UArch;
 
         let c_ptr = vm.mem_range(buf_ptr, buf_len)?.as_ptr() as *const _;
-        let wr_len = unsafe { libc::write(fd, c_ptr, buf_len) };
+        let wr_len = unsafe { libc::write(fd, c_ptr, buf_len as UHSize) };
         if wr_len < 0 {
             let errno = io::Error::last_os_error().raw_os_error().unwrap();
             warn!(
@@ -26,15 +26,15 @@ syscalls!(
             );
         }
 
-        vm.set_x(RET_REG, wr_len as u64);
+        vm.set_x(RET_REG, wr_len as UArch);
     },
     read(63) = {
-        let fd = vm.x(ARG0_REG) as i32;
-        let buf_ptr = vm.x(ARG1_REG) as usize;
-        let buf_len = vm.x(ARG2_REG) as usize;
+        let fd = vm.x(ARG0_REG) as SWord;
+        let buf_ptr = vm.x(ARG1_REG) as UArch;
+        let buf_len = vm.x(ARG2_REG) as UArch;
 
         let c_ptr = vm.mem_range_mut(buf_ptr, buf_len)?.as_ptr() as *mut _;
-        let rd_len = unsafe { libc::read(fd, c_ptr, buf_len) };
+        let rd_len = unsafe { libc::read(fd, c_ptr, buf_len as UHSize) };
         if rd_len < 0 {
             let errno = io::Error::last_os_error().raw_os_error().unwrap();
             warn!(
@@ -43,7 +43,7 @@ syscalls!(
             );
         }
 
-        vm.set_x(RET_REG, rd_len as u64);
+        vm.set_x(RET_REG, rd_len as UArch);
     },
     fstat(80) = {
         vm.set_x(RET_REG, 0); // passthrough
@@ -65,19 +65,19 @@ syscalls!(
         vm.set_x(RET_REG, 0); // passthrough
     },
     close(57) = {
-        let fd = vm.x(ARG0_REG) as i32;
+        let fd = vm.x(ARG0_REG) as SWord;
         let r = unsafe { libc::close(fd) };
         if r < 0 {
             let errno = io::Error::last_os_error().raw_os_error().unwrap();
             warn!("{:x}: errno {errno:x}: failed to close fd({fd})", vm.pc);
         }
 
-        vm.set_x(RET_REG, r as u64);
+        vm.set_x(RET_REG, r as UArch);
     },
     lseek(62) = {
-        let fd = vm.x(ARG0_REG) as i32;
-        let offset = vm.x(ARG1_REG) as i64;
-        let whence = vm.x(ARG2_REG) as i32;
+        let fd = vm.x(ARG0_REG) as SWord;
+        let offset = vm.x(ARG1_REG) as SArch;
+        let whence = vm.x(ARG2_REG) as SWord;
 
         let r = unsafe { libc::lseek(fd, offset, whence) };
         if r < 0 {
@@ -88,16 +88,18 @@ syscalls!(
             );
         }
 
-        vm.set_x(RET_REG, r as u64);
+        vm.set_x(RET_REG, r as UArch);
     },
     gettimeofday(169) = {
-        let tv = vm.x(ARG0_REG) as usize;
-        let tz = vm.x(ARG1_REG) as usize;
+        let tv = vm.x(ARG0_REG) as UArch;
+        let tz = vm.x(ARG1_REG) as UArch;
 
-        let tv_ptr =
-            vm.mem_range_mut(tv, size_of::<libc::timeval>())?.as_ptr() as *mut libc::timeval;
-        let tz_ptr =
-            vm.mem_range_mut(tz, size_of::<libc::timezone>())?.as_ptr() as *mut libc::timezone;
+        let tv_ptr = vm
+            .mem_range_mut(tv, size_of::<libc::timeval>() as UArch)?
+            .as_ptr() as *mut libc::timeval;
+        let tz_ptr = vm
+            .mem_range_mut(tz, size_of::<libc::timezone>() as UArch)?
+            .as_ptr() as *mut libc::timezone;
         let r = unsafe { libc::gettimeofday(tv_ptr, tz_ptr) };
         if r < 0 {
             let errno = io::Error::last_os_error().raw_os_error().unwrap();
@@ -107,26 +109,26 @@ syscalls!(
             );
         }
 
-        vm.set_x(RET_REG, r as u64);
+        vm.set_x(RET_REG, r as UArch);
     },
 );
 
 #[allow(dead_code)]
-const SYSCALL_REG: u8 = 17;
+const SYSCALL_REG: Byte = 17;
 #[allow(dead_code)]
-const RET_REG: u8 = 10;
+const RET_REG: Byte = 10;
 #[allow(dead_code)]
-const ARG0_REG: u8 = 10;
+const ARG0_REG: Byte = 10;
 #[allow(dead_code)]
-const ARG1_REG: u8 = 11;
+const ARG1_REG: Byte = 11;
 #[allow(dead_code)]
-const ARG2_REG: u8 = 12;
+const ARG2_REG: Byte = 12;
 #[allow(dead_code)]
-const ARG3_REG: u8 = 13;
+const ARG3_REG: Byte = 13;
 #[allow(dead_code)]
-const ARG4_REG: u8 = 14;
+const ARG4_REG: Byte = 14;
 #[allow(dead_code)]
-const ARG5_REG: u8 = 15;
+const ARG5_REG: Byte = 15;
 
 mod util {
     #[macro_export]
@@ -137,7 +139,7 @@ mod util {
                     let $vm = self;
                     // $vm.rep.is_syscall = true;
 
-                    let code = $vm.x(SYSCALL_REG) as i16;
+                    let code = $vm.x(SYSCALL_REG) as crate::SArch as crate::SHalf;
                     match code {
                         $(
                         $code => {

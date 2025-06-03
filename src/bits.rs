@@ -1,43 +1,43 @@
 #[inline]
-pub const fn mask(len: usize) -> u64 {
-    !(0 as u64) >> (8 * 8 - len)
+pub const fn mask(len: UArch) -> UArch {
+    !(0 as UArch) >> (8 * 8 - len)
 }
 
 #[inline]
-pub const fn sext(v: u64, sign_pos: usize) -> i64 {
-    let v_shl = (v << (64 - sign_pos - 1)) as i64;
+pub const fn sext(v: UArch, sign_pos: UArch) -> SArch {
+    let v_shl = (v << (64 - sign_pos - 1)) as SArch;
     let v_shr = v_shl >> (64 - sign_pos - 1);
     v_shr
 }
 
 #[inline]
-pub const fn opcode(v: u32) -> u8 {
-    ext!(v, u8; 6;2)
+pub const fn opcode(v: Word) -> Byte {
+    ext!(v, Byte; 6;2)
 }
 
 #[inline]
-pub const fn funct3_14_12(v: u32) -> u8 {
-    ext!(v, u8; 14;12)
+pub const fn funct3_14_12(v: Word) -> Byte {
+    ext!(v, Byte; 14;12)
 }
 
 #[inline]
-pub const fn funct7_31_25(v: u32) -> u8 {
-    ext!(v, u8; 31;25)
+pub const fn funct7_31_25(v: Word) -> Byte {
+    ext!(v, Byte; 31;25)
 }
 
 #[inline]
-pub const fn rd_11_7(v: u32) -> u8 {
-    ext!(v, u8; 11;7)
+pub const fn rd_11_7(v: Word) -> Byte {
+    ext!(v, Byte; 11;7)
 }
 
 #[inline]
-pub const fn rs1_19_15(v: u32) -> u8 {
-    ext!(v, u8; 19;15)
+pub const fn rs1_19_15(v: Word) -> Byte {
+    ext!(v, Byte; 19;15)
 }
 
 #[inline]
-pub const fn rs2_24_20(v: u32) -> u8 {
-    ext!(v, u8; 24;20)
+pub const fn rs2_24_20(v: Word) -> Byte {
+    ext!(v, Byte; 24;20)
 }
 
 mod utils {
@@ -54,3 +54,5 @@ mod utils {
 }
 
 pub(crate) use utils::ext;
+
+use crate::{Byte, SArch, UArch, Word};

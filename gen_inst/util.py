@@ -12,6 +12,7 @@ class Colors:
 def get_match_pat_from_bit_pat(bit_pat: str) -> list[tuple[int, int, str]]:
     bit_pat = bit_pat.strip().replace("_", "")[::-1].upper()
     assert len(bit_pat) == 32, "Bit pattern must be 32 bits long"
+    assert all(c in "01X" for c in bit_pat), "Bit pattern must contain only 0, 1, or X"
     
     start = 0
     end = 0

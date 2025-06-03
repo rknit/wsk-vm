@@ -11,7 +11,7 @@ pub struct Mul;
 impl Mul {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Mul$
-        data.set_rd(data.r1s().wrapping_mul(data.r2s()) as u64);
+        data.set_rd(data.r1s().wrapping_mul(data.r2s()) as UArch);
         Ok(())
         // $IMPL_END Mul$
     }
@@ -21,10 +21,10 @@ pub struct Mulh;
 impl Mulh {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Mulh$
-        let r1 = data.r1s() as i128;
-        let r2 = data.r2s() as i128;
-        let result = ((r1 * r2) >> 64) as i64;
-        data.set_rd(result as u64);
+        let r1 = data.r1s() as SDArch;
+        let r2 = data.r2s() as SDArch;
+        let result = ((r1 * r2) >> 64) as SArch;
+        data.set_rd(result as UArch);
         Ok(())
         // $IMPL_END Mulh$
     }
@@ -34,10 +34,10 @@ pub struct Mulhsu;
 impl Mulhsu {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Mulhsu$
-        let r1 = data.r1s() as i128;
-        let r2 = data.r2() as i128;
-        let result = ((r1 * r2) >> 64) as i64;
-        data.set_rd(result as u64);
+        let r1 = data.r1s() as SDArch;
+        let r2 = data.r2() as SDArch;
+        let result = ((r1 * r2) >> 64) as SArch;
+        data.set_rd(result as UArch);
         Ok(())
         // $IMPL_END Mulhsu$
     }
@@ -47,9 +47,9 @@ pub struct Mulhu;
 impl Mulhu {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Mulhu$
-        let r1 = data.r1() as u128;
-        let r2 = data.r2() as u128;
-        let result = ((r1 * r2) >> 64) as u64;
+        let r1 = data.r1() as UDArch;
+        let r2 = data.r2() as UDArch;
+        let result = ((r1 * r2) >> 64) as UArch;
         data.set_rd(result);
         Ok(())
         // $IMPL_END Mulhu$
@@ -68,7 +68,7 @@ impl Div {
             });
         }
         let result = data.r1s().wrapping_div(data.r2s());
-        data.set_rd(result as u64);
+        data.set_rd(result as UArch);
         Ok(())
         // $IMPL_END Div$
     }
@@ -104,7 +104,7 @@ impl Rem {
             });
         }
         let result = data.r1s().wrapping_rem(data.r2s());
-        data.set_rd(result as u64);
+        data.set_rd(result as UArch);
         Ok(())
         // $IMPL_END Rem$
     }

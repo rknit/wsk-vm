@@ -25,7 +25,7 @@ MAIN_HEADER = f"""
 // $GEN_VERSION {GEN_VERSION}
 {DISCLAIMER}
 #![allow(dead_code, unused_variables, unused_imports, unreachable_code, unused_mut)]
-use crate::{{VM, VMRunError, VMRunErrorKind}};
+use crate::*;
 use crate::bits::*;
 use crate::format::*;
 """
