@@ -48,7 +48,7 @@ def gen_main(modules: Modules) -> str:
     # decode function
     gen(f"""
 impl Inst {{
-    pub fn decode(inst: word) -> Option<Self> {{
+    pub fn decode(inst: Word) -> Option<Self> {{
         Some(match inst {{
             {"            ".join([inst.decode_arm() for inst in modules.all_inst()])}
             #[allow(unreachable_patterns)]
@@ -88,7 +88,7 @@ impl Inst {{
         }}
     }}""")
     gen(f"""
-    pub fn raw(self) -> word {{
+    pub fn raw(self) -> Word {{
         self.inner().raw()
     }}""")
 

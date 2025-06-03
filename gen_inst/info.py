@@ -4,12 +4,12 @@ class Inst:
         self.raw_name = name
         self.format = format.strip().upper()
         self.symbol = "".join([part.capitalize() if len(part) > 1 else part.upper() for part in name.strip().lower().split(".")])
-        self.bit_pat = bit_pat.strip().upper()
+        self.bit_pat = bit_pat.strip().upper().replace("_", "")
         self.pats = pats
         self.impl = ""
         
     def decode_cond(self) -> str:
-        return " && ".join([f"ext!(v, word; {hi};{lo}) == 0b{pat}" for hi, lo, pat in self.pats])
+        return " && ".join([f"ext!(v, Word; {hi};{lo}) == 0b{pat}" for hi, lo, pat in self.pats])
     
     def decode_arm(self) -> str:
         return f"v if {self.decode_cond()} => Inst::{self.symbol}(inst.into()),"
@@ -35,7 +35,7 @@ class Inst:
     def __eq__(self, value: object) -> bool:
         if not isinstance(value, Inst):
             return False
-        return self.raw_name == value.raw_name
+        return self.bit_pat == value.bit_pat
         
     def __hash__(self) -> int:
         return hash(self.raw_name)

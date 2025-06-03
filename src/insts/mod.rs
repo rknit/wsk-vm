@@ -24,6 +24,21 @@ use rv32m_rv64m::*;
 mod rv64m;
 use rv64m::*;
 
+mod rv32a_rv64a;
+use rv32a_rv64a::*;
+
+mod rv64a;
+use rv64a::*;
+
+mod rv32f_rv64f;
+use rv32f_rv64f::*;
+
+mod rv64f;
+use rv64f::*;
+
+mod rv64d;
+use rv64d::*;
+
 #[derive(Debug, Clone, Copy)]
 pub enum Inst {
     // RV32I_RV64I
@@ -110,6 +125,100 @@ pub enum Inst {
     Divuw(RawInst),
     Remw(RawInst),
     Remuw(RawInst),
+
+    // RV32A_RV64A
+    LrW(RawInst),
+    ScW(RawInst),
+    AmoswapW(RawInst),
+    AmoaddW(RawInst),
+    AmoxorW(RawInst),
+    AmoandW(RawInst),
+    AmoorW(RawInst),
+    AmominW(RawInst),
+    AmomaxW(RawInst),
+    AmominuW(RawInst),
+    AmomaxuW(RawInst),
+
+    // RV64A
+    LrD(RawInst),
+    ScD(RawInst),
+    AmodswapD(RawInst),
+    AmoaddD(RawInst),
+    AmoxorD(RawInst),
+    AmoandD(RawInst),
+    AmoorD(RawInst),
+    AmominD(RawInst),
+    AmomaxD(RawInst),
+    AmominuD(RawInst),
+    AmomaxuD(RawInst),
+
+    // RV32F_RV64F
+    FmaddS(RawInst),
+    FmsubS(RawInst),
+    FnmsubS(RawInst),
+    FnmaddS(RawInst),
+    FaddS(RawInst),
+    FsubS(RawInst),
+    FmulS(RawInst),
+    FdivS(RawInst),
+    FsqrtS(RawInst),
+    FsgnjS(RawInst),
+    FsgnjnS(RawInst),
+    FsgnjxS(RawInst),
+    FminS(RawInst),
+    FmaxS(RawInst),
+    FcvtWS(RawInst),
+    FcvtWuS(RawInst),
+    FmvXW(RawInst),
+    FeqS(RawInst),
+    FltS(RawInst),
+    FleS(RawInst),
+    FclassS(RawInst),
+    FcvtSW(RawInst),
+    FcvtSWu(RawInst),
+    FmvWX(RawInst),
+    FmaddD(RawInst),
+    FmsubD(RawInst),
+    FnmsubD(RawInst),
+    FnmaddD(RawInst),
+    FaddD(RawInst),
+    FsubD(RawInst),
+    FmulD(RawInst),
+    FdivD(RawInst),
+    FsqrtD(RawInst),
+    FsgnjD(RawInst),
+    FsgnjnD(RawInst),
+    FsgnjxD(RawInst),
+    FminD(RawInst),
+    FmaxD(RawInst),
+    FcvtSD(RawInst),
+    FcvtDS(RawInst),
+    FeqD(RawInst),
+    FltD(RawInst),
+    FleD(RawInst),
+    FclassD(RawInst),
+    FcvtWD(RawInst),
+    FcvtWuD(RawInst),
+    FcvtDW(RawInst),
+    FcvtDWu(RawInst),
+    Flw(RawInst),
+    Fsw(RawInst),
+    Fld(RawInst),
+    Fsd(RawInst),
+
+    // RV64F
+    FcvtLS(RawInst),
+    FcvtLuS(RawInst),
+    FcvtSL(RawInst),
+    FcvtSLu(RawInst),
+
+    // RV64D
+    FcvtLD(RawInst),
+    FcvtLuD(RawInst),
+    FmvXD(RawInst),
+    FcvtDL(RawInst),
+    FcvtDLu(RawInst),
+    FmvDX(RawInst),
 }
 
 impl Inst {
@@ -445,6 +554,392 @@ impl Inst {
             {
                 Inst::Remuw(inst.into())
             }
+            v if ext!(v, Word; 6;0) == 0b0101111
+                && ext!(v, Word; 14;12) == 0b010
+                && ext!(v, Word; 24;20) == 0b00000
+                && ext!(v, Word; 31;27) == 0b00010 =>
+            {
+                Inst::LrW(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b0101111
+                && ext!(v, Word; 14;12) == 0b010
+                && ext!(v, Word; 31;27) == 0b00011 =>
+            {
+                Inst::ScW(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b0101111
+                && ext!(v, Word; 14;12) == 0b010
+                && ext!(v, Word; 31;27) == 0b00001 =>
+            {
+                Inst::AmoswapW(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b0101111
+                && ext!(v, Word; 14;12) == 0b010
+                && ext!(v, Word; 31;27) == 0b00000 =>
+            {
+                Inst::AmoaddW(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b0101111
+                && ext!(v, Word; 14;12) == 0b010
+                && ext!(v, Word; 31;27) == 0b00100 =>
+            {
+                Inst::AmoxorW(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b0101111
+                && ext!(v, Word; 14;12) == 0b010
+                && ext!(v, Word; 31;27) == 0b01100 =>
+            {
+                Inst::AmoandW(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b0101111
+                && ext!(v, Word; 14;12) == 0b010
+                && ext!(v, Word; 31;27) == 0b01000 =>
+            {
+                Inst::AmoorW(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b0101111
+                && ext!(v, Word; 14;12) == 0b010
+                && ext!(v, Word; 31;27) == 0b10000 =>
+            {
+                Inst::AmominW(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b0101111
+                && ext!(v, Word; 14;12) == 0b010
+                && ext!(v, Word; 31;27) == 0b10100 =>
+            {
+                Inst::AmomaxW(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b0101111
+                && ext!(v, Word; 14;12) == 0b010
+                && ext!(v, Word; 31;27) == 0b11000 =>
+            {
+                Inst::AmominuW(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b0101111
+                && ext!(v, Word; 14;12) == 0b010
+                && ext!(v, Word; 31;27) == 0b11100 =>
+            {
+                Inst::AmomaxuW(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b0101111
+                && ext!(v, Word; 14;12) == 0b011
+                && ext!(v, Word; 24;20) == 0b00000
+                && ext!(v, Word; 31;27) == 0b00010 =>
+            {
+                Inst::LrD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b0101111
+                && ext!(v, Word; 14;12) == 0b011
+                && ext!(v, Word; 31;27) == 0b00011 =>
+            {
+                Inst::ScD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b0101111
+                && ext!(v, Word; 14;12) == 0b011
+                && ext!(v, Word; 31;27) == 0b00001 =>
+            {
+                Inst::AmodswapD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b0101111
+                && ext!(v, Word; 14;12) == 0b011
+                && ext!(v, Word; 31;27) == 0b00000 =>
+            {
+                Inst::AmoaddD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b0101111
+                && ext!(v, Word; 14;12) == 0b011
+                && ext!(v, Word; 31;27) == 0b00100 =>
+            {
+                Inst::AmoxorD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b0101111
+                && ext!(v, Word; 14;12) == 0b011
+                && ext!(v, Word; 31;27) == 0b01100 =>
+            {
+                Inst::AmoandD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b0101111
+                && ext!(v, Word; 14;12) == 0b011
+                && ext!(v, Word; 31;27) == 0b01000 =>
+            {
+                Inst::AmoorD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b0101111
+                && ext!(v, Word; 14;12) == 0b011
+                && ext!(v, Word; 31;27) == 0b10000 =>
+            {
+                Inst::AmominD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b0101111
+                && ext!(v, Word; 14;12) == 0b011
+                && ext!(v, Word; 31;27) == 0b10100 =>
+            {
+                Inst::AmomaxD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b0101111
+                && ext!(v, Word; 14;12) == 0b011
+                && ext!(v, Word; 31;27) == 0b11000 =>
+            {
+                Inst::AmominuD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b0101111
+                && ext!(v, Word; 14;12) == 0b011
+                && ext!(v, Word; 31;27) == 0b11100 =>
+            {
+                Inst::AmomaxuD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1000011 && ext!(v, Word; 26;25) == 0b00 => {
+                Inst::FmaddS(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1000111 && ext!(v, Word; 26;25) == 0b00 => {
+                Inst::FmsubS(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1001011 && ext!(v, Word; 26;25) == 0b00 => {
+                Inst::FnmsubS(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1001111 && ext!(v, Word; 26;25) == 0b00 => {
+                Inst::FnmaddS(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;25) == 0b0000000 => {
+                Inst::FaddS(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;25) == 0b0000100 => {
+                Inst::FsubS(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;25) == 0b0001000 => {
+                Inst::FmulS(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;25) == 0b0001100 => {
+                Inst::FdivS(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b010110000000 => {
+                Inst::FsqrtS(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011
+                && ext!(v, Word; 14;12) == 0b000
+                && ext!(v, Word; 31;25) == 0b0010000 =>
+            {
+                Inst::FsgnjS(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011
+                && ext!(v, Word; 14;12) == 0b001
+                && ext!(v, Word; 31;25) == 0b0010000 =>
+            {
+                Inst::FsgnjnS(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011
+                && ext!(v, Word; 14;12) == 0b010
+                && ext!(v, Word; 31;25) == 0b0010000 =>
+            {
+                Inst::FsgnjxS(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011
+                && ext!(v, Word; 14;12) == 0b000
+                && ext!(v, Word; 31;25) == 0b0010100 =>
+            {
+                Inst::FminS(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011
+                && ext!(v, Word; 14;12) == 0b001
+                && ext!(v, Word; 31;25) == 0b0010100 =>
+            {
+                Inst::FmaxS(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110000000000 => {
+                Inst::FcvtWS(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110000000001 => {
+                Inst::FcvtWuS(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011
+                && ext!(v, Word; 14;12) == 0b000
+                && ext!(v, Word; 31;20) == 0b111000000000 =>
+            {
+                Inst::FmvXW(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011
+                && ext!(v, Word; 14;12) == 0b010
+                && ext!(v, Word; 31;25) == 0b1010000 =>
+            {
+                Inst::FeqS(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011
+                && ext!(v, Word; 14;12) == 0b001
+                && ext!(v, Word; 31;25) == 0b1010000 =>
+            {
+                Inst::FltS(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011
+                && ext!(v, Word; 14;12) == 0b000
+                && ext!(v, Word; 31;25) == 0b1010000 =>
+            {
+                Inst::FleS(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011
+                && ext!(v, Word; 14;12) == 0b001
+                && ext!(v, Word; 31;20) == 0b111000000000 =>
+            {
+                Inst::FclassS(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110100000000 => {
+                Inst::FcvtSW(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110100000001 => {
+                Inst::FcvtSWu(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011
+                && ext!(v, Word; 14;12) == 0b000
+                && ext!(v, Word; 31;20) == 0b111100000000 =>
+            {
+                Inst::FmvWX(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1000011 && ext!(v, Word; 26;25) == 0b01 => {
+                Inst::FmaddD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1000111 && ext!(v, Word; 26;25) == 0b01 => {
+                Inst::FmsubD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1001011 && ext!(v, Word; 26;25) == 0b01 => {
+                Inst::FnmsubD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1001111 && ext!(v, Word; 26;25) == 0b01 => {
+                Inst::FnmaddD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;25) == 0b0000001 => {
+                Inst::FaddD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;25) == 0b0000101 => {
+                Inst::FsubD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;25) == 0b0001001 => {
+                Inst::FmulD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;25) == 0b0001101 => {
+                Inst::FdivD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b010110100000 => {
+                Inst::FsqrtD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011
+                && ext!(v, Word; 14;12) == 0b000
+                && ext!(v, Word; 31;25) == 0b0010001 =>
+            {
+                Inst::FsgnjD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011
+                && ext!(v, Word; 14;12) == 0b001
+                && ext!(v, Word; 31;25) == 0b0010001 =>
+            {
+                Inst::FsgnjnD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011
+                && ext!(v, Word; 14;12) == 0b010
+                && ext!(v, Word; 31;25) == 0b0010001 =>
+            {
+                Inst::FsgnjxD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011
+                && ext!(v, Word; 14;12) == 0b000
+                && ext!(v, Word; 31;25) == 0b0010101 =>
+            {
+                Inst::FminD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011
+                && ext!(v, Word; 14;12) == 0b001
+                && ext!(v, Word; 31;25) == 0b0010101 =>
+            {
+                Inst::FmaxD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b010000000001 => {
+                Inst::FcvtSD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b010000100000 => {
+                Inst::FcvtDS(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011
+                && ext!(v, Word; 14;12) == 0b010
+                && ext!(v, Word; 31;25) == 0b1010001 =>
+            {
+                Inst::FeqD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011
+                && ext!(v, Word; 14;12) == 0b001
+                && ext!(v, Word; 31;25) == 0b1010001 =>
+            {
+                Inst::FltD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011
+                && ext!(v, Word; 14;12) == 0b000
+                && ext!(v, Word; 31;25) == 0b1010001 =>
+            {
+                Inst::FleD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011
+                && ext!(v, Word; 14;12) == 0b001
+                && ext!(v, Word; 31;20) == 0b111000100000 =>
+            {
+                Inst::FclassD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110000100000 => {
+                Inst::FcvtWD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110000100001 => {
+                Inst::FcvtWuD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110100100000 => {
+                Inst::FcvtDW(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110100100001 => {
+                Inst::FcvtDWu(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b0000111 && ext!(v, Word; 14;12) == 0b010 => {
+                Inst::Flw(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b0100111 && ext!(v, Word; 14;12) == 0b010 => {
+                Inst::Fsw(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b0000111 && ext!(v, Word; 14;12) == 0b011 => {
+                Inst::Fld(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b0100111 && ext!(v, Word; 14;12) == 0b011 => {
+                Inst::Fsd(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110000000010 => {
+                Inst::FcvtLS(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110000000011 => {
+                Inst::FcvtLuS(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110100000010 => {
+                Inst::FcvtSL(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110100000011 => {
+                Inst::FcvtSLu(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110000100010 => {
+                Inst::FcvtLD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110000100011 => {
+                Inst::FcvtLuD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011
+                && ext!(v, Word; 14;12) == 0b000
+                && ext!(v, Word; 31;20) == 0b111000100000 =>
+            {
+                Inst::FmvXD(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110100100010 => {
+                Inst::FcvtDL(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110100100011 => {
+                Inst::FcvtDLu(inst.into())
+            }
+            v if ext!(v, Word; 6;0) == 0b1010011
+                && ext!(v, Word; 14;12) == 0b000
+                && ext!(v, Word; 31;20) == 0b111100100000 =>
+            {
+                Inst::FmvDX(inst.into())
+            }
             #[allow(unreachable_patterns)]
             _ => return None,
         })
@@ -529,6 +1024,90 @@ impl Inst {
             Inst::Divuw(inst) => Divuw::run(RunData::new(inst, vm)),
             Inst::Remw(inst) => Remw::run(RunData::new(inst, vm)),
             Inst::Remuw(inst) => Remuw::run(RunData::new(inst, vm)),
+            Inst::LrW(inst) => LrW::run(RunData::new(inst, vm)),
+            Inst::ScW(inst) => ScW::run(RunData::new(inst, vm)),
+            Inst::AmoswapW(inst) => AmoswapW::run(RunData::new(inst, vm)),
+            Inst::AmoaddW(inst) => AmoaddW::run(RunData::new(inst, vm)),
+            Inst::AmoxorW(inst) => AmoxorW::run(RunData::new(inst, vm)),
+            Inst::AmoandW(inst) => AmoandW::run(RunData::new(inst, vm)),
+            Inst::AmoorW(inst) => AmoorW::run(RunData::new(inst, vm)),
+            Inst::AmominW(inst) => AmominW::run(RunData::new(inst, vm)),
+            Inst::AmomaxW(inst) => AmomaxW::run(RunData::new(inst, vm)),
+            Inst::AmominuW(inst) => AmominuW::run(RunData::new(inst, vm)),
+            Inst::AmomaxuW(inst) => AmomaxuW::run(RunData::new(inst, vm)),
+            Inst::LrD(inst) => LrD::run(RunData::new(inst, vm)),
+            Inst::ScD(inst) => ScD::run(RunData::new(inst, vm)),
+            Inst::AmodswapD(inst) => AmodswapD::run(RunData::new(inst, vm)),
+            Inst::AmoaddD(inst) => AmoaddD::run(RunData::new(inst, vm)),
+            Inst::AmoxorD(inst) => AmoxorD::run(RunData::new(inst, vm)),
+            Inst::AmoandD(inst) => AmoandD::run(RunData::new(inst, vm)),
+            Inst::AmoorD(inst) => AmoorD::run(RunData::new(inst, vm)),
+            Inst::AmominD(inst) => AmominD::run(RunData::new(inst, vm)),
+            Inst::AmomaxD(inst) => AmomaxD::run(RunData::new(inst, vm)),
+            Inst::AmominuD(inst) => AmominuD::run(RunData::new(inst, vm)),
+            Inst::AmomaxuD(inst) => AmomaxuD::run(RunData::new(inst, vm)),
+            Inst::FmaddS(inst) => FmaddS::run(RunData::new(inst, vm)),
+            Inst::FmsubS(inst) => FmsubS::run(RunData::new(inst, vm)),
+            Inst::FnmsubS(inst) => FnmsubS::run(RunData::new(inst, vm)),
+            Inst::FnmaddS(inst) => FnmaddS::run(RunData::new(inst, vm)),
+            Inst::FaddS(inst) => FaddS::run(RunData::new(inst, vm)),
+            Inst::FsubS(inst) => FsubS::run(RunData::new(inst, vm)),
+            Inst::FmulS(inst) => FmulS::run(RunData::new(inst, vm)),
+            Inst::FdivS(inst) => FdivS::run(RunData::new(inst, vm)),
+            Inst::FsqrtS(inst) => FsqrtS::run(RunData::new(inst, vm)),
+            Inst::FsgnjS(inst) => FsgnjS::run(RunData::new(inst, vm)),
+            Inst::FsgnjnS(inst) => FsgnjnS::run(RunData::new(inst, vm)),
+            Inst::FsgnjxS(inst) => FsgnjxS::run(RunData::new(inst, vm)),
+            Inst::FminS(inst) => FminS::run(RunData::new(inst, vm)),
+            Inst::FmaxS(inst) => FmaxS::run(RunData::new(inst, vm)),
+            Inst::FcvtWS(inst) => FcvtWS::run(RunData::new(inst, vm)),
+            Inst::FcvtWuS(inst) => FcvtWuS::run(RunData::new(inst, vm)),
+            Inst::FmvXW(inst) => FmvXW::run(RunData::new(inst, vm)),
+            Inst::FeqS(inst) => FeqS::run(RunData::new(inst, vm)),
+            Inst::FltS(inst) => FltS::run(RunData::new(inst, vm)),
+            Inst::FleS(inst) => FleS::run(RunData::new(inst, vm)),
+            Inst::FclassS(inst) => FclassS::run(RunData::new(inst, vm)),
+            Inst::FcvtSW(inst) => FcvtSW::run(RunData::new(inst, vm)),
+            Inst::FcvtSWu(inst) => FcvtSWu::run(RunData::new(inst, vm)),
+            Inst::FmvWX(inst) => FmvWX::run(RunData::new(inst, vm)),
+            Inst::FmaddD(inst) => FmaddD::run(RunData::new(inst, vm)),
+            Inst::FmsubD(inst) => FmsubD::run(RunData::new(inst, vm)),
+            Inst::FnmsubD(inst) => FnmsubD::run(RunData::new(inst, vm)),
+            Inst::FnmaddD(inst) => FnmaddD::run(RunData::new(inst, vm)),
+            Inst::FaddD(inst) => FaddD::run(RunData::new(inst, vm)),
+            Inst::FsubD(inst) => FsubD::run(RunData::new(inst, vm)),
+            Inst::FmulD(inst) => FmulD::run(RunData::new(inst, vm)),
+            Inst::FdivD(inst) => FdivD::run(RunData::new(inst, vm)),
+            Inst::FsqrtD(inst) => FsqrtD::run(RunData::new(inst, vm)),
+            Inst::FsgnjD(inst) => FsgnjD::run(RunData::new(inst, vm)),
+            Inst::FsgnjnD(inst) => FsgnjnD::run(RunData::new(inst, vm)),
+            Inst::FsgnjxD(inst) => FsgnjxD::run(RunData::new(inst, vm)),
+            Inst::FminD(inst) => FminD::run(RunData::new(inst, vm)),
+            Inst::FmaxD(inst) => FmaxD::run(RunData::new(inst, vm)),
+            Inst::FcvtSD(inst) => FcvtSD::run(RunData::new(inst, vm)),
+            Inst::FcvtDS(inst) => FcvtDS::run(RunData::new(inst, vm)),
+            Inst::FeqD(inst) => FeqD::run(RunData::new(inst, vm)),
+            Inst::FltD(inst) => FltD::run(RunData::new(inst, vm)),
+            Inst::FleD(inst) => FleD::run(RunData::new(inst, vm)),
+            Inst::FclassD(inst) => FclassD::run(RunData::new(inst, vm)),
+            Inst::FcvtWD(inst) => FcvtWD::run(RunData::new(inst, vm)),
+            Inst::FcvtWuD(inst) => FcvtWuD::run(RunData::new(inst, vm)),
+            Inst::FcvtDW(inst) => FcvtDW::run(RunData::new(inst, vm)),
+            Inst::FcvtDWu(inst) => FcvtDWu::run(RunData::new(inst, vm)),
+            Inst::Flw(inst) => Flw::run(RunData::new(inst, vm)),
+            Inst::Fsw(inst) => Fsw::run(RunData::new(inst, vm)),
+            Inst::Fld(inst) => Fld::run(RunData::new(inst, vm)),
+            Inst::Fsd(inst) => Fsd::run(RunData::new(inst, vm)),
+            Inst::FcvtLS(inst) => FcvtLS::run(RunData::new(inst, vm)),
+            Inst::FcvtLuS(inst) => FcvtLuS::run(RunData::new(inst, vm)),
+            Inst::FcvtSL(inst) => FcvtSL::run(RunData::new(inst, vm)),
+            Inst::FcvtSLu(inst) => FcvtSLu::run(RunData::new(inst, vm)),
+            Inst::FcvtLD(inst) => FcvtLD::run(RunData::new(inst, vm)),
+            Inst::FcvtLuD(inst) => FcvtLuD::run(RunData::new(inst, vm)),
+            Inst::FmvXD(inst) => FmvXD::run(RunData::new(inst, vm)),
+            Inst::FcvtDL(inst) => FcvtDL::run(RunData::new(inst, vm)),
+            Inst::FcvtDLu(inst) => FcvtDLu::run(RunData::new(inst, vm)),
+            Inst::FmvDX(inst) => FmvDX::run(RunData::new(inst, vm)),
         }
     }
 
@@ -611,6 +1190,90 @@ impl Inst {
             Inst::Divuw(_) => "divuw",
             Inst::Remw(_) => "remw",
             Inst::Remuw(_) => "remuw",
+            Inst::LrW(_) => "lr.w",
+            Inst::ScW(_) => "sc.w",
+            Inst::AmoswapW(_) => "amoswap.w",
+            Inst::AmoaddW(_) => "amoadd.w",
+            Inst::AmoxorW(_) => "amoxor.w",
+            Inst::AmoandW(_) => "amoand.w",
+            Inst::AmoorW(_) => "amoor.w",
+            Inst::AmominW(_) => "amomin.w",
+            Inst::AmomaxW(_) => "amomax.w",
+            Inst::AmominuW(_) => "amominu.w",
+            Inst::AmomaxuW(_) => "amomaxu.w",
+            Inst::LrD(_) => "lr.d",
+            Inst::ScD(_) => "sc.d",
+            Inst::AmodswapD(_) => "amodswap.d",
+            Inst::AmoaddD(_) => "amoadd.d",
+            Inst::AmoxorD(_) => "amoxor.d",
+            Inst::AmoandD(_) => "amoand.d",
+            Inst::AmoorD(_) => "amoor.d",
+            Inst::AmominD(_) => "amomin.d",
+            Inst::AmomaxD(_) => "amomax.d",
+            Inst::AmominuD(_) => "amominu.d",
+            Inst::AmomaxuD(_) => "amomaxu.d",
+            Inst::FmaddS(_) => "fmadd.s",
+            Inst::FmsubS(_) => "fmsub.s",
+            Inst::FnmsubS(_) => "fnmsub.s",
+            Inst::FnmaddS(_) => "fnmadd.s",
+            Inst::FaddS(_) => "fadd.s",
+            Inst::FsubS(_) => "fsub.s",
+            Inst::FmulS(_) => "fmul.s",
+            Inst::FdivS(_) => "fdiv.s",
+            Inst::FsqrtS(_) => "fsqrt.s",
+            Inst::FsgnjS(_) => "fsgnj.s",
+            Inst::FsgnjnS(_) => "fsgnjn.s",
+            Inst::FsgnjxS(_) => "fsgnjx.s",
+            Inst::FminS(_) => "fmin.s",
+            Inst::FmaxS(_) => "fmax.s",
+            Inst::FcvtWS(_) => "fcvt.w.s",
+            Inst::FcvtWuS(_) => "fcvt.wu.s",
+            Inst::FmvXW(_) => "fmv.x.w",
+            Inst::FeqS(_) => "feq.s",
+            Inst::FltS(_) => "flt.s",
+            Inst::FleS(_) => "fle.s",
+            Inst::FclassS(_) => "fclass.s",
+            Inst::FcvtSW(_) => "fcvt.s.w",
+            Inst::FcvtSWu(_) => "fcvt.s.wu",
+            Inst::FmvWX(_) => "fmv.w.x",
+            Inst::FmaddD(_) => "fmadd.d",
+            Inst::FmsubD(_) => "fmsub.d",
+            Inst::FnmsubD(_) => "fnmsub.d",
+            Inst::FnmaddD(_) => "fnmadd.d",
+            Inst::FaddD(_) => "fadd.d",
+            Inst::FsubD(_) => "fsub.d",
+            Inst::FmulD(_) => "fmul.d",
+            Inst::FdivD(_) => "fdiv.d",
+            Inst::FsqrtD(_) => "fsqrt.d",
+            Inst::FsgnjD(_) => "fsgnj.d",
+            Inst::FsgnjnD(_) => "fsgnjn.d",
+            Inst::FsgnjxD(_) => "fsgnjx.d",
+            Inst::FminD(_) => "fmin.d",
+            Inst::FmaxD(_) => "fmax.d",
+            Inst::FcvtSD(_) => "fcvt.s.d",
+            Inst::FcvtDS(_) => "fcvt.d.s",
+            Inst::FeqD(_) => "feq.d",
+            Inst::FltD(_) => "flt.d",
+            Inst::FleD(_) => "fle.d",
+            Inst::FclassD(_) => "fclass.d",
+            Inst::FcvtWD(_) => "fcvt.w.d",
+            Inst::FcvtWuD(_) => "fcvt.wu.d",
+            Inst::FcvtDW(_) => "fcvt.d.w",
+            Inst::FcvtDWu(_) => "fcvt.d.wu",
+            Inst::Flw(_) => "flw",
+            Inst::Fsw(_) => "fsw",
+            Inst::Fld(_) => "fld",
+            Inst::Fsd(_) => "fsd",
+            Inst::FcvtLS(_) => "fcvt.l.s",
+            Inst::FcvtLuS(_) => "fcvt.lu.s",
+            Inst::FcvtSL(_) => "fcvt.s.l",
+            Inst::FcvtSLu(_) => "fcvt.s.lu",
+            Inst::FcvtLD(_) => "fcvt.l.d",
+            Inst::FcvtLuD(_) => "fcvt.lu.d",
+            Inst::FmvXD(_) => "fmv.x.d",
+            Inst::FcvtDL(_) => "fcvt.d.l",
+            Inst::FcvtDLu(_) => "fcvt.d.lu",
+            Inst::FmvDX(_) => "fmv.d.x",
         }
     }
 
@@ -693,6 +1356,90 @@ impl Inst {
             Inst::Divuw(_) => Format::R,
             Inst::Remw(_) => Format::R,
             Inst::Remuw(_) => Format::R,
+            Inst::LrW(_) => Format::R,
+            Inst::ScW(_) => Format::R,
+            Inst::AmoswapW(_) => Format::R,
+            Inst::AmoaddW(_) => Format::R,
+            Inst::AmoxorW(_) => Format::R,
+            Inst::AmoandW(_) => Format::R,
+            Inst::AmoorW(_) => Format::R,
+            Inst::AmominW(_) => Format::R,
+            Inst::AmomaxW(_) => Format::R,
+            Inst::AmominuW(_) => Format::R,
+            Inst::AmomaxuW(_) => Format::R,
+            Inst::LrD(_) => Format::R,
+            Inst::ScD(_) => Format::R,
+            Inst::AmodswapD(_) => Format::R,
+            Inst::AmoaddD(_) => Format::R,
+            Inst::AmoxorD(_) => Format::R,
+            Inst::AmoandD(_) => Format::R,
+            Inst::AmoorD(_) => Format::R,
+            Inst::AmominD(_) => Format::R,
+            Inst::AmomaxD(_) => Format::R,
+            Inst::AmominuD(_) => Format::R,
+            Inst::AmomaxuD(_) => Format::R,
+            Inst::FmaddS(_) => Format::R,
+            Inst::FmsubS(_) => Format::R,
+            Inst::FnmsubS(_) => Format::R,
+            Inst::FnmaddS(_) => Format::R,
+            Inst::FaddS(_) => Format::R,
+            Inst::FsubS(_) => Format::R,
+            Inst::FmulS(_) => Format::R,
+            Inst::FdivS(_) => Format::R,
+            Inst::FsqrtS(_) => Format::R,
+            Inst::FsgnjS(_) => Format::R,
+            Inst::FsgnjnS(_) => Format::R,
+            Inst::FsgnjxS(_) => Format::R,
+            Inst::FminS(_) => Format::R,
+            Inst::FmaxS(_) => Format::R,
+            Inst::FcvtWS(_) => Format::R,
+            Inst::FcvtWuS(_) => Format::R,
+            Inst::FmvXW(_) => Format::R,
+            Inst::FeqS(_) => Format::R,
+            Inst::FltS(_) => Format::R,
+            Inst::FleS(_) => Format::R,
+            Inst::FclassS(_) => Format::R,
+            Inst::FcvtSW(_) => Format::R,
+            Inst::FcvtSWu(_) => Format::R,
+            Inst::FmvWX(_) => Format::R,
+            Inst::FmaddD(_) => Format::R,
+            Inst::FmsubD(_) => Format::R,
+            Inst::FnmsubD(_) => Format::R,
+            Inst::FnmaddD(_) => Format::R,
+            Inst::FaddD(_) => Format::R,
+            Inst::FsubD(_) => Format::R,
+            Inst::FmulD(_) => Format::R,
+            Inst::FdivD(_) => Format::R,
+            Inst::FsqrtD(_) => Format::R,
+            Inst::FsgnjD(_) => Format::R,
+            Inst::FsgnjnD(_) => Format::R,
+            Inst::FsgnjxD(_) => Format::R,
+            Inst::FminD(_) => Format::R,
+            Inst::FmaxD(_) => Format::R,
+            Inst::FcvtSD(_) => Format::R,
+            Inst::FcvtDS(_) => Format::R,
+            Inst::FeqD(_) => Format::R,
+            Inst::FltD(_) => Format::R,
+            Inst::FleD(_) => Format::R,
+            Inst::FclassD(_) => Format::R,
+            Inst::FcvtWD(_) => Format::R,
+            Inst::FcvtWuD(_) => Format::R,
+            Inst::FcvtDW(_) => Format::R,
+            Inst::FcvtDWu(_) => Format::R,
+            Inst::Flw(_) => Format::R,
+            Inst::Fsw(_) => Format::R,
+            Inst::Fld(_) => Format::R,
+            Inst::Fsd(_) => Format::R,
+            Inst::FcvtLS(_) => Format::R,
+            Inst::FcvtLuS(_) => Format::R,
+            Inst::FcvtSL(_) => Format::R,
+            Inst::FcvtSLu(_) => Format::R,
+            Inst::FcvtLD(_) => Format::R,
+            Inst::FcvtLuD(_) => Format::R,
+            Inst::FmvXD(_) => Format::R,
+            Inst::FcvtDL(_) => Format::R,
+            Inst::FcvtDLu(_) => Format::R,
+            Inst::FmvDX(_) => Format::R,
         }
     }
 
@@ -775,6 +1522,90 @@ impl Inst {
             Inst::Divuw(v) => v,
             Inst::Remw(v) => v,
             Inst::Remuw(v) => v,
+            Inst::LrW(v) => v,
+            Inst::ScW(v) => v,
+            Inst::AmoswapW(v) => v,
+            Inst::AmoaddW(v) => v,
+            Inst::AmoxorW(v) => v,
+            Inst::AmoandW(v) => v,
+            Inst::AmoorW(v) => v,
+            Inst::AmominW(v) => v,
+            Inst::AmomaxW(v) => v,
+            Inst::AmominuW(v) => v,
+            Inst::AmomaxuW(v) => v,
+            Inst::LrD(v) => v,
+            Inst::ScD(v) => v,
+            Inst::AmodswapD(v) => v,
+            Inst::AmoaddD(v) => v,
+            Inst::AmoxorD(v) => v,
+            Inst::AmoandD(v) => v,
+            Inst::AmoorD(v) => v,
+            Inst::AmominD(v) => v,
+            Inst::AmomaxD(v) => v,
+            Inst::AmominuD(v) => v,
+            Inst::AmomaxuD(v) => v,
+            Inst::FmaddS(v) => v,
+            Inst::FmsubS(v) => v,
+            Inst::FnmsubS(v) => v,
+            Inst::FnmaddS(v) => v,
+            Inst::FaddS(v) => v,
+            Inst::FsubS(v) => v,
+            Inst::FmulS(v) => v,
+            Inst::FdivS(v) => v,
+            Inst::FsqrtS(v) => v,
+            Inst::FsgnjS(v) => v,
+            Inst::FsgnjnS(v) => v,
+            Inst::FsgnjxS(v) => v,
+            Inst::FminS(v) => v,
+            Inst::FmaxS(v) => v,
+            Inst::FcvtWS(v) => v,
+            Inst::FcvtWuS(v) => v,
+            Inst::FmvXW(v) => v,
+            Inst::FeqS(v) => v,
+            Inst::FltS(v) => v,
+            Inst::FleS(v) => v,
+            Inst::FclassS(v) => v,
+            Inst::FcvtSW(v) => v,
+            Inst::FcvtSWu(v) => v,
+            Inst::FmvWX(v) => v,
+            Inst::FmaddD(v) => v,
+            Inst::FmsubD(v) => v,
+            Inst::FnmsubD(v) => v,
+            Inst::FnmaddD(v) => v,
+            Inst::FaddD(v) => v,
+            Inst::FsubD(v) => v,
+            Inst::FmulD(v) => v,
+            Inst::FdivD(v) => v,
+            Inst::FsqrtD(v) => v,
+            Inst::FsgnjD(v) => v,
+            Inst::FsgnjnD(v) => v,
+            Inst::FsgnjxD(v) => v,
+            Inst::FminD(v) => v,
+            Inst::FmaxD(v) => v,
+            Inst::FcvtSD(v) => v,
+            Inst::FcvtDS(v) => v,
+            Inst::FeqD(v) => v,
+            Inst::FltD(v) => v,
+            Inst::FleD(v) => v,
+            Inst::FclassD(v) => v,
+            Inst::FcvtWD(v) => v,
+            Inst::FcvtWuD(v) => v,
+            Inst::FcvtDW(v) => v,
+            Inst::FcvtDWu(v) => v,
+            Inst::Flw(v) => v,
+            Inst::Fsw(v) => v,
+            Inst::Fld(v) => v,
+            Inst::Fsd(v) => v,
+            Inst::FcvtLS(v) => v,
+            Inst::FcvtLuS(v) => v,
+            Inst::FcvtSL(v) => v,
+            Inst::FcvtSLu(v) => v,
+            Inst::FcvtLD(v) => v,
+            Inst::FcvtLuD(v) => v,
+            Inst::FmvXD(v) => v,
+            Inst::FcvtDL(v) => v,
+            Inst::FcvtDLu(v) => v,
+            Inst::FmvDX(v) => v,
         }
     }
 
