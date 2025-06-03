@@ -178,8 +178,18 @@ impl VM {
         Ok(self.exit_code())
     }
 
+    #[inline]
     pub fn step(&mut self) -> Result<(), VMRunError> {
-        let (inst, align) = self.fetch_inst(self.pc)?;
+        let (inst, align_len) = if let Some(cached) = self.inst_cache.get(self.pc) {
+            (cached.0, cached.1.len())
+        } else {
+            let (inst, align) = self.fetch_inst_uncached(self.pc)?;
+            let align_len = align.len();
+            self.inst_cache.put(self.pc, (inst, align));
+            (inst, align_len)
+        };
+
+        #[cfg(debug_assertions)]
         if log_enabled!(log::Level::Trace) {
             trace!(
                 "{}",
@@ -192,15 +202,29 @@ impl VM {
 
         inst.run(self)?;
 
-        self.pc = (self.pc + align.len()) % (PROG_LEN);
+        let new_pc = self.pc + align_len;
+        self.pc = if new_pc < PROG_LEN {
+            new_pc
+        } else {
+            new_pc % PROG_LEN
+        };
+
         Ok(())
     }
 
+    #[inline]
     pub fn fetch_inst(&mut self, addr: UArch) -> Result<(Inst, InstAlign), VMRunError> {
         if let Some(cache) = self.inst_cache.get(addr) {
             return Ok(*cache);
         }
 
+        let result = self.fetch_inst_uncached(addr)?;
+        self.inst_cache.put(addr, result);
+        Ok(result)
+    }
+
+    #[cold]
+    pub fn fetch_inst_uncached(&mut self, addr: UArch) -> Result<(Inst, InstAlign), VMRunError> {
         let word = self.fetch_word(addr)?;
         let (inst, align) = if word & 0b11 == 0b11 {
             // last two bits are 11, so it's a normal instruction
@@ -216,7 +240,6 @@ impl VM {
             info: "fetch_inst (decode)",
         })?;
 
-        self.inst_cache.put(addr, (inst, align));
         Ok((inst, align))
     }
 
@@ -352,7 +375,8 @@ pub enum InstAlign {
     Half,
 }
 impl InstAlign {
-    fn len(&self) -> UArch {
+    #[inline]
+    const fn len(&self) -> UArch {
         match self {
             Self::Word => 4,
             Self::Half => 2,

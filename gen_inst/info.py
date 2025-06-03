@@ -12,7 +12,7 @@ class Inst:
         return " && ".join([f"ext!(v, Word; {hi};{lo}) == 0b{pat}" for hi, lo, pat in self.pats])
     
     def decode_arm(self) -> str:
-        return f"v if {self.decode_cond()} => Inst::{self.symbol}(inst.into()),"
+        return f"v if {self.decode_cond()} => Inst::{self.symbol}(RawInst::new(inst)),"
 
     def enum_variant(self) -> str:
         return f"{self.symbol}(RawInst),"

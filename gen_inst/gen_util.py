@@ -59,7 +59,8 @@ def gen_main(modules: Modules) -> str:
     # decode function
     gen(f"""
 impl Inst {{
-    pub fn decode(inst: Word) -> Option<Self> {{
+    #[inline]
+    pub const fn decode(inst: Word) -> Option<Self> {{
         Some(match inst {{
             {"            ".join([inst.decode_arm() for inst in modules.all_inst()])}
             #[allow(unreachable_patterns)]
@@ -69,6 +70,7 @@ impl Inst {{
 
     # run function
     gen(f"""
+    #[inline]
     pub fn run(self, vm: &mut VM) -> Result<(), VMRunError> {{
         match self {{
             {"            ".join([inst.run_arm() for inst in modules.all_inst()])}
@@ -77,7 +79,8 @@ impl Inst {{
     
     # name function
     gen(f"""
-    pub fn name(self) -> &'static str {{
+    #[inline]
+    pub const fn name(self) -> &'static str {{
         match self {{
             {"            ".join([inst.name_arm() for inst in modules.all_inst()])}
         }}
@@ -85,7 +88,8 @@ impl Inst {{
     
     # format function
     gen(f"""
-    pub fn format(self) -> Format {{
+    #[inline]
+    pub const fn format(self) -> Format {{
         match self {{
             {"            ".join([inst.format_arm() for inst in modules.all_inst()])}
         }}
@@ -93,13 +97,15 @@ impl Inst {{
     
     # util functions
     gen(f"""
-    pub fn inner(self) -> RawInst {{
+    #[inline]
+    pub const fn inner(self) -> RawInst {{
         match self {{
             {"            ".join([f"Inst::{inst.symbol}(v) => v," for inst in modules.all_inst()])}
         }}
     }}""")
     gen(f"""
-    pub fn raw(self) -> Word {{
+    #[inline]
+    pub const fn raw(self) -> Word {{
         self.inner().raw()
     }}""")
 
