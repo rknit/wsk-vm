@@ -9,6 +9,7 @@ use crate::*;
 
 pub struct CJr;
 impl CJr {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CJr$
         todo!("implement CJr please!");
@@ -19,6 +20,7 @@ impl CJr {
 
 pub struct CMv;
 impl CMv {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CMv$
         todo!("implement CMv please!");
@@ -29,6 +31,7 @@ impl CMv {
 
 pub struct CEbreak;
 impl CEbreak {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CEbreak$
         todo!("implement CEbreak please!");
@@ -39,6 +42,7 @@ impl CEbreak {
 
 pub struct CJalr;
 impl CJalr {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CJalr$
         todo!("implement CJalr please!");
@@ -49,6 +53,7 @@ impl CJalr {
 
 pub struct CAdd;
 impl CAdd {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CAdd$
         todo!("implement CAdd please!");
@@ -59,6 +64,7 @@ impl CAdd {
 
 pub struct CNop;
 impl CNop {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CNop$
         todo!("implement CNop please!");
@@ -69,6 +75,7 @@ impl CNop {
 
 pub struct CAddi;
 impl CAddi {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CAddi$
         todo!("implement CAddi please!");
@@ -79,6 +86,7 @@ impl CAddi {
 
 pub struct CAddiw;
 impl CAddiw {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CAddiw$
         todo!("implement CAddiw please!");
@@ -89,6 +97,7 @@ impl CAddiw {
 
 pub struct CLi;
 impl CLi {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CLi$
         todo!("implement CLi please!");
@@ -99,6 +108,7 @@ impl CLi {
 
 pub struct CAddi16sp;
 impl CAddi16sp {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CAddi16sp$
         todo!("implement CAddi16sp please!");
@@ -109,6 +119,7 @@ impl CAddi16sp {
 
 pub struct CLui;
 impl CLui {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CLui$
         todo!("implement CLui please!");
@@ -119,6 +130,7 @@ impl CLui {
 
 pub struct CSrli;
 impl CSrli {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CSrli$
         todo!("implement CSrli please!");
@@ -129,6 +141,7 @@ impl CSrli {
 
 pub struct CSrai;
 impl CSrai {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CSrai$
         todo!("implement CSrai please!");
@@ -139,6 +152,7 @@ impl CSrai {
 
 pub struct CAndi;
 impl CAndi {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CAndi$
         todo!("implement CAndi please!");
@@ -149,6 +163,7 @@ impl CAndi {
 
 pub struct CSlli;
 impl CSlli {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CSlli$
         todo!("implement CSlli please!");
@@ -159,6 +174,7 @@ impl CSlli {
 
 pub struct CFldsp;
 impl CFldsp {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CFldsp$
         todo!("implement CFldsp please!");
@@ -169,6 +185,7 @@ impl CFldsp {
 
 pub struct CLwsp;
 impl CLwsp {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CLwsp$
         todo!("implement CLwsp please!");
@@ -179,6 +196,7 @@ impl CLwsp {
 
 pub struct CLdsp;
 impl CLdsp {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CLdsp$
         todo!("implement CLdsp please!");
@@ -189,6 +207,7 @@ impl CLdsp {
 
 pub struct CFsdsp;
 impl CFsdsp {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CFsdsp$
         todo!("implement CFsdsp please!");
@@ -199,6 +218,7 @@ impl CFsdsp {
 
 pub struct CSwsp;
 impl CSwsp {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CSwsp$
         todo!("implement CSwsp please!");
@@ -209,6 +229,7 @@ impl CSwsp {
 
 pub struct CSdsp;
 impl CSdsp {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CSdsp$
         todo!("implement CSdsp please!");
@@ -219,6 +240,7 @@ impl CSdsp {
 
 pub struct CAddi4spn;
 impl CAddi4spn {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CAddi4spn$
         todo!("implement CAddi4spn please!");
@@ -229,6 +251,7 @@ impl CAddi4spn {
 
 pub struct CFld;
 impl CFld {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CFld$
         todo!("implement CFld please!");
@@ -239,6 +262,7 @@ impl CFld {
 
 pub struct CLw;
 impl CLw {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CLw$
         todo!("implement CLw please!");
@@ -249,6 +273,7 @@ impl CLw {
 
 pub struct CLd;
 impl CLd {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CLd$
         todo!("implement CLd please!");
@@ -259,6 +284,7 @@ impl CLd {
 
 pub struct CFsd;
 impl CFsd {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CFsd$
         todo!("implement CFsd please!");
@@ -269,6 +295,7 @@ impl CFsd {
 
 pub struct CSw;
 impl CSw {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CSw$
         todo!("implement CSw please!");
@@ -279,6 +306,7 @@ impl CSw {
 
 pub struct CSd;
 impl CSd {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CSd$
         todo!("implement CSd please!");
@@ -289,6 +317,7 @@ impl CSd {
 
 pub struct CSub;
 impl CSub {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CSub$
         todo!("implement CSub please!");
@@ -299,6 +328,7 @@ impl CSub {
 
 pub struct CXor;
 impl CXor {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CXor$
         todo!("implement CXor please!");
@@ -309,6 +339,7 @@ impl CXor {
 
 pub struct COr;
 impl COr {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START COr$
         todo!("implement COr please!");
@@ -319,6 +350,7 @@ impl COr {
 
 pub struct CAnd;
 impl CAnd {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CAnd$
         todo!("implement CAnd please!");
@@ -329,6 +361,7 @@ impl CAnd {
 
 pub struct CSubw;
 impl CSubw {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CSubw$
         todo!("implement CSubw please!");
@@ -339,6 +372,7 @@ impl CSubw {
 
 pub struct CAddw;
 impl CAddw {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CAddw$
         todo!("implement CAddw please!");
@@ -349,6 +383,7 @@ impl CAddw {
 
 pub struct CBeqz;
 impl CBeqz {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CBeqz$
         todo!("implement CBeqz please!");
@@ -359,6 +394,7 @@ impl CBeqz {
 
 pub struct CBnez;
 impl CBnez {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CBnez$
         todo!("implement CBnez please!");
@@ -369,6 +405,7 @@ impl CBnez {
 
 pub struct CJ;
 impl CJ {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CJ$
         todo!("implement CJ please!");

@@ -9,6 +9,7 @@ use crate::*;
 
 pub struct Mulw;
 impl Mulw {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Mulw$
         let result = data.r1().wrapping_mul(data.r2()) as SWord as SArch;
@@ -20,6 +21,7 @@ impl Mulw {
 
 pub struct Divw;
 impl Divw {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Divw$
         if data.r2() == 0 {
@@ -40,6 +42,7 @@ impl Divw {
 
 pub struct Divuw;
 impl Divuw {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Divuw$
         if data.r2() == 0 {
@@ -60,6 +63,7 @@ impl Divuw {
 
 pub struct Remw;
 impl Remw {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Remw$
         if data.r2() == 0 {
@@ -80,6 +84,7 @@ impl Remw {
 
 pub struct Remuw;
 impl Remuw {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Remuw$
         if data.r2() == 0 {

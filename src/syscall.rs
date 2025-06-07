@@ -1,4 +1,7 @@
-use std::io;
+use std::{
+    io::{self, stderr, stdout},
+    os::fd::AsRawFd,
+};
 
 use log::warn;
 use util::syscalls;
@@ -66,6 +69,13 @@ syscalls!(
     },
     close(57) = {
         let fd = vm.x(ARG0_REG) as SWord;
+
+        if fd == stdout().as_raw_fd() || fd == stderr().as_raw_fd() {
+            // Do not close stdout/stderr
+            vm.set_x(RET_REG, 0);
+            return Ok(());
+        }
+
         let r = unsafe { libc::close(fd) };
         if r < 0 {
             let errno = io::Error::last_os_error().raw_os_error().unwrap();

@@ -9,6 +9,7 @@ use crate::*;
 
 pub struct LrD;
 impl LrD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START LrD$
         todo!("implement LrD please!");
@@ -19,6 +20,7 @@ impl LrD {
 
 pub struct ScD;
 impl ScD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START ScD$
         todo!("implement ScD please!");
@@ -29,6 +31,7 @@ impl ScD {
 
 pub struct AmodswapD;
 impl AmodswapD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START AmodswapD$
         todo!("implement AmodswapD please!");
@@ -39,6 +42,7 @@ impl AmodswapD {
 
 pub struct AmoaddD;
 impl AmoaddD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START AmoaddD$
         todo!("implement AmoaddD please!");
@@ -49,6 +53,7 @@ impl AmoaddD {
 
 pub struct AmoxorD;
 impl AmoxorD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START AmoxorD$
         todo!("implement AmoxorD please!");
@@ -59,6 +64,7 @@ impl AmoxorD {
 
 pub struct AmoandD;
 impl AmoandD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START AmoandD$
         todo!("implement AmoandD please!");
@@ -69,6 +75,7 @@ impl AmoandD {
 
 pub struct AmoorD;
 impl AmoorD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START AmoorD$
         todo!("implement AmoorD please!");
@@ -79,6 +86,7 @@ impl AmoorD {
 
 pub struct AmominD;
 impl AmominD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START AmominD$
         todo!("implement AmominD please!");
@@ -89,6 +97,7 @@ impl AmominD {
 
 pub struct AmomaxD;
 impl AmomaxD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START AmomaxD$
         todo!("implement AmomaxD please!");
@@ -99,6 +108,7 @@ impl AmomaxD {
 
 pub struct AmominuD;
 impl AmominuD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START AmominuD$
         todo!("implement AmominuD please!");
@@ -109,6 +119,7 @@ impl AmominuD {
 
 pub struct AmomaxuD;
 impl AmomaxuD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START AmomaxuD$
         todo!("implement AmomaxuD please!");

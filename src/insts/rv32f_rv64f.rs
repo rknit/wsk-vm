@@ -9,6 +9,7 @@ use crate::*;
 
 pub struct FmaddS;
 impl FmaddS {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FmaddS$
         todo!("implement FmaddS please!");
@@ -19,6 +20,7 @@ impl FmaddS {
 
 pub struct FmsubS;
 impl FmsubS {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FmsubS$
         todo!("implement FmsubS please!");
@@ -29,6 +31,7 @@ impl FmsubS {
 
 pub struct FnmsubS;
 impl FnmsubS {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FnmsubS$
         todo!("implement FnmsubS please!");
@@ -39,6 +42,7 @@ impl FnmsubS {
 
 pub struct FnmaddS;
 impl FnmaddS {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FnmaddS$
         todo!("implement FnmaddS please!");
@@ -49,6 +53,7 @@ impl FnmaddS {
 
 pub struct FaddS;
 impl FaddS {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FaddS$
         todo!("implement FaddS please!");
@@ -59,6 +64,7 @@ impl FaddS {
 
 pub struct FsubS;
 impl FsubS {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FsubS$
         todo!("implement FsubS please!");
@@ -69,6 +75,7 @@ impl FsubS {
 
 pub struct FmulS;
 impl FmulS {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FmulS$
         todo!("implement FmulS please!");
@@ -79,6 +86,7 @@ impl FmulS {
 
 pub struct FdivS;
 impl FdivS {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FdivS$
         todo!("implement FdivS please!");
@@ -89,6 +97,7 @@ impl FdivS {
 
 pub struct FsqrtS;
 impl FsqrtS {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FsqrtS$
         todo!("implement FsqrtS please!");
@@ -99,6 +108,7 @@ impl FsqrtS {
 
 pub struct FsgnjS;
 impl FsgnjS {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FsgnjS$
         todo!("implement FsgnjS please!");
@@ -109,6 +119,7 @@ impl FsgnjS {
 
 pub struct FsgnjnS;
 impl FsgnjnS {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FsgnjnS$
         todo!("implement FsgnjnS please!");
@@ -119,6 +130,7 @@ impl FsgnjnS {
 
 pub struct FsgnjxS;
 impl FsgnjxS {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FsgnjxS$
         todo!("implement FsgnjxS please!");
@@ -129,6 +141,7 @@ impl FsgnjxS {
 
 pub struct FminS;
 impl FminS {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FminS$
         todo!("implement FminS please!");
@@ -139,6 +152,7 @@ impl FminS {
 
 pub struct FmaxS;
 impl FmaxS {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FmaxS$
         todo!("implement FmaxS please!");
@@ -149,6 +163,7 @@ impl FmaxS {
 
 pub struct FcvtWS;
 impl FcvtWS {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FcvtWS$
         todo!("implement FcvtWS please!");
@@ -159,6 +174,7 @@ impl FcvtWS {
 
 pub struct FcvtWuS;
 impl FcvtWuS {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FcvtWuS$
         todo!("implement FcvtWuS please!");
@@ -169,6 +185,7 @@ impl FcvtWuS {
 
 pub struct FmvXW;
 impl FmvXW {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FmvXW$
         todo!("implement FmvXW please!");
@@ -179,6 +196,7 @@ impl FmvXW {
 
 pub struct FeqS;
 impl FeqS {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FeqS$
         todo!("implement FeqS please!");
@@ -189,6 +207,7 @@ impl FeqS {
 
 pub struct FltS;
 impl FltS {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FltS$
         todo!("implement FltS please!");
@@ -199,6 +218,7 @@ impl FltS {
 
 pub struct FleS;
 impl FleS {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FleS$
         todo!("implement FleS please!");
@@ -209,6 +229,7 @@ impl FleS {
 
 pub struct FclassS;
 impl FclassS {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FclassS$
         todo!("implement FclassS please!");
@@ -219,6 +240,7 @@ impl FclassS {
 
 pub struct FcvtSW;
 impl FcvtSW {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FcvtSW$
         todo!("implement FcvtSW please!");
@@ -229,6 +251,7 @@ impl FcvtSW {
 
 pub struct FcvtSWu;
 impl FcvtSWu {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FcvtSWu$
         todo!("implement FcvtSWu please!");
@@ -239,6 +262,7 @@ impl FcvtSWu {
 
 pub struct FmvWX;
 impl FmvWX {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FmvWX$
         todo!("implement FmvWX please!");
@@ -249,6 +273,7 @@ impl FmvWX {
 
 pub struct FmaddD;
 impl FmaddD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FmaddD$
         todo!("implement FmaddD please!");
@@ -259,6 +284,7 @@ impl FmaddD {
 
 pub struct FmsubD;
 impl FmsubD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FmsubD$
         todo!("implement FmsubD please!");
@@ -269,6 +295,7 @@ impl FmsubD {
 
 pub struct FnmsubD;
 impl FnmsubD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FnmsubD$
         todo!("implement FnmsubD please!");
@@ -279,6 +306,7 @@ impl FnmsubD {
 
 pub struct FnmaddD;
 impl FnmaddD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FnmaddD$
         todo!("implement FnmaddD please!");
@@ -289,6 +317,7 @@ impl FnmaddD {
 
 pub struct FaddD;
 impl FaddD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FaddD$
         todo!("implement FaddD please!");
@@ -299,6 +328,7 @@ impl FaddD {
 
 pub struct FsubD;
 impl FsubD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FsubD$
         todo!("implement FsubD please!");
@@ -309,6 +339,7 @@ impl FsubD {
 
 pub struct FmulD;
 impl FmulD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FmulD$
         todo!("implement FmulD please!");
@@ -319,6 +350,7 @@ impl FmulD {
 
 pub struct FdivD;
 impl FdivD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FdivD$
         todo!("implement FdivD please!");
@@ -329,6 +361,7 @@ impl FdivD {
 
 pub struct FsqrtD;
 impl FsqrtD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FsqrtD$
         todo!("implement FsqrtD please!");
@@ -339,6 +372,7 @@ impl FsqrtD {
 
 pub struct FsgnjD;
 impl FsgnjD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FsgnjD$
         todo!("implement FsgnjD please!");
@@ -349,6 +383,7 @@ impl FsgnjD {
 
 pub struct FsgnjnD;
 impl FsgnjnD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FsgnjnD$
         todo!("implement FsgnjnD please!");
@@ -359,6 +394,7 @@ impl FsgnjnD {
 
 pub struct FsgnjxD;
 impl FsgnjxD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FsgnjxD$
         todo!("implement FsgnjxD please!");
@@ -369,6 +405,7 @@ impl FsgnjxD {
 
 pub struct FminD;
 impl FminD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FminD$
         todo!("implement FminD please!");
@@ -379,6 +416,7 @@ impl FminD {
 
 pub struct FmaxD;
 impl FmaxD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FmaxD$
         todo!("implement FmaxD please!");
@@ -389,6 +427,7 @@ impl FmaxD {
 
 pub struct FcvtSD;
 impl FcvtSD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FcvtSD$
         todo!("implement FcvtSD please!");
@@ -399,6 +438,7 @@ impl FcvtSD {
 
 pub struct FcvtDS;
 impl FcvtDS {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FcvtDS$
         todo!("implement FcvtDS please!");
@@ -409,6 +449,7 @@ impl FcvtDS {
 
 pub struct FeqD;
 impl FeqD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FeqD$
         todo!("implement FeqD please!");
@@ -419,6 +460,7 @@ impl FeqD {
 
 pub struct FltD;
 impl FltD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FltD$
         todo!("implement FltD please!");
@@ -429,6 +471,7 @@ impl FltD {
 
 pub struct FleD;
 impl FleD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FleD$
         todo!("implement FleD please!");
@@ -439,6 +482,7 @@ impl FleD {
 
 pub struct FclassD;
 impl FclassD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FclassD$
         todo!("implement FclassD please!");
@@ -449,6 +493,7 @@ impl FclassD {
 
 pub struct FcvtWD;
 impl FcvtWD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FcvtWD$
         todo!("implement FcvtWD please!");
@@ -459,6 +504,7 @@ impl FcvtWD {
 
 pub struct FcvtWuD;
 impl FcvtWuD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FcvtWuD$
         todo!("implement FcvtWuD please!");
@@ -469,6 +515,7 @@ impl FcvtWuD {
 
 pub struct FcvtDW;
 impl FcvtDW {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FcvtDW$
         todo!("implement FcvtDW please!");
@@ -479,6 +526,7 @@ impl FcvtDW {
 
 pub struct FcvtDWu;
 impl FcvtDWu {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FcvtDWu$
         todo!("implement FcvtDWu please!");
@@ -489,6 +537,7 @@ impl FcvtDWu {
 
 pub struct Flw;
 impl Flw {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Flw$
         todo!("implement Flw please!");
@@ -499,6 +548,7 @@ impl Flw {
 
 pub struct Fsw;
 impl Fsw {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Fsw$
         todo!("implement Fsw please!");
@@ -509,6 +559,7 @@ impl Fsw {
 
 pub struct Fld;
 impl Fld {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Fld$
         todo!("implement Fld please!");
@@ -519,6 +570,7 @@ impl Fld {
 
 pub struct Fsd;
 impl Fsd {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Fsd$
         todo!("implement Fsd please!");

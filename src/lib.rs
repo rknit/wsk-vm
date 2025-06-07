@@ -1,4 +1,5 @@
 mod bits;
+mod cache;
 mod exception;
 mod format;
 mod insts;

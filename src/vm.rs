@@ -5,9 +5,11 @@ use std::{
 
 use log::{info, log_enabled, trace};
 
-use crate::{Byte, Exception, Half, Inst, InstReport, SArch, SHalf, UArch, UHSize, Word};
+use crate::{
+    Byte, Exception, Half, Inst, InstReport, SArch, SHalf, UArch, UHSize, Word, cache::Cache,
+};
 
-const REG_COUNT: usize = 32;
+const REG_COUNT: UHSize = 32;
 
 const MEM_LEN: UArch = 64 * MEGABYTE;
 
@@ -19,16 +21,20 @@ const PROG_BEGIN: UArch = 0;
 
 const MEGABYTE: UArch = 1024 * 1024;
 
+const CACHE_CAPACITY: UArch = 16384;
+
+#[repr(align(64))]
 pub struct VM {
     regs: [UArch; REG_COUNT],
     mem: Box<[Byte]>,
     pub pc: UArch,
-    inst_alignment: InstAlignmentMode,
 
     pub(crate) halt: bool,
     pub(crate) exit_code: Byte,
 
     dbg_syms: HashMap<UArch, HashSet<String>>,
+
+    inst_cache: Cache<(Inst, InstAlign)>,
 }
 impl VM {
     pub fn new() -> Self {
@@ -36,12 +42,12 @@ impl VM {
             regs: Default::default(),
             mem: vec![0; MEM_LEN as UHSize].into_boxed_slice(),
             pc: PROG_BEGIN,
-            inst_alignment: InstAlignmentMode::Word,
 
             halt: false,
             exit_code: 0,
 
             dbg_syms: HashMap::new(),
+            inst_cache: Cache::new(CACHE_CAPACITY),
         }
     }
 
@@ -162,6 +168,7 @@ impl VM {
         Ok(())
     }
 
+    #[inline]
     pub fn run(&mut self) -> Result<Byte, VMRunError> {
         while !self.halt {
             self.step()?;
@@ -169,8 +176,18 @@ impl VM {
         Ok(self.exit_code())
     }
 
+    #[inline]
     pub fn step(&mut self) -> Result<(), VMRunError> {
-        let (inst, align) = self.fetch_inst(self.pc)?;
+        let (inst, align_len) = if let Some(cached) = self.inst_cache.get(self.pc) {
+            (cached.0, cached.1.len())
+        } else {
+            let (inst, align) = self.fetch_inst_uncached(self.pc)?;
+            let align_len = align.len();
+            self.inst_cache.put(self.pc, (inst, align));
+            (inst, align_len)
+        };
+
+        #[cfg(debug_assertions)]
         if log_enabled!(log::Level::Trace) {
             trace!(
                 "{}",
@@ -183,27 +200,37 @@ impl VM {
 
         inst.run(self)?;
 
-        self.inst_alignment = align;
-        self.pc = (self.pc + self.inst_alignment.len()) % (PROG_LEN);
+        let new_pc = self.pc + align_len;
+        self.pc = if new_pc < PROG_LEN {
+            new_pc
+        } else {
+            new_pc % PROG_LEN
+        };
+
         Ok(())
     }
 
-    pub fn fetch_inst(&self, addr: UArch) -> Result<(Inst, InstAlignmentMode), VMRunError> {
-        if addr % self.inst_alignment.len() != 0 {
-            return Err(VMRunError {
-                err_addr: addr,
-                kind: VMRunErrorKind::Misalignment(self.inst_alignment.len()),
-                info: "inst address alignment",
-            });
+    #[inline]
+    pub fn fetch_inst(&mut self, addr: UArch) -> Result<(Inst, InstAlign), VMRunError> {
+        if let Some(cache) = self.inst_cache.get(addr) {
+            return Ok(*cache);
         }
 
-        let (inst, align) = self.solve_alignment(
-            addr,
-            match self.inst_alignment {
-                InstAlignmentMode::Word => self.fetch_word(addr)?,
-                InstAlignmentMode::Half => self.fetch_half(addr)? as Word,
-            },
-        )?;
+        let result = self.fetch_inst_uncached(addr)?;
+        self.inst_cache.put(addr, result);
+        Ok(result)
+    }
+
+    #[cold]
+    pub fn fetch_inst_uncached(&mut self, addr: UArch) -> Result<(Inst, InstAlign), VMRunError> {
+        let word = self.fetch_word(addr)?;
+        let (inst, align) = if word & 0b11 == 0b11 {
+            // last two bits are 11, so it's a normal instruction
+            (word, InstAlign::Word)
+        } else {
+            // last two bits are not 11, so it's a compressed instruction
+            (word as Half as Word, InstAlign::Half)
+        };
 
         let inst = Inst::decode(inst).ok_or_else(|| VMRunError {
             err_addr: addr,
@@ -214,54 +241,6 @@ impl VM {
         Ok((inst, align))
     }
 
-    fn solve_alignment(
-        &self,
-        addr: UArch,
-        inst: Word,
-    ) -> Result<(Word, InstAlignmentMode), VMRunError> {
-        match self.inst_alignment {
-            InstAlignmentMode::Word => {
-                if inst & 0b11 == 0b11 {
-                    return Ok((inst, InstAlignmentMode::Word));
-                }
-
-                let inst16 = inst >> 16;
-                if inst16 & 0b11 != 0b11 {
-                    return Ok((inst16, InstAlignmentMode::Half));
-                }
-
-                Err(VMRunError {
-                    err_addr: addr,
-                    kind: VMRunErrorKind::Misalignment(self.inst_alignment.len()),
-                    info: "fail to solve alignment for word",
-                })
-            }
-            InstAlignmentMode::Half => {
-                if inst & 0b11 != 0b11 {
-                    return Ok((inst, InstAlignmentMode::Half));
-                }
-
-                let Ok(word) = self.fetch_word(addr) else {
-                    return Err(VMRunError {
-                        err_addr: addr,
-                        kind: VMRunErrorKind::Misalignment(self.inst_alignment.len()),
-                        info: "fail to solve alignment for half (out of bound)",
-                    });
-                };
-
-                if word & 0b11 == 0b11 {
-                    return Ok((word, InstAlignmentMode::Word));
-                }
-
-                Err(VMRunError {
-                    err_addr: addr,
-                    kind: VMRunErrorKind::Misalignment(self.inst_alignment.len()),
-                    info: "fail to solve alignment for half",
-                })
-            }
-        }
-    }
-
     fn fetch_word(&self, addr: UArch) -> Result<Word, VMRunError> {
         let bytes = self.mem_range(addr, 4)?;
         Ok(Word::from_le_bytes([
@@ -269,11 +248,7 @@ impl VM {
         ]))
     }
 
-    fn fetch_half(&self, addr: UArch) -> Result<Half, VMRunError> {
-        let bytes = self.mem_range(addr, 2)?;
-        Ok(Half::from_le_bytes([bytes[0], bytes[1]]))
-    }
-
+    #[inline]
     pub fn mem(&self, addr: UArch) -> Result<Byte, VMRunError> {
         if addr < MEM_LEN {
             Ok(self.mem[addr as UHSize])
@@ -286,6 +261,7 @@ impl VM {
         }
     }
 
+    #[inline]
     pub fn mem_range(&self, addr: UArch, len: UArch) -> Result<&[Byte], VMRunError> {
         if addr + len < MEM_LEN {
             Ok(&self.mem[addr as UHSize..(addr + len) as UHSize])
@@ -298,6 +274,7 @@ impl VM {
         }
     }
 
+    #[inline]
     pub fn mem_range_mut(&mut self, addr: UArch, len: UArch) -> Result<&mut [Byte], VMRunError> {
         if addr + len < MEM_LEN {
             Ok(&mut self.mem[addr as UHSize..(addr + len) as UHSize])
@@ -310,6 +287,7 @@ impl VM {
         }
     }
 
+    #[inline]
     pub fn set_mem(&mut self, addr: UArch, value: Byte) -> Result<(), VMRunError> {
         if addr < MEM_LEN {
             self.mem[addr as UHSize] = value;
@@ -323,6 +301,7 @@ impl VM {
         }
     }
 
+    #[inline]
     pub fn set_mem_range(&mut self, addr: UArch, values: &[Byte]) -> Result<(), VMRunError> {
         if addr < MEM_LEN {
             let mem = self.mem_range_mut(addr, values.len() as UArch).unwrap();
@@ -337,18 +316,27 @@ impl VM {
         }
     }
 
+    #[inline(always)]
     pub fn x(&self, i: Byte) -> UArch {
-        let i = i as usize;
-        assert!(i < REG_COUNT, "invalid register");
-        if i == 0 { 0 } else { self.regs[i] }
+        debug_assert!((i as UHSize) < REG_COUNT, "invalid register");
+        if i == 0 {
+            return 0;
+        } else {
+            self.regs[i as UHSize]
+        }
     }
 
+    #[inline(always)]
     pub fn set_x(&mut self, i: Byte, val: UArch) {
-        let i = i as usize;
-        assert!(i < REG_COUNT, "invalid register");
-        self.regs[i] = val;
+        debug_assert!((i as UHSize) < REG_COUNT, "invalid register");
+        if i == 0 {
+            self.regs[i as UHSize] = 0;
+        } else {
+            self.regs[i as UHSize] = val;
+        }
     }
 
+    #[inline]
     pub fn jump(&mut self, addr: UArch, dec_4: bool) -> Result<(), VMRunError> {
         if addr < PROG_LEN {
             if dec_4 {
@@ -367,6 +355,7 @@ impl VM {
         }
     }
 
+    #[inline]
     pub fn jump_pc_rel(&mut self, offset: SArch, dec_4: bool) -> Result<(), VMRunError> {
         let addr = self.pc.wrapping_add_signed(offset) & !1;
         if addr < PROG_LEN {
@@ -380,6 +369,7 @@ impl VM {
         }
     }
 
+    #[inline]
     pub fn raise(&mut self, ex: Exception) -> Result<(), VMRunError> {
         match ex {
             Exception::Ecall => self.syscall(),
@@ -387,16 +377,29 @@ impl VM {
     }
 }
 
-pub enum InstAlignmentMode {
+impl Default for Inst {
+    fn default() -> Self {
+        Inst::CNop(0.into())
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum InstAlign {
     Word,
     Half,
 }
-impl InstAlignmentMode {
-    fn len(&self) -> UArch {
+impl InstAlign {
+    #[inline]
+    const fn len(&self) -> UArch {
         match self {
             Self::Word => 4,
             Self::Half => 2,
         }
+    }
+}
+impl Default for InstAlign {
+    fn default() -> Self {
+        InstAlign::Word
     }
 }
 
@@ -428,7 +431,7 @@ impl Display for VMRunError {
 
 #[derive(Debug)]
 pub enum VMRunErrorKind {
-    Misalignment(UArch),
+    Misalignment,
     UnknownInst(Word),
     InvalidAddress(UArch),
     UnknownSyscall(SHalf),
@@ -438,7 +441,7 @@ pub enum VMRunErrorKind {
 impl Display for VMRunErrorKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Misalignment(align) => write!(f, "address misalignment to multiple of {align}"),
+            Self::Misalignment => write!(f, "address misalignment"),
             Self::UnknownInst(inst) => write!(f, "unknown inst: {inst:08x}"),
             Self::InvalidAddress(addr) => write!(f, "invalid address {addr:x}"),
             Self::UnknownSyscall(code) => write!(f, "unknown syscall: {code}"),

@@ -51,7 +51,7 @@ def gen_main(modules: Modules) -> str:
     for mod_idx, mod in enumerate(modules.mods()):
         gen(f"    // {mod.name.upper()}")
         for inst in mod.insts:
-            gen(f"    {inst.enum_variant()}")
+            gen(f"    {inst.enum_variant()},")
         if mod_idx + 1 != modules.len():
             gen()
     gen("}")
@@ -59,7 +59,8 @@ def gen_main(modules: Modules) -> str:
     # decode function
     gen(f"""
 impl Inst {{
-    pub fn decode(inst: Word) -> Option<Self> {{
+    #[inline]
+    pub const fn decode(inst: Word) -> Option<Self> {{
         Some(match inst {{
             {"            ".join([inst.decode_arm() for inst in modules.all_inst()])}
             #[allow(unreachable_patterns)]
@@ -69,15 +70,21 @@ impl Inst {{
 
     # run function
     gen(f"""
+    #[inline]
     pub fn run(self, vm: &mut VM) -> Result<(), VMRunError> {{
-        match self {{
-            {"            ".join([inst.run_arm() for inst in modules.all_inst()])}
-        }}
+        const RUN_TABLE: [fn(RawInst, &mut VM) -> Result<(), VMRunError>; {len(modules.all_inst())}] = [
+            {"            ".join([inst.jump_table_entry() for inst in modules.all_inst()])}
+        ];
+        
+        let id = self.discriminant();
+        let raw_inst = self.inner();
+        RUN_TABLE[id](raw_inst, vm)
     }}""")
     
     # name function
     gen(f"""
-    pub fn name(self) -> &'static str {{
+    #[inline]
+    pub const fn name(&self) -> &'static str {{
         match self {{
             {"            ".join([inst.name_arm() for inst in modules.all_inst()])}
         }}
@@ -85,7 +92,8 @@ impl Inst {{
     
     # format function
     gen(f"""
-    pub fn format(self) -> Format {{
+    #[inline]
+    pub const fn format(&self) -> Format {{
         match self {{
             {"            ".join([inst.format_arm() for inst in modules.all_inst()])}
         }}
@@ -93,14 +101,25 @@ impl Inst {{
     
     # util functions
     gen(f"""
-    pub fn inner(self) -> RawInst {{
+    #[inline]
+    pub const fn inner(self) -> RawInst {{
         match self {{
             {"            ".join([f"Inst::{inst.symbol}(v) => v," for inst in modules.all_inst()])}
         }}
     }}""")
+    
     gen(f"""
-    pub fn raw(self) -> Word {{
+    #[inline]
+    pub const fn raw(self) -> Word {{
         self.inner().raw()
+    }}""")
+    
+    gen(f"""
+    #[inline]
+    pub const fn discriminant(&self) -> UHSize {{
+        match self {{
+            {"            ".join([f"Inst::{inst.symbol}(_) => {i}," for i, inst in enumerate(modules.all_inst())])}
+        }}
     }}""")
 
     # finish impl
@@ -120,6 +139,7 @@ def gen_inst_impl(inst: Inst) -> str:
     return f"""
 pub struct {inst.symbol};
 impl {inst.symbol} {{
+    #[inline]
     pub fn run({inst.run_param()}) -> Result<(), VMRunError> {{
         {get_impl_start_token(inst)}
         {inst.impl if inst.impl else get_default_impl(inst)}

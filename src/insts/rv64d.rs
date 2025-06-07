@@ -9,6 +9,7 @@ use crate::*;
 
 pub struct FcvtLD;
 impl FcvtLD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FcvtLD$
         todo!("implement FcvtLD please!");
@@ -19,6 +20,7 @@ impl FcvtLD {
 
 pub struct FcvtLuD;
 impl FcvtLuD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FcvtLuD$
         todo!("implement FcvtLuD please!");
@@ -29,6 +31,7 @@ impl FcvtLuD {
 
 pub struct FmvXD;
 impl FmvXD {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FmvXD$
         todo!("implement FmvXD please!");
@@ -39,6 +42,7 @@ impl FmvXD {
 
 pub struct FcvtDL;
 impl FcvtDL {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FcvtDL$
         todo!("implement FcvtDL please!");
@@ -49,6 +53,7 @@ impl FcvtDL {
 
 pub struct FcvtDLu;
 impl FcvtDLu {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FcvtDLu$
         todo!("implement FcvtDLu please!");
@@ -59,6 +64,7 @@ impl FcvtDLu {
 
 pub struct FmvDX;
 impl FmvDX {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FmvDX$
         todo!("implement FmvDX please!");

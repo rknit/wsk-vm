@@ -264,1081 +264,1088 @@ pub enum Inst {
 }
 
 impl Inst {
-    pub fn decode(inst: Word) -> Option<Self> {
+    #[inline]
+    pub const fn decode(inst: Word) -> Option<Self> {
         Some(match inst {
             v if ext!(v, Word; 6;0) == 0b0110011
                 && ext!(v, Word; 14;12) == 0b000
                 && ext!(v, Word; 31;25) == 0b0000000 =>
             {
-                Inst::Add(inst.into())
+                Inst::Add(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0110011
                 && ext!(v, Word; 14;12) == 0b000
                 && ext!(v, Word; 31;25) == 0b0100000 =>
             {
-                Inst::Sub(inst.into())
+                Inst::Sub(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0110011
                 && ext!(v, Word; 14;12) == 0b001
                 && ext!(v, Word; 31;25) == 0b0000000 =>
             {
-                Inst::Sll(inst.into())
+                Inst::Sll(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0110011
                 && ext!(v, Word; 14;12) == 0b010
                 && ext!(v, Word; 31;25) == 0b0000000 =>
             {
-                Inst::Slt(inst.into())
+                Inst::Slt(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0110011
                 && ext!(v, Word; 14;12) == 0b011
                 && ext!(v, Word; 31;25) == 0b0000000 =>
             {
-                Inst::Sltu(inst.into())
+                Inst::Sltu(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0110011
                 && ext!(v, Word; 14;12) == 0b100
                 && ext!(v, Word; 31;25) == 0b0000000 =>
             {
-                Inst::Xor(inst.into())
+                Inst::Xor(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0110011
                 && ext!(v, Word; 14;12) == 0b101
                 && ext!(v, Word; 31;25) == 0b0000000 =>
             {
-                Inst::Srl(inst.into())
+                Inst::Srl(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0110011
                 && ext!(v, Word; 14;12) == 0b101
                 && ext!(v, Word; 31;25) == 0b0100000 =>
             {
-                Inst::Sra(inst.into())
+                Inst::Sra(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0110011
                 && ext!(v, Word; 14;12) == 0b110
                 && ext!(v, Word; 31;25) == 0b0000000 =>
             {
-                Inst::Or(inst.into())
+                Inst::Or(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0110011
                 && ext!(v, Word; 14;12) == 0b111
                 && ext!(v, Word; 31;25) == 0b0000000 =>
             {
-                Inst::And(inst.into())
+                Inst::And(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1110011
                 && ext!(v, Word; 14;12) == 0b000
                 && ext!(v, Word; 31;25) == 0b0001001 =>
             {
-                Inst::SfenceVma(inst.into())
+                Inst::SfenceVma(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0010011 && ext!(v, Word; 14;12) == 0b000 => {
-                Inst::Addi(inst.into())
+                Inst::Addi(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0010011 && ext!(v, Word; 14;12) == 0b010 => {
-                Inst::Slti(inst.into())
+                Inst::Slti(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0010011 && ext!(v, Word; 14;12) == 0b011 => {
-                Inst::Sltiu(inst.into())
+                Inst::Sltiu(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0010011 && ext!(v, Word; 14;12) == 0b100 => {
-                Inst::Xori(inst.into())
+                Inst::Xori(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0010011 && ext!(v, Word; 14;12) == 0b110 => {
-                Inst::Ori(inst.into())
+                Inst::Ori(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0010011 && ext!(v, Word; 14;12) == 0b111 => {
-                Inst::Andi(inst.into())
+                Inst::Andi(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0010011
                 && ext!(v, Word; 14;12) == 0b001
                 && ext!(v, Word; 31;26) == 0b000000 =>
             {
-                Inst::Slli(inst.into())
+                Inst::Slli(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0010011
                 && ext!(v, Word; 14;12) == 0b101
                 && ext!(v, Word; 31;26) == 0b000000 =>
             {
-                Inst::Srli(inst.into())
+                Inst::Srli(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0010011
                 && ext!(v, Word; 14;12) == 0b101
                 && ext!(v, Word; 31;26) == 0b010000 =>
             {
-                Inst::Srai(inst.into())
+                Inst::Srai(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0000011 && ext!(v, Word; 14;12) == 0b000 => {
-                Inst::Lb(inst.into())
+                Inst::Lb(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0000011 && ext!(v, Word; 14;12) == 0b001 => {
-                Inst::Lh(inst.into())
+                Inst::Lh(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0000011 && ext!(v, Word; 14;12) == 0b010 => {
-                Inst::Lw(inst.into())
+                Inst::Lw(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0000011 && ext!(v, Word; 14;12) == 0b100 => {
-                Inst::Lbu(inst.into())
+                Inst::Lbu(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0000011 && ext!(v, Word; 14;12) == 0b101 => {
-                Inst::Lhu(inst.into())
+                Inst::Lhu(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1100111 && ext!(v, Word; 14;12) == 0b000 => {
-                Inst::Jalr(inst.into())
+                Inst::Jalr(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0001111 && ext!(v, Word; 14;12) == 0b000 => {
-                Inst::Fence(inst.into())
+                Inst::Fence(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0001111 && ext!(v, Word; 14;12) == 0b001 => {
-                Inst::FenceI(inst.into())
+                Inst::FenceI(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1110011 && ext!(v, Word; 14;12) == 0b001 => {
-                Inst::Csrrw(inst.into())
+                Inst::Csrrw(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1110011 && ext!(v, Word; 14;12) == 0b010 => {
-                Inst::Csrrs(inst.into())
+                Inst::Csrrs(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1110011 && ext!(v, Word; 14;12) == 0b011 => {
-                Inst::Csrrc(inst.into())
+                Inst::Csrrc(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1110011 && ext!(v, Word; 14;12) == 0b101 => {
-                Inst::Csrrwi(inst.into())
+                Inst::Csrrwi(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1110011 && ext!(v, Word; 14;12) == 0b110 => {
-                Inst::Csrrsi(inst.into())
+                Inst::Csrrsi(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1110011 && ext!(v, Word; 14;12) == 0b111 => {
-                Inst::Csrrci(inst.into())
+                Inst::Csrrci(RawInst::new(inst))
             }
             v if ext!(v, Word; 31;0) == 0b00000000000000000000000001110011 => {
-                Inst::Ecall(inst.into())
+                Inst::Ecall(RawInst::new(inst))
             }
             v if ext!(v, Word; 31;0) == 0b00000000000100000000000001110011 => {
-                Inst::Ebreak(inst.into())
+                Inst::Ebreak(RawInst::new(inst))
             }
             v if ext!(v, Word; 31;0) == 0b00000000001000000000000001110011 => {
-                Inst::Uret(inst.into())
+                Inst::Uret(RawInst::new(inst))
             }
             v if ext!(v, Word; 31;0) == 0b00010000001000000000000001110011 => {
-                Inst::Sret(inst.into())
+                Inst::Sret(RawInst::new(inst))
             }
             v if ext!(v, Word; 31;0) == 0b00110000001000000000000001110011 => {
-                Inst::Mret(inst.into())
+                Inst::Mret(RawInst::new(inst))
             }
             v if ext!(v, Word; 31;0) == 0b00010000010100000000000001110011 => {
-                Inst::Wfi(inst.into())
+                Inst::Wfi(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0100011 && ext!(v, Word; 14;12) == 0b000 => {
-                Inst::Sb(inst.into())
+                Inst::Sb(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0100011 && ext!(v, Word; 14;12) == 0b001 => {
-                Inst::Sh(inst.into())
+                Inst::Sh(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0100011 && ext!(v, Word; 14;12) == 0b010 => {
-                Inst::Sw(inst.into())
+                Inst::Sw(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1100011 && ext!(v, Word; 14;12) == 0b000 => {
-                Inst::Beq(inst.into())
+                Inst::Beq(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1100011 && ext!(v, Word; 14;12) == 0b001 => {
-                Inst::Bne(inst.into())
+                Inst::Bne(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1100011 && ext!(v, Word; 14;12) == 0b100 => {
-                Inst::Blt(inst.into())
+                Inst::Blt(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1100011 && ext!(v, Word; 14;12) == 0b101 => {
-                Inst::Bge(inst.into())
+                Inst::Bge(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1100011 && ext!(v, Word; 14;12) == 0b110 => {
-                Inst::Bltu(inst.into())
+                Inst::Bltu(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1100011 && ext!(v, Word; 14;12) == 0b111 => {
-                Inst::Bgeu(inst.into())
+                Inst::Bgeu(RawInst::new(inst))
             }
-            v if ext!(v, Word; 6;0) == 0b0110111 => Inst::Lui(inst.into()),
-            v if ext!(v, Word; 6;0) == 0b0010111 => Inst::Auipc(inst.into()),
-            v if ext!(v, Word; 6;0) == 0b1101111 => Inst::Jal(inst.into()),
+            v if ext!(v, Word; 6;0) == 0b0110111 => Inst::Lui(RawInst::new(inst)),
+            v if ext!(v, Word; 6;0) == 0b0010111 => Inst::Auipc(RawInst::new(inst)),
+            v if ext!(v, Word; 6;0) == 0b1101111 => Inst::Jal(RawInst::new(inst)),
             v if ext!(v, Word; 6;0) == 0b0111011
                 && ext!(v, Word; 14;12) == 0b000
                 && ext!(v, Word; 31;25) == 0b0000000 =>
             {
-                Inst::Addw(inst.into())
+                Inst::Addw(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0111011
                 && ext!(v, Word; 14;12) == 0b000
                 && ext!(v, Word; 31;25) == 0b0100000 =>
             {
-                Inst::Subw(inst.into())
+                Inst::Subw(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0111011
                 && ext!(v, Word; 14;12) == 0b001
                 && ext!(v, Word; 31;25) == 0b0000000 =>
             {
-                Inst::Sllw(inst.into())
+                Inst::Sllw(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0111011
                 && ext!(v, Word; 14;12) == 0b101
                 && ext!(v, Word; 31;25) == 0b0000000 =>
             {
-                Inst::Srlw(inst.into())
+                Inst::Srlw(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0111011
                 && ext!(v, Word; 14;12) == 0b101
                 && ext!(v, Word; 31;25) == 0b0100000 =>
             {
-                Inst::Sraw(inst.into())
+                Inst::Sraw(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0011011 && ext!(v, Word; 14;12) == 0b000 => {
-                Inst::Addiw(inst.into())
+                Inst::Addiw(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0011011
                 && ext!(v, Word; 14;12) == 0b001
                 && ext!(v, Word; 31;25) == 0b0000000 =>
             {
-                Inst::Slliw(inst.into())
+                Inst::Slliw(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0011011
                 && ext!(v, Word; 14;12) == 0b101
                 && ext!(v, Word; 31;25) == 0b0000000 =>
             {
-                Inst::Srliw(inst.into())
+                Inst::Srliw(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0011011
                 && ext!(v, Word; 14;12) == 0b101
                 && ext!(v, Word; 31;25) == 0b0100000 =>
             {
-                Inst::Sraiw(inst.into())
+                Inst::Sraiw(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0000011 && ext!(v, Word; 14;12) == 0b110 => {
-                Inst::Lwu(inst.into())
+                Inst::Lwu(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0000011 && ext!(v, Word; 14;12) == 0b011 => {
-                Inst::Ld(inst.into())
+                Inst::Ld(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0100011 && ext!(v, Word; 14;12) == 0b011 => {
-                Inst::Sd(inst.into())
+                Inst::Sd(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0110011
                 && ext!(v, Word; 14;12) == 0b000
                 && ext!(v, Word; 31;25) == 0b0000001 =>
             {
-                Inst::Mul(inst.into())
+                Inst::Mul(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0110011
                 && ext!(v, Word; 14;12) == 0b001
                 && ext!(v, Word; 31;25) == 0b0000001 =>
             {
-                Inst::Mulh(inst.into())
+                Inst::Mulh(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0110011
                 && ext!(v, Word; 14;12) == 0b010
                 && ext!(v, Word; 31;25) == 0b0000001 =>
             {
-                Inst::Mulhsu(inst.into())
+                Inst::Mulhsu(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0110011
                 && ext!(v, Word; 14;12) == 0b011
                 && ext!(v, Word; 31;25) == 0b0000001 =>
             {
-                Inst::Mulhu(inst.into())
+                Inst::Mulhu(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0110011
                 && ext!(v, Word; 14;12) == 0b100
                 && ext!(v, Word; 31;25) == 0b0000001 =>
             {
-                Inst::Div(inst.into())
+                Inst::Div(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0110011
                 && ext!(v, Word; 14;12) == 0b101
                 && ext!(v, Word; 31;25) == 0b0000001 =>
             {
-                Inst::Divu(inst.into())
+                Inst::Divu(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0110011
                 && ext!(v, Word; 14;12) == 0b110
                 && ext!(v, Word; 31;25) == 0b0000001 =>
             {
-                Inst::Rem(inst.into())
+                Inst::Rem(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0110011
                 && ext!(v, Word; 14;12) == 0b111
                 && ext!(v, Word; 31;25) == 0b0000001 =>
             {
-                Inst::Remu(inst.into())
+                Inst::Remu(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0111011
                 && ext!(v, Word; 14;12) == 0b000
                 && ext!(v, Word; 31;25) == 0b0000001 =>
             {
-                Inst::Mulw(inst.into())
+                Inst::Mulw(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0111011
                 && ext!(v, Word; 14;12) == 0b100
                 && ext!(v, Word; 31;25) == 0b0000001 =>
             {
-                Inst::Divw(inst.into())
+                Inst::Divw(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0111011
                 && ext!(v, Word; 14;12) == 0b101
                 && ext!(v, Word; 31;25) == 0b0000001 =>
             {
-                Inst::Divuw(inst.into())
+                Inst::Divuw(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0111011
                 && ext!(v, Word; 14;12) == 0b110
                 && ext!(v, Word; 31;25) == 0b0000001 =>
             {
-                Inst::Remw(inst.into())
+                Inst::Remw(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0111011
                 && ext!(v, Word; 14;12) == 0b111
                 && ext!(v, Word; 31;25) == 0b0000001 =>
             {
-                Inst::Remuw(inst.into())
+                Inst::Remuw(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0101111
                 && ext!(v, Word; 14;12) == 0b010
                 && ext!(v, Word; 24;20) == 0b00000
                 && ext!(v, Word; 31;27) == 0b00010 =>
             {
-                Inst::LrW(inst.into())
+                Inst::LrW(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0101111
                 && ext!(v, Word; 14;12) == 0b010
                 && ext!(v, Word; 31;27) == 0b00011 =>
             {
-                Inst::ScW(inst.into())
+                Inst::ScW(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0101111
                 && ext!(v, Word; 14;12) == 0b010
                 && ext!(v, Word; 31;27) == 0b00001 =>
             {
-                Inst::AmoswapW(inst.into())
+                Inst::AmoswapW(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0101111
                 && ext!(v, Word; 14;12) == 0b010
                 && ext!(v, Word; 31;27) == 0b00000 =>
             {
-                Inst::AmoaddW(inst.into())
+                Inst::AmoaddW(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0101111
                 && ext!(v, Word; 14;12) == 0b010
                 && ext!(v, Word; 31;27) == 0b00100 =>
             {
-                Inst::AmoxorW(inst.into())
+                Inst::AmoxorW(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0101111
                 && ext!(v, Word; 14;12) == 0b010
                 && ext!(v, Word; 31;27) == 0b01100 =>
             {
-                Inst::AmoandW(inst.into())
+                Inst::AmoandW(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0101111
                 && ext!(v, Word; 14;12) == 0b010
                 && ext!(v, Word; 31;27) == 0b01000 =>
             {
-                Inst::AmoorW(inst.into())
+                Inst::AmoorW(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0101111
                 && ext!(v, Word; 14;12) == 0b010
                 && ext!(v, Word; 31;27) == 0b10000 =>
             {
-                Inst::AmominW(inst.into())
+                Inst::AmominW(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0101111
                 && ext!(v, Word; 14;12) == 0b010
                 && ext!(v, Word; 31;27) == 0b10100 =>
             {
-                Inst::AmomaxW(inst.into())
+                Inst::AmomaxW(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0101111
                 && ext!(v, Word; 14;12) == 0b010
                 && ext!(v, Word; 31;27) == 0b11000 =>
             {
-                Inst::AmominuW(inst.into())
+                Inst::AmominuW(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0101111
                 && ext!(v, Word; 14;12) == 0b010
                 && ext!(v, Word; 31;27) == 0b11100 =>
             {
-                Inst::AmomaxuW(inst.into())
+                Inst::AmomaxuW(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0101111
                 && ext!(v, Word; 14;12) == 0b011
                 && ext!(v, Word; 24;20) == 0b00000
                 && ext!(v, Word; 31;27) == 0b00010 =>
             {
-                Inst::LrD(inst.into())
+                Inst::LrD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0101111
                 && ext!(v, Word; 14;12) == 0b011
                 && ext!(v, Word; 31;27) == 0b00011 =>
             {
-                Inst::ScD(inst.into())
+                Inst::ScD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0101111
                 && ext!(v, Word; 14;12) == 0b011
                 && ext!(v, Word; 31;27) == 0b00001 =>
             {
-                Inst::AmodswapD(inst.into())
+                Inst::AmodswapD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0101111
                 && ext!(v, Word; 14;12) == 0b011
                 && ext!(v, Word; 31;27) == 0b00000 =>
             {
-                Inst::AmoaddD(inst.into())
+                Inst::AmoaddD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0101111
                 && ext!(v, Word; 14;12) == 0b011
                 && ext!(v, Word; 31;27) == 0b00100 =>
             {
-                Inst::AmoxorD(inst.into())
+                Inst::AmoxorD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0101111
                 && ext!(v, Word; 14;12) == 0b011
                 && ext!(v, Word; 31;27) == 0b01100 =>
             {
-                Inst::AmoandD(inst.into())
+                Inst::AmoandD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0101111
                 && ext!(v, Word; 14;12) == 0b011
                 && ext!(v, Word; 31;27) == 0b01000 =>
             {
-                Inst::AmoorD(inst.into())
+                Inst::AmoorD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0101111
                 && ext!(v, Word; 14;12) == 0b011
                 && ext!(v, Word; 31;27) == 0b10000 =>
             {
-                Inst::AmominD(inst.into())
+                Inst::AmominD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0101111
                 && ext!(v, Word; 14;12) == 0b011
                 && ext!(v, Word; 31;27) == 0b10100 =>
             {
-                Inst::AmomaxD(inst.into())
+                Inst::AmomaxD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0101111
                 && ext!(v, Word; 14;12) == 0b011
                 && ext!(v, Word; 31;27) == 0b11000 =>
             {
-                Inst::AmominuD(inst.into())
+                Inst::AmominuD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0101111
                 && ext!(v, Word; 14;12) == 0b011
                 && ext!(v, Word; 31;27) == 0b11100 =>
             {
-                Inst::AmomaxuD(inst.into())
+                Inst::AmomaxuD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1000011 && ext!(v, Word; 26;25) == 0b00 => {
-                Inst::FmaddS(inst.into())
+                Inst::FmaddS(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1000111 && ext!(v, Word; 26;25) == 0b00 => {
-                Inst::FmsubS(inst.into())
+                Inst::FmsubS(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1001011 && ext!(v, Word; 26;25) == 0b00 => {
-                Inst::FnmsubS(inst.into())
+                Inst::FnmsubS(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1001111 && ext!(v, Word; 26;25) == 0b00 => {
-                Inst::FnmaddS(inst.into())
+                Inst::FnmaddS(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;25) == 0b0000000 => {
-                Inst::FaddS(inst.into())
+                Inst::FaddS(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;25) == 0b0000100 => {
-                Inst::FsubS(inst.into())
+                Inst::FsubS(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;25) == 0b0001000 => {
-                Inst::FmulS(inst.into())
+                Inst::FmulS(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;25) == 0b0001100 => {
-                Inst::FdivS(inst.into())
+                Inst::FdivS(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b010110000000 => {
-                Inst::FsqrtS(inst.into())
+                Inst::FsqrtS(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011
                 && ext!(v, Word; 14;12) == 0b000
                 && ext!(v, Word; 31;25) == 0b0010000 =>
             {
-                Inst::FsgnjS(inst.into())
+                Inst::FsgnjS(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011
                 && ext!(v, Word; 14;12) == 0b001
                 && ext!(v, Word; 31;25) == 0b0010000 =>
             {
-                Inst::FsgnjnS(inst.into())
+                Inst::FsgnjnS(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011
                 && ext!(v, Word; 14;12) == 0b010
                 && ext!(v, Word; 31;25) == 0b0010000 =>
             {
-                Inst::FsgnjxS(inst.into())
+                Inst::FsgnjxS(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011
                 && ext!(v, Word; 14;12) == 0b000
                 && ext!(v, Word; 31;25) == 0b0010100 =>
             {
-                Inst::FminS(inst.into())
+                Inst::FminS(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011
                 && ext!(v, Word; 14;12) == 0b001
                 && ext!(v, Word; 31;25) == 0b0010100 =>
             {
-                Inst::FmaxS(inst.into())
+                Inst::FmaxS(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110000000000 => {
-                Inst::FcvtWS(inst.into())
+                Inst::FcvtWS(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110000000001 => {
-                Inst::FcvtWuS(inst.into())
+                Inst::FcvtWuS(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011
                 && ext!(v, Word; 14;12) == 0b000
                 && ext!(v, Word; 31;20) == 0b111000000000 =>
             {
-                Inst::FmvXW(inst.into())
+                Inst::FmvXW(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011
                 && ext!(v, Word; 14;12) == 0b010
                 && ext!(v, Word; 31;25) == 0b1010000 =>
             {
-                Inst::FeqS(inst.into())
+                Inst::FeqS(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011
                 && ext!(v, Word; 14;12) == 0b001
                 && ext!(v, Word; 31;25) == 0b1010000 =>
             {
-                Inst::FltS(inst.into())
+                Inst::FltS(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011
                 && ext!(v, Word; 14;12) == 0b000
                 && ext!(v, Word; 31;25) == 0b1010000 =>
             {
-                Inst::FleS(inst.into())
+                Inst::FleS(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011
                 && ext!(v, Word; 14;12) == 0b001
                 && ext!(v, Word; 31;20) == 0b111000000000 =>
             {
-                Inst::FclassS(inst.into())
+                Inst::FclassS(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110100000000 => {
-                Inst::FcvtSW(inst.into())
+                Inst::FcvtSW(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110100000001 => {
-                Inst::FcvtSWu(inst.into())
+                Inst::FcvtSWu(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011
                 && ext!(v, Word; 14;12) == 0b000
                 && ext!(v, Word; 31;20) == 0b111100000000 =>
             {
-                Inst::FmvWX(inst.into())
+                Inst::FmvWX(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1000011 && ext!(v, Word; 26;25) == 0b01 => {
-                Inst::FmaddD(inst.into())
+                Inst::FmaddD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1000111 && ext!(v, Word; 26;25) == 0b01 => {
-                Inst::FmsubD(inst.into())
+                Inst::FmsubD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1001011 && ext!(v, Word; 26;25) == 0b01 => {
-                Inst::FnmsubD(inst.into())
+                Inst::FnmsubD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1001111 && ext!(v, Word; 26;25) == 0b01 => {
-                Inst::FnmaddD(inst.into())
+                Inst::FnmaddD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;25) == 0b0000001 => {
-                Inst::FaddD(inst.into())
+                Inst::FaddD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;25) == 0b0000101 => {
-                Inst::FsubD(inst.into())
+                Inst::FsubD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;25) == 0b0001001 => {
-                Inst::FmulD(inst.into())
+                Inst::FmulD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;25) == 0b0001101 => {
-                Inst::FdivD(inst.into())
+                Inst::FdivD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b010110100000 => {
-                Inst::FsqrtD(inst.into())
+                Inst::FsqrtD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011
                 && ext!(v, Word; 14;12) == 0b000
                 && ext!(v, Word; 31;25) == 0b0010001 =>
             {
-                Inst::FsgnjD(inst.into())
+                Inst::FsgnjD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011
                 && ext!(v, Word; 14;12) == 0b001
                 && ext!(v, Word; 31;25) == 0b0010001 =>
             {
-                Inst::FsgnjnD(inst.into())
+                Inst::FsgnjnD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011
                 && ext!(v, Word; 14;12) == 0b010
                 && ext!(v, Word; 31;25) == 0b0010001 =>
             {
-                Inst::FsgnjxD(inst.into())
+                Inst::FsgnjxD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011
                 && ext!(v, Word; 14;12) == 0b000
                 && ext!(v, Word; 31;25) == 0b0010101 =>
             {
-                Inst::FminD(inst.into())
+                Inst::FminD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011
                 && ext!(v, Word; 14;12) == 0b001
                 && ext!(v, Word; 31;25) == 0b0010101 =>
             {
-                Inst::FmaxD(inst.into())
+                Inst::FmaxD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b010000000001 => {
-                Inst::FcvtSD(inst.into())
+                Inst::FcvtSD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b010000100000 => {
-                Inst::FcvtDS(inst.into())
+                Inst::FcvtDS(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011
                 && ext!(v, Word; 14;12) == 0b010
                 && ext!(v, Word; 31;25) == 0b1010001 =>
             {
-                Inst::FeqD(inst.into())
+                Inst::FeqD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011
                 && ext!(v, Word; 14;12) == 0b001
                 && ext!(v, Word; 31;25) == 0b1010001 =>
             {
-                Inst::FltD(inst.into())
+                Inst::FltD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011
                 && ext!(v, Word; 14;12) == 0b000
                 && ext!(v, Word; 31;25) == 0b1010001 =>
             {
-                Inst::FleD(inst.into())
+                Inst::FleD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011
                 && ext!(v, Word; 14;12) == 0b001
                 && ext!(v, Word; 31;20) == 0b111000100000 =>
             {
-                Inst::FclassD(inst.into())
+                Inst::FclassD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110000100000 => {
-                Inst::FcvtWD(inst.into())
+                Inst::FcvtWD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110000100001 => {
-                Inst::FcvtWuD(inst.into())
+                Inst::FcvtWuD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110100100000 => {
-                Inst::FcvtDW(inst.into())
+                Inst::FcvtDW(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110100100001 => {
-                Inst::FcvtDWu(inst.into())
+                Inst::FcvtDWu(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0000111 && ext!(v, Word; 14;12) == 0b010 => {
-                Inst::Flw(inst.into())
+                Inst::Flw(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0100111 && ext!(v, Word; 14;12) == 0b010 => {
-                Inst::Fsw(inst.into())
+                Inst::Fsw(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0000111 && ext!(v, Word; 14;12) == 0b011 => {
-                Inst::Fld(inst.into())
+                Inst::Fld(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0100111 && ext!(v, Word; 14;12) == 0b011 => {
-                Inst::Fsd(inst.into())
+                Inst::Fsd(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110000000010 => {
-                Inst::FcvtLS(inst.into())
+                Inst::FcvtLS(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110000000011 => {
-                Inst::FcvtLuS(inst.into())
+                Inst::FcvtLuS(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110100000010 => {
-                Inst::FcvtSL(inst.into())
+                Inst::FcvtSL(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110100000011 => {
-                Inst::FcvtSLu(inst.into())
+                Inst::FcvtSLu(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110000100010 => {
-                Inst::FcvtLD(inst.into())
+                Inst::FcvtLD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110000100011 => {
-                Inst::FcvtLuD(inst.into())
+                Inst::FcvtLuD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011
                 && ext!(v, Word; 14;12) == 0b000
                 && ext!(v, Word; 31;20) == 0b111000100000 =>
             {
-                Inst::FmvXD(inst.into())
+                Inst::FmvXD(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110100100010 => {
-                Inst::FcvtDL(inst.into())
+                Inst::FcvtDL(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011 && ext!(v, Word; 31;20) == 0b110100100011 => {
-                Inst::FcvtDLu(inst.into())
+                Inst::FcvtDLu(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b1010011
                 && ext!(v, Word; 14;12) == 0b000
                 && ext!(v, Word; 31;20) == 0b111100100000 =>
             {
-                Inst::FmvDX(inst.into())
+                Inst::FmvDX(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0000010
                 && ext!(v, Word; 31;12) == 0b00000000000000001000 =>
             {
-                Inst::CJr(inst.into())
+                Inst::CJr(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b10 && ext!(v, Word; 31;12) == 0b00000000000000001000 => {
-                Inst::CMv(inst.into())
+                Inst::CMv(RawInst::new(inst))
             }
             v if ext!(v, Word; 31;0) == 0b00000000000000001001000000000010 => {
-                Inst::CEbreak(inst.into())
+                Inst::CEbreak(RawInst::new(inst))
             }
             v if ext!(v, Word; 6;0) == 0b0000010
                 && ext!(v, Word; 31;12) == 0b00000000000000001001 =>
             {
-                Inst::CJalr(inst.into())
+                Inst::CJalr(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b10 && ext!(v, Word; 31;12) == 0b00000000000000001001 => {
-                Inst::CAdd(inst.into())
+                Inst::CAdd(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b01
                 && ext!(v, Word; 11;7) == 0b00000
                 && ext!(v, Word; 31;13) == 0b0000000000000000000 =>
             {
-                Inst::CNop(inst.into())
+                Inst::CNop(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b01 && ext!(v, Word; 31;13) == 0b0000000000000000000 => {
-                Inst::CAddi(inst.into())
+                Inst::CAddi(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b01 && ext!(v, Word; 31;13) == 0b0000000000000000001 => {
-                Inst::CAddiw(inst.into())
+                Inst::CAddiw(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b01 && ext!(v, Word; 31;13) == 0b0000000000000000010 => {
-                Inst::CLi(inst.into())
+                Inst::CLi(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b01
                 && ext!(v, Word; 11;7) == 0b00010
                 && ext!(v, Word; 31;13) == 0b0000000000000000011 =>
             {
-                Inst::CAddi16sp(inst.into())
+                Inst::CAddi16sp(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b01 && ext!(v, Word; 31;13) == 0b0000000000000000011 => {
-                Inst::CLui(inst.into())
+                Inst::CLui(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b01
                 && ext!(v, Word; 11;10) == 0b00
                 && ext!(v, Word; 31;13) == 0b0000000000000000100 =>
             {
-                Inst::CSrli(inst.into())
+                Inst::CSrli(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b01
                 && ext!(v, Word; 11;10) == 0b01
                 && ext!(v, Word; 31;13) == 0b0000000000000000100 =>
             {
-                Inst::CSrai(inst.into())
+                Inst::CSrai(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b01
                 && ext!(v, Word; 11;10) == 0b10
                 && ext!(v, Word; 31;13) == 0b0000000000000000100 =>
             {
-                Inst::CAndi(inst.into())
+                Inst::CAndi(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b10 && ext!(v, Word; 31;13) == 0b0000000000000000000 => {
-                Inst::CSlli(inst.into())
+                Inst::CSlli(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b10 && ext!(v, Word; 31;13) == 0b0000000000000000001 => {
-                Inst::CFldsp(inst.into())
+                Inst::CFldsp(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b10 && ext!(v, Word; 31;13) == 0b0000000000000000010 => {
-                Inst::CLwsp(inst.into())
+                Inst::CLwsp(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b10 && ext!(v, Word; 31;13) == 0b0000000000000000011 => {
-                Inst::CLdsp(inst.into())
+                Inst::CLdsp(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b10 && ext!(v, Word; 31;13) == 0b0000000000000000101 => {
-                Inst::CFsdsp(inst.into())
+                Inst::CFsdsp(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b10 && ext!(v, Word; 31;13) == 0b0000000000000000110 => {
-                Inst::CSwsp(inst.into())
+                Inst::CSwsp(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b10 && ext!(v, Word; 31;13) == 0b0000000000000000111 => {
-                Inst::CSdsp(inst.into())
+                Inst::CSdsp(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b00 && ext!(v, Word; 31;13) == 0b0000000000000000000 => {
-                Inst::CAddi4spn(inst.into())
+                Inst::CAddi4spn(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b00 && ext!(v, Word; 31;13) == 0b0000000000000000001 => {
-                Inst::CFld(inst.into())
+                Inst::CFld(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b00 && ext!(v, Word; 31;13) == 0b0000000000000000010 => {
-                Inst::CLw(inst.into())
+                Inst::CLw(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b00 && ext!(v, Word; 31;13) == 0b0000000000000000011 => {
-                Inst::CLd(inst.into())
+                Inst::CLd(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b00 && ext!(v, Word; 31;13) == 0b0000000000000000101 => {
-                Inst::CFsd(inst.into())
+                Inst::CFsd(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b00 && ext!(v, Word; 31;13) == 0b0000000000000000110 => {
-                Inst::CSw(inst.into())
+                Inst::CSw(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b00 && ext!(v, Word; 31;13) == 0b0000000000000000111 => {
-                Inst::CSd(inst.into())
+                Inst::CSd(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b01
                 && ext!(v, Word; 6;5) == 0b00
                 && ext!(v, Word; 31;10) == 0b0000000000000000100011 =>
             {
-                Inst::CSub(inst.into())
+                Inst::CSub(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b01
                 && ext!(v, Word; 6;5) == 0b01
                 && ext!(v, Word; 31;10) == 0b0000000000000000100011 =>
             {
-                Inst::CXor(inst.into())
+                Inst::CXor(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b01
                 && ext!(v, Word; 6;5) == 0b10
                 && ext!(v, Word; 31;10) == 0b0000000000000000100011 =>
             {
-                Inst::COr(inst.into())
+                Inst::COr(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b01
                 && ext!(v, Word; 6;5) == 0b11
                 && ext!(v, Word; 31;10) == 0b0000000000000000100011 =>
             {
-                Inst::CAnd(inst.into())
+                Inst::CAnd(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b01
                 && ext!(v, Word; 6;5) == 0b00
                 && ext!(v, Word; 31;10) == 0b0000000000000000100111 =>
             {
-                Inst::CSubw(inst.into())
+                Inst::CSubw(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b01
                 && ext!(v, Word; 6;5) == 0b01
                 && ext!(v, Word; 31;10) == 0b0000000000000000100111 =>
             {
-                Inst::CAddw(inst.into())
+                Inst::CAddw(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b01 && ext!(v, Word; 31;13) == 0b0000000000000000110 => {
-                Inst::CBeqz(inst.into())
+                Inst::CBeqz(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b01 && ext!(v, Word; 31;13) == 0b0000000000000000111 => {
-                Inst::CBnez(inst.into())
+                Inst::CBnez(RawInst::new(inst))
             }
             v if ext!(v, Word; 1;0) == 0b01 && ext!(v, Word; 31;13) == 0b0000000000000000101 => {
-                Inst::CJ(inst.into())
+                Inst::CJ(RawInst::new(inst))
             }
             #[allow(unreachable_patterns)]
             _ => return None,
         })
     }
 
+    #[inline]
     pub fn run(self, vm: &mut VM) -> Result<(), VMRunError> {
-        match self {
-            Inst::Add(inst) => Add::run(RunData::new(inst, vm)),
-            Inst::Sub(inst) => Sub::run(RunData::new(inst, vm)),
-            Inst::Sll(inst) => Sll::run(RunData::new(inst, vm)),
-            Inst::Slt(inst) => Slt::run(RunData::new(inst, vm)),
-            Inst::Sltu(inst) => Sltu::run(RunData::new(inst, vm)),
-            Inst::Xor(inst) => Xor::run(RunData::new(inst, vm)),
-            Inst::Srl(inst) => Srl::run(RunData::new(inst, vm)),
-            Inst::Sra(inst) => Sra::run(RunData::new(inst, vm)),
-            Inst::Or(inst) => Or::run(RunData::new(inst, vm)),
-            Inst::And(inst) => And::run(RunData::new(inst, vm)),
-            Inst::SfenceVma(inst) => SfenceVma::run(RunData::new(inst, vm)),
-            Inst::Addi(inst) => Addi::run(RunData::new(inst, vm)),
-            Inst::Slti(inst) => Slti::run(RunData::new(inst, vm)),
-            Inst::Sltiu(inst) => Sltiu::run(RunData::new(inst, vm)),
-            Inst::Xori(inst) => Xori::run(RunData::new(inst, vm)),
-            Inst::Ori(inst) => Ori::run(RunData::new(inst, vm)),
-            Inst::Andi(inst) => Andi::run(RunData::new(inst, vm)),
-            Inst::Slli(inst) => Slli::run(RunData::new(inst, vm)),
-            Inst::Srli(inst) => Srli::run(RunData::new(inst, vm)),
-            Inst::Srai(inst) => Srai::run(RunData::new(inst, vm)),
-            Inst::Lb(inst) => Lb::run(RunData::new(inst, vm)),
-            Inst::Lh(inst) => Lh::run(RunData::new(inst, vm)),
-            Inst::Lw(inst) => Lw::run(RunData::new(inst, vm)),
-            Inst::Lbu(inst) => Lbu::run(RunData::new(inst, vm)),
-            Inst::Lhu(inst) => Lhu::run(RunData::new(inst, vm)),
-            Inst::Jalr(inst) => Jalr::run(RunData::new(inst, vm)),
-            Inst::Fence(inst) => Fence::run(RunData::new(inst, vm)),
-            Inst::FenceI(inst) => FenceI::run(RunData::new(inst, vm)),
-            Inst::Csrrw(inst) => Csrrw::run(RunData::new(inst, vm)),
-            Inst::Csrrs(inst) => Csrrs::run(RunData::new(inst, vm)),
-            Inst::Csrrc(inst) => Csrrc::run(RunData::new(inst, vm)),
-            Inst::Csrrwi(inst) => Csrrwi::run(RunData::new(inst, vm)),
-            Inst::Csrrsi(inst) => Csrrsi::run(RunData::new(inst, vm)),
-            Inst::Csrrci(inst) => Csrrci::run(RunData::new(inst, vm)),
-            Inst::Ecall(inst) => Ecall::run(RunData::new(inst, vm)),
-            Inst::Ebreak(inst) => Ebreak::run(RunData::new(inst, vm)),
-            Inst::Uret(inst) => Uret::run(RunData::new(inst, vm)),
-            Inst::Sret(inst) => Sret::run(RunData::new(inst, vm)),
-            Inst::Mret(inst) => Mret::run(RunData::new(inst, vm)),
-            Inst::Wfi(inst) => Wfi::run(RunData::new(inst, vm)),
-            Inst::Sb(inst) => Sb::run(RunData::new(inst, vm)),
-            Inst::Sh(inst) => Sh::run(RunData::new(inst, vm)),
-            Inst::Sw(inst) => Sw::run(RunData::new(inst, vm)),
-            Inst::Beq(inst) => Beq::run(RunData::new(inst, vm)),
-            Inst::Bne(inst) => Bne::run(RunData::new(inst, vm)),
-            Inst::Blt(inst) => Blt::run(RunData::new(inst, vm)),
-            Inst::Bge(inst) => Bge::run(RunData::new(inst, vm)),
-            Inst::Bltu(inst) => Bltu::run(RunData::new(inst, vm)),
-            Inst::Bgeu(inst) => Bgeu::run(RunData::new(inst, vm)),
-            Inst::Lui(inst) => Lui::run(RunData::new(inst, vm)),
-            Inst::Auipc(inst) => Auipc::run(RunData::new(inst, vm)),
-            Inst::Jal(inst) => Jal::run(RunData::new(inst, vm)),
-            Inst::Addw(inst) => Addw::run(RunData::new(inst, vm)),
-            Inst::Subw(inst) => Subw::run(RunData::new(inst, vm)),
-            Inst::Sllw(inst) => Sllw::run(RunData::new(inst, vm)),
-            Inst::Srlw(inst) => Srlw::run(RunData::new(inst, vm)),
-            Inst::Sraw(inst) => Sraw::run(RunData::new(inst, vm)),
-            Inst::Addiw(inst) => Addiw::run(RunData::new(inst, vm)),
-            Inst::Slliw(inst) => Slliw::run(RunData::new(inst, vm)),
-            Inst::Srliw(inst) => Srliw::run(RunData::new(inst, vm)),
-            Inst::Sraiw(inst) => Sraiw::run(RunData::new(inst, vm)),
-            Inst::Lwu(inst) => Lwu::run(RunData::new(inst, vm)),
-            Inst::Ld(inst) => Ld::run(RunData::new(inst, vm)),
-            Inst::Sd(inst) => Sd::run(RunData::new(inst, vm)),
-            Inst::Mul(inst) => Mul::run(RunData::new(inst, vm)),
-            Inst::Mulh(inst) => Mulh::run(RunData::new(inst, vm)),
-            Inst::Mulhsu(inst) => Mulhsu::run(RunData::new(inst, vm)),
-            Inst::Mulhu(inst) => Mulhu::run(RunData::new(inst, vm)),
-            Inst::Div(inst) => Div::run(RunData::new(inst, vm)),
-            Inst::Divu(inst) => Divu::run(RunData::new(inst, vm)),
-            Inst::Rem(inst) => Rem::run(RunData::new(inst, vm)),
-            Inst::Remu(inst) => Remu::run(RunData::new(inst, vm)),
-            Inst::Mulw(inst) => Mulw::run(RunData::new(inst, vm)),
-            Inst::Divw(inst) => Divw::run(RunData::new(inst, vm)),
-            Inst::Divuw(inst) => Divuw::run(RunData::new(inst, vm)),
-            Inst::Remw(inst) => Remw::run(RunData::new(inst, vm)),
-            Inst::Remuw(inst) => Remuw::run(RunData::new(inst, vm)),
-            Inst::LrW(inst) => LrW::run(RunData::new(inst, vm)),
-            Inst::ScW(inst) => ScW::run(RunData::new(inst, vm)),
-            Inst::AmoswapW(inst) => AmoswapW::run(RunData::new(inst, vm)),
-            Inst::AmoaddW(inst) => AmoaddW::run(RunData::new(inst, vm)),
-            Inst::AmoxorW(inst) => AmoxorW::run(RunData::new(inst, vm)),
-            Inst::AmoandW(inst) => AmoandW::run(RunData::new(inst, vm)),
-            Inst::AmoorW(inst) => AmoorW::run(RunData::new(inst, vm)),
-            Inst::AmominW(inst) => AmominW::run(RunData::new(inst, vm)),
-            Inst::AmomaxW(inst) => AmomaxW::run(RunData::new(inst, vm)),
-            Inst::AmominuW(inst) => AmominuW::run(RunData::new(inst, vm)),
-            Inst::AmomaxuW(inst) => AmomaxuW::run(RunData::new(inst, vm)),
-            Inst::LrD(inst) => LrD::run(RunData::new(inst, vm)),
-            Inst::ScD(inst) => ScD::run(RunData::new(inst, vm)),
-            Inst::AmodswapD(inst) => AmodswapD::run(RunData::new(inst, vm)),
-            Inst::AmoaddD(inst) => AmoaddD::run(RunData::new(inst, vm)),
-            Inst::AmoxorD(inst) => AmoxorD::run(RunData::new(inst, vm)),
-            Inst::AmoandD(inst) => AmoandD::run(RunData::new(inst, vm)),
-            Inst::AmoorD(inst) => AmoorD::run(RunData::new(inst, vm)),
-            Inst::AmominD(inst) => AmominD::run(RunData::new(inst, vm)),
-            Inst::AmomaxD(inst) => AmomaxD::run(RunData::new(inst, vm)),
-            Inst::AmominuD(inst) => AmominuD::run(RunData::new(inst, vm)),
-            Inst::AmomaxuD(inst) => AmomaxuD::run(RunData::new(inst, vm)),
-            Inst::FmaddS(inst) => FmaddS::run(RunData::new(inst, vm)),
-            Inst::FmsubS(inst) => FmsubS::run(RunData::new(inst, vm)),
-            Inst::FnmsubS(inst) => FnmsubS::run(RunData::new(inst, vm)),
-            Inst::FnmaddS(inst) => FnmaddS::run(RunData::new(inst, vm)),
-            Inst::FaddS(inst) => FaddS::run(RunData::new(inst, vm)),
-            Inst::FsubS(inst) => FsubS::run(RunData::new(inst, vm)),
-            Inst::FmulS(inst) => FmulS::run(RunData::new(inst, vm)),
-            Inst::FdivS(inst) => FdivS::run(RunData::new(inst, vm)),
-            Inst::FsqrtS(inst) => FsqrtS::run(RunData::new(inst, vm)),
-            Inst::FsgnjS(inst) => FsgnjS::run(RunData::new(inst, vm)),
-            Inst::FsgnjnS(inst) => FsgnjnS::run(RunData::new(inst, vm)),
-            Inst::FsgnjxS(inst) => FsgnjxS::run(RunData::new(inst, vm)),
-            Inst::FminS(inst) => FminS::run(RunData::new(inst, vm)),
-            Inst::FmaxS(inst) => FmaxS::run(RunData::new(inst, vm)),
-            Inst::FcvtWS(inst) => FcvtWS::run(RunData::new(inst, vm)),
-            Inst::FcvtWuS(inst) => FcvtWuS::run(RunData::new(inst, vm)),
-            Inst::FmvXW(inst) => FmvXW::run(RunData::new(inst, vm)),
-            Inst::FeqS(inst) => FeqS::run(RunData::new(inst, vm)),
-            Inst::FltS(inst) => FltS::run(RunData::new(inst, vm)),
-            Inst::FleS(inst) => FleS::run(RunData::new(inst, vm)),
-            Inst::FclassS(inst) => FclassS::run(RunData::new(inst, vm)),
-            Inst::FcvtSW(inst) => FcvtSW::run(RunData::new(inst, vm)),
-            Inst::FcvtSWu(inst) => FcvtSWu::run(RunData::new(inst, vm)),
-            Inst::FmvWX(inst) => FmvWX::run(RunData::new(inst, vm)),
-            Inst::FmaddD(inst) => FmaddD::run(RunData::new(inst, vm)),
-            Inst::FmsubD(inst) => FmsubD::run(RunData::new(inst, vm)),
-            Inst::FnmsubD(inst) => FnmsubD::run(RunData::new(inst, vm)),
-            Inst::FnmaddD(inst) => FnmaddD::run(RunData::new(inst, vm)),
-            Inst::FaddD(inst) => FaddD::run(RunData::new(inst, vm)),
-            Inst::FsubD(inst) => FsubD::run(RunData::new(inst, vm)),
-            Inst::FmulD(inst) => FmulD::run(RunData::new(inst, vm)),
-            Inst::FdivD(inst) => FdivD::run(RunData::new(inst, vm)),
-            Inst::FsqrtD(inst) => FsqrtD::run(RunData::new(inst, vm)),
-            Inst::FsgnjD(inst) => FsgnjD::run(RunData::new(inst, vm)),
-            Inst::FsgnjnD(inst) => FsgnjnD::run(RunData::new(inst, vm)),
-            Inst::FsgnjxD(inst) => FsgnjxD::run(RunData::new(inst, vm)),
-            Inst::FminD(inst) => FminD::run(RunData::new(inst, vm)),
-            Inst::FmaxD(inst) => FmaxD::run(RunData::new(inst, vm)),
-            Inst::FcvtSD(inst) => FcvtSD::run(RunData::new(inst, vm)),
-            Inst::FcvtDS(inst) => FcvtDS::run(RunData::new(inst, vm)),
-            Inst::FeqD(inst) => FeqD::run(RunData::new(inst, vm)),
-            Inst::FltD(inst) => FltD::run(RunData::new(inst, vm)),
-            Inst::FleD(inst) => FleD::run(RunData::new(inst, vm)),
-            Inst::FclassD(inst) => FclassD::run(RunData::new(inst, vm)),
-            Inst::FcvtWD(inst) => FcvtWD::run(RunData::new(inst, vm)),
-            Inst::FcvtWuD(inst) => FcvtWuD::run(RunData::new(inst, vm)),
-            Inst::FcvtDW(inst) => FcvtDW::run(RunData::new(inst, vm)),
-            Inst::FcvtDWu(inst) => FcvtDWu::run(RunData::new(inst, vm)),
-            Inst::Flw(inst) => Flw::run(RunData::new(inst, vm)),
-            Inst::Fsw(inst) => Fsw::run(RunData::new(inst, vm)),
-            Inst::Fld(inst) => Fld::run(RunData::new(inst, vm)),
-            Inst::Fsd(inst) => Fsd::run(RunData::new(inst, vm)),
-            Inst::FcvtLS(inst) => FcvtLS::run(RunData::new(inst, vm)),
-            Inst::FcvtLuS(inst) => FcvtLuS::run(RunData::new(inst, vm)),
-            Inst::FcvtSL(inst) => FcvtSL::run(RunData::new(inst, vm)),
-            Inst::FcvtSLu(inst) => FcvtSLu::run(RunData::new(inst, vm)),
-            Inst::FcvtLD(inst) => FcvtLD::run(RunData::new(inst, vm)),
-            Inst::FcvtLuD(inst) => FcvtLuD::run(RunData::new(inst, vm)),
-            Inst::FmvXD(inst) => FmvXD::run(RunData::new(inst, vm)),
-            Inst::FcvtDL(inst) => FcvtDL::run(RunData::new(inst, vm)),
-            Inst::FcvtDLu(inst) => FcvtDLu::run(RunData::new(inst, vm)),
-            Inst::FmvDX(inst) => FmvDX::run(RunData::new(inst, vm)),
-            Inst::CJr(inst) => CJr::run(RunData::new(inst, vm)),
-            Inst::CMv(inst) => CMv::run(RunData::new(inst, vm)),
-            Inst::CEbreak(inst) => CEbreak::run(RunData::new(inst, vm)),
-            Inst::CJalr(inst) => CJalr::run(RunData::new(inst, vm)),
-            Inst::CAdd(inst) => CAdd::run(RunData::new(inst, vm)),
-            Inst::CNop(inst) => CNop::run(RunData::new(inst, vm)),
-            Inst::CAddi(inst) => CAddi::run(RunData::new(inst, vm)),
-            Inst::CAddiw(inst) => CAddiw::run(RunData::new(inst, vm)),
-            Inst::CLi(inst) => CLi::run(RunData::new(inst, vm)),
-            Inst::CAddi16sp(inst) => CAddi16sp::run(RunData::new(inst, vm)),
-            Inst::CLui(inst) => CLui::run(RunData::new(inst, vm)),
-            Inst::CSrli(inst) => CSrli::run(RunData::new(inst, vm)),
-            Inst::CSrai(inst) => CSrai::run(RunData::new(inst, vm)),
-            Inst::CAndi(inst) => CAndi::run(RunData::new(inst, vm)),
-            Inst::CSlli(inst) => CSlli::run(RunData::new(inst, vm)),
-            Inst::CFldsp(inst) => CFldsp::run(RunData::new(inst, vm)),
-            Inst::CLwsp(inst) => CLwsp::run(RunData::new(inst, vm)),
-            Inst::CLdsp(inst) => CLdsp::run(RunData::new(inst, vm)),
-            Inst::CFsdsp(inst) => CFsdsp::run(RunData::new(inst, vm)),
-            Inst::CSwsp(inst) => CSwsp::run(RunData::new(inst, vm)),
-            Inst::CSdsp(inst) => CSdsp::run(RunData::new(inst, vm)),
-            Inst::CAddi4spn(inst) => CAddi4spn::run(RunData::new(inst, vm)),
-            Inst::CFld(inst) => CFld::run(RunData::new(inst, vm)),
-            Inst::CLw(inst) => CLw::run(RunData::new(inst, vm)),
-            Inst::CLd(inst) => CLd::run(RunData::new(inst, vm)),
-            Inst::CFsd(inst) => CFsd::run(RunData::new(inst, vm)),
-            Inst::CSw(inst) => CSw::run(RunData::new(inst, vm)),
-            Inst::CSd(inst) => CSd::run(RunData::new(inst, vm)),
-            Inst::CSub(inst) => CSub::run(RunData::new(inst, vm)),
-            Inst::CXor(inst) => CXor::run(RunData::new(inst, vm)),
-            Inst::COr(inst) => COr::run(RunData::new(inst, vm)),
-            Inst::CAnd(inst) => CAnd::run(RunData::new(inst, vm)),
-            Inst::CSubw(inst) => CSubw::run(RunData::new(inst, vm)),
-            Inst::CAddw(inst) => CAddw::run(RunData::new(inst, vm)),
-            Inst::CBeqz(inst) => CBeqz::run(RunData::new(inst, vm)),
-            Inst::CBnez(inst) => CBnez::run(RunData::new(inst, vm)),
-            Inst::CJ(inst) => CJ::run(RunData::new(inst, vm)),
-        }
+        const RUN_TABLE: [fn(RawInst, &mut VM) -> Result<(), VMRunError>; 198] = [
+            |inst, vm| Add::run(RunData::new(inst, vm)),
+            |inst, vm| Sub::run(RunData::new(inst, vm)),
+            |inst, vm| Sll::run(RunData::new(inst, vm)),
+            |inst, vm| Slt::run(RunData::new(inst, vm)),
+            |inst, vm| Sltu::run(RunData::new(inst, vm)),
+            |inst, vm| Xor::run(RunData::new(inst, vm)),
+            |inst, vm| Srl::run(RunData::new(inst, vm)),
+            |inst, vm| Sra::run(RunData::new(inst, vm)),
+            |inst, vm| Or::run(RunData::new(inst, vm)),
+            |inst, vm| And::run(RunData::new(inst, vm)),
+            |inst, vm| SfenceVma::run(RunData::new(inst, vm)),
+            |inst, vm| Addi::run(RunData::new(inst, vm)),
+            |inst, vm| Slti::run(RunData::new(inst, vm)),
+            |inst, vm| Sltiu::run(RunData::new(inst, vm)),
+            |inst, vm| Xori::run(RunData::new(inst, vm)),
+            |inst, vm| Ori::run(RunData::new(inst, vm)),
+            |inst, vm| Andi::run(RunData::new(inst, vm)),
+            |inst, vm| Slli::run(RunData::new(inst, vm)),
+            |inst, vm| Srli::run(RunData::new(inst, vm)),
+            |inst, vm| Srai::run(RunData::new(inst, vm)),
+            |inst, vm| Lb::run(RunData::new(inst, vm)),
+            |inst, vm| Lh::run(RunData::new(inst, vm)),
+            |inst, vm| Lw::run(RunData::new(inst, vm)),
+            |inst, vm| Lbu::run(RunData::new(inst, vm)),
+            |inst, vm| Lhu::run(RunData::new(inst, vm)),
+            |inst, vm| Jalr::run(RunData::new(inst, vm)),
+            |inst, vm| Fence::run(RunData::new(inst, vm)),
+            |inst, vm| FenceI::run(RunData::new(inst, vm)),
+            |inst, vm| Csrrw::run(RunData::new(inst, vm)),
+            |inst, vm| Csrrs::run(RunData::new(inst, vm)),
+            |inst, vm| Csrrc::run(RunData::new(inst, vm)),
+            |inst, vm| Csrrwi::run(RunData::new(inst, vm)),
+            |inst, vm| Csrrsi::run(RunData::new(inst, vm)),
+            |inst, vm| Csrrci::run(RunData::new(inst, vm)),
+            |inst, vm| Ecall::run(RunData::new(inst, vm)),
+            |inst, vm| Ebreak::run(RunData::new(inst, vm)),
+            |inst, vm| Uret::run(RunData::new(inst, vm)),
+            |inst, vm| Sret::run(RunData::new(inst, vm)),
+            |inst, vm| Mret::run(RunData::new(inst, vm)),
+            |inst, vm| Wfi::run(RunData::new(inst, vm)),
+            |inst, vm| Sb::run(RunData::new(inst, vm)),
+            |inst, vm| Sh::run(RunData::new(inst, vm)),
+            |inst, vm| Sw::run(RunData::new(inst, vm)),
+            |inst, vm| Beq::run(RunData::new(inst, vm)),
+            |inst, vm| Bne::run(RunData::new(inst, vm)),
+            |inst, vm| Blt::run(RunData::new(inst, vm)),
+            |inst, vm| Bge::run(RunData::new(inst, vm)),
+            |inst, vm| Bltu::run(RunData::new(inst, vm)),
+            |inst, vm| Bgeu::run(RunData::new(inst, vm)),
+            |inst, vm| Lui::run(RunData::new(inst, vm)),
+            |inst, vm| Auipc::run(RunData::new(inst, vm)),
+            |inst, vm| Jal::run(RunData::new(inst, vm)),
+            |inst, vm| Addw::run(RunData::new(inst, vm)),
+            |inst, vm| Subw::run(RunData::new(inst, vm)),
+            |inst, vm| Sllw::run(RunData::new(inst, vm)),
+            |inst, vm| Srlw::run(RunData::new(inst, vm)),
+            |inst, vm| Sraw::run(RunData::new(inst, vm)),
+            |inst, vm| Addiw::run(RunData::new(inst, vm)),
+            |inst, vm| Slliw::run(RunData::new(inst, vm)),
+            |inst, vm| Srliw::run(RunData::new(inst, vm)),
+            |inst, vm| Sraiw::run(RunData::new(inst, vm)),
+            |inst, vm| Lwu::run(RunData::new(inst, vm)),
+            |inst, vm| Ld::run(RunData::new(inst, vm)),
+            |inst, vm| Sd::run(RunData::new(inst, vm)),
+            |inst, vm| Mul::run(RunData::new(inst, vm)),
+            |inst, vm| Mulh::run(RunData::new(inst, vm)),
+            |inst, vm| Mulhsu::run(RunData::new(inst, vm)),
+            |inst, vm| Mulhu::run(RunData::new(inst, vm)),
+            |inst, vm| Div::run(RunData::new(inst, vm)),
+            |inst, vm| Divu::run(RunData::new(inst, vm)),
+            |inst, vm| Rem::run(RunData::new(inst, vm)),
+            |inst, vm| Remu::run(RunData::new(inst, vm)),
+            |inst, vm| Mulw::run(RunData::new(inst, vm)),
+            |inst, vm| Divw::run(RunData::new(inst, vm)),
+            |inst, vm| Divuw::run(RunData::new(inst, vm)),
+            |inst, vm| Remw::run(RunData::new(inst, vm)),
+            |inst, vm| Remuw::run(RunData::new(inst, vm)),
+            |inst, vm| LrW::run(RunData::new(inst, vm)),
+            |inst, vm| ScW::run(RunData::new(inst, vm)),
+            |inst, vm| AmoswapW::run(RunData::new(inst, vm)),
+            |inst, vm| AmoaddW::run(RunData::new(inst, vm)),
+            |inst, vm| AmoxorW::run(RunData::new(inst, vm)),
+            |inst, vm| AmoandW::run(RunData::new(inst, vm)),
+            |inst, vm| AmoorW::run(RunData::new(inst, vm)),
+            |inst, vm| AmominW::run(RunData::new(inst, vm)),
+            |inst, vm| AmomaxW::run(RunData::new(inst, vm)),
+            |inst, vm| AmominuW::run(RunData::new(inst, vm)),
+            |inst, vm| AmomaxuW::run(RunData::new(inst, vm)),
+            |inst, vm| LrD::run(RunData::new(inst, vm)),
+            |inst, vm| ScD::run(RunData::new(inst, vm)),
+            |inst, vm| AmodswapD::run(RunData::new(inst, vm)),
+            |inst, vm| AmoaddD::run(RunData::new(inst, vm)),
+            |inst, vm| AmoxorD::run(RunData::new(inst, vm)),
+            |inst, vm| AmoandD::run(RunData::new(inst, vm)),
+            |inst, vm| AmoorD::run(RunData::new(inst, vm)),
+            |inst, vm| AmominD::run(RunData::new(inst, vm)),
+            |inst, vm| AmomaxD::run(RunData::new(inst, vm)),
+            |inst, vm| AmominuD::run(RunData::new(inst, vm)),
+            |inst, vm| AmomaxuD::run(RunData::new(inst, vm)),
+            |inst, vm| FmaddS::run(RunData::new(inst, vm)),
+            |inst, vm| FmsubS::run(RunData::new(inst, vm)),
+            |inst, vm| FnmsubS::run(RunData::new(inst, vm)),
+            |inst, vm| FnmaddS::run(RunData::new(inst, vm)),
+            |inst, vm| FaddS::run(RunData::new(inst, vm)),
+            |inst, vm| FsubS::run(RunData::new(inst, vm)),
+            |inst, vm| FmulS::run(RunData::new(inst, vm)),
+            |inst, vm| FdivS::run(RunData::new(inst, vm)),
+            |inst, vm| FsqrtS::run(RunData::new(inst, vm)),
+            |inst, vm| FsgnjS::run(RunData::new(inst, vm)),
+            |inst, vm| FsgnjnS::run(RunData::new(inst, vm)),
+            |inst, vm| FsgnjxS::run(RunData::new(inst, vm)),
+            |inst, vm| FminS::run(RunData::new(inst, vm)),
+            |inst, vm| FmaxS::run(RunData::new(inst, vm)),
+            |inst, vm| FcvtWS::run(RunData::new(inst, vm)),
+            |inst, vm| FcvtWuS::run(RunData::new(inst, vm)),
+            |inst, vm| FmvXW::run(RunData::new(inst, vm)),
+            |inst, vm| FeqS::run(RunData::new(inst, vm)),
+            |inst, vm| FltS::run(RunData::new(inst, vm)),
+            |inst, vm| FleS::run(RunData::new(inst, vm)),
+            |inst, vm| FclassS::run(RunData::new(inst, vm)),
+            |inst, vm| FcvtSW::run(RunData::new(inst, vm)),
+            |inst, vm| FcvtSWu::run(RunData::new(inst, vm)),
+            |inst, vm| FmvWX::run(RunData::new(inst, vm)),
+            |inst, vm| FmaddD::run(RunData::new(inst, vm)),
+            |inst, vm| FmsubD::run(RunData::new(inst, vm)),
+            |inst, vm| FnmsubD::run(RunData::new(inst, vm)),
+            |inst, vm| FnmaddD::run(RunData::new(inst, vm)),
+            |inst, vm| FaddD::run(RunData::new(inst, vm)),
+            |inst, vm| FsubD::run(RunData::new(inst, vm)),
+            |inst, vm| FmulD::run(RunData::new(inst, vm)),
+            |inst, vm| FdivD::run(RunData::new(inst, vm)),
+            |inst, vm| FsqrtD::run(RunData::new(inst, vm)),
+            |inst, vm| FsgnjD::run(RunData::new(inst, vm)),
+            |inst, vm| FsgnjnD::run(RunData::new(inst, vm)),
+            |inst, vm| FsgnjxD::run(RunData::new(inst, vm)),
+            |inst, vm| FminD::run(RunData::new(inst, vm)),
+            |inst, vm| FmaxD::run(RunData::new(inst, vm)),
+            |inst, vm| FcvtSD::run(RunData::new(inst, vm)),
+            |inst, vm| FcvtDS::run(RunData::new(inst, vm)),
+            |inst, vm| FeqD::run(RunData::new(inst, vm)),
+            |inst, vm| FltD::run(RunData::new(inst, vm)),
+            |inst, vm| FleD::run(RunData::new(inst, vm)),
+            |inst, vm| FclassD::run(RunData::new(inst, vm)),
+            |inst, vm| FcvtWD::run(RunData::new(inst, vm)),
+            |inst, vm| FcvtWuD::run(RunData::new(inst, vm)),
+            |inst, vm| FcvtDW::run(RunData::new(inst, vm)),
+            |inst, vm| FcvtDWu::run(RunData::new(inst, vm)),
+            |inst, vm| Flw::run(RunData::new(inst, vm)),
+            |inst, vm| Fsw::run(RunData::new(inst, vm)),
+            |inst, vm| Fld::run(RunData::new(inst, vm)),
+            |inst, vm| Fsd::run(RunData::new(inst, vm)),
+            |inst, vm| FcvtLS::run(RunData::new(inst, vm)),
+            |inst, vm| FcvtLuS::run(RunData::new(inst, vm)),
+            |inst, vm| FcvtSL::run(RunData::new(inst, vm)),
+            |inst, vm| FcvtSLu::run(RunData::new(inst, vm)),
+            |inst, vm| FcvtLD::run(RunData::new(inst, vm)),
+            |inst, vm| FcvtLuD::run(RunData::new(inst, vm)),
+            |inst, vm| FmvXD::run(RunData::new(inst, vm)),
+            |inst, vm| FcvtDL::run(RunData::new(inst, vm)),
+            |inst, vm| FcvtDLu::run(RunData::new(inst, vm)),
+            |inst, vm| FmvDX::run(RunData::new(inst, vm)),
+            |inst, vm| CJr::run(RunData::new(inst, vm)),
+            |inst, vm| CMv::run(RunData::new(inst, vm)),
+            |inst, vm| CEbreak::run(RunData::new(inst, vm)),
+            |inst, vm| CJalr::run(RunData::new(inst, vm)),
+            |inst, vm| CAdd::run(RunData::new(inst, vm)),
+            |inst, vm| CNop::run(RunData::new(inst, vm)),
+            |inst, vm| CAddi::run(RunData::new(inst, vm)),
+            |inst, vm| CAddiw::run(RunData::new(inst, vm)),
+            |inst, vm| CLi::run(RunData::new(inst, vm)),
+            |inst, vm| CAddi16sp::run(RunData::new(inst, vm)),
+            |inst, vm| CLui::run(RunData::new(inst, vm)),
+            |inst, vm| CSrli::run(RunData::new(inst, vm)),
+            |inst, vm| CSrai::run(RunData::new(inst, vm)),
+            |inst, vm| CAndi::run(RunData::new(inst, vm)),
+            |inst, vm| CSlli::run(RunData::new(inst, vm)),
+            |inst, vm| CFldsp::run(RunData::new(inst, vm)),
+            |inst, vm| CLwsp::run(RunData::new(inst, vm)),
+            |inst, vm| CLdsp::run(RunData::new(inst, vm)),
+            |inst, vm| CFsdsp::run(RunData::new(inst, vm)),
+            |inst, vm| CSwsp::run(RunData::new(inst, vm)),
+            |inst, vm| CSdsp::run(RunData::new(inst, vm)),
+            |inst, vm| CAddi4spn::run(RunData::new(inst, vm)),
+            |inst, vm| CFld::run(RunData::new(inst, vm)),
+            |inst, vm| CLw::run(RunData::new(inst, vm)),
+            |inst, vm| CLd::run(RunData::new(inst, vm)),
+            |inst, vm| CFsd::run(RunData::new(inst, vm)),
+            |inst, vm| CSw::run(RunData::new(inst, vm)),
+            |inst, vm| CSd::run(RunData::new(inst, vm)),
+            |inst, vm| CSub::run(RunData::new(inst, vm)),
+            |inst, vm| CXor::run(RunData::new(inst, vm)),
+            |inst, vm| COr::run(RunData::new(inst, vm)),
+            |inst, vm| CAnd::run(RunData::new(inst, vm)),
+            |inst, vm| CSubw::run(RunData::new(inst, vm)),
+            |inst, vm| CAddw::run(RunData::new(inst, vm)),
+            |inst, vm| CBeqz::run(RunData::new(inst, vm)),
+            |inst, vm| CBnez::run(RunData::new(inst, vm)),
+            |inst, vm| CJ::run(RunData::new(inst, vm)),
+        ];
+
+        let id = self.discriminant();
+        let raw_inst = self.inner();
+        RUN_TABLE[id](raw_inst, vm)
     }
 
-    pub fn name(self) -> &'static str {
+    #[inline]
+    pub const fn name(&self) -> &'static str {
         match self {
             Inst::Add(_) => "add",
             Inst::Sub(_) => "sub",
@@ -1541,7 +1548,8 @@ impl Inst {
         }
     }
 
-    pub fn format(self) -> Format {
+    #[inline]
+    pub const fn format(&self) -> Format {
         match self {
             Inst::Add(_) => Format::R,
             Inst::Sub(_) => Format::R,
@@ -1744,7 +1752,8 @@ impl Inst {
         }
     }
 
-    pub fn inner(self) -> RawInst {
+    #[inline]
+    pub const fn inner(self) -> RawInst {
         match self {
             Inst::Add(v) => v,
             Inst::Sub(v) => v,
@@ -1947,7 +1956,212 @@ impl Inst {
         }
     }
 
-    pub fn raw(self) -> Word {
+    #[inline]
+    pub const fn raw(self) -> Word {
         self.inner().raw()
+    }
+
+    #[inline]
+    pub const fn discriminant(&self) -> UHSize {
+        match self {
+            Inst::Add(_) => 0,
+            Inst::Sub(_) => 1,
+            Inst::Sll(_) => 2,
+            Inst::Slt(_) => 3,
+            Inst::Sltu(_) => 4,
+            Inst::Xor(_) => 5,
+            Inst::Srl(_) => 6,
+            Inst::Sra(_) => 7,
+            Inst::Or(_) => 8,
+            Inst::And(_) => 9,
+            Inst::SfenceVma(_) => 10,
+            Inst::Addi(_) => 11,
+            Inst::Slti(_) => 12,
+            Inst::Sltiu(_) => 13,
+            Inst::Xori(_) => 14,
+            Inst::Ori(_) => 15,
+            Inst::Andi(_) => 16,
+            Inst::Slli(_) => 17,
+            Inst::Srli(_) => 18,
+            Inst::Srai(_) => 19,
+            Inst::Lb(_) => 20,
+            Inst::Lh(_) => 21,
+            Inst::Lw(_) => 22,
+            Inst::Lbu(_) => 23,
+            Inst::Lhu(_) => 24,
+            Inst::Jalr(_) => 25,
+            Inst::Fence(_) => 26,
+            Inst::FenceI(_) => 27,
+            Inst::Csrrw(_) => 28,
+            Inst::Csrrs(_) => 29,
+            Inst::Csrrc(_) => 30,
+            Inst::Csrrwi(_) => 31,
+            Inst::Csrrsi(_) => 32,
+            Inst::Csrrci(_) => 33,
+            Inst::Ecall(_) => 34,
+            Inst::Ebreak(_) => 35,
+            Inst::Uret(_) => 36,
+            Inst::Sret(_) => 37,
+            Inst::Mret(_) => 38,
+            Inst::Wfi(_) => 39,
+            Inst::Sb(_) => 40,
+            Inst::Sh(_) => 41,
+            Inst::Sw(_) => 42,
+            Inst::Beq(_) => 43,
+            Inst::Bne(_) => 44,
+            Inst::Blt(_) => 45,
+            Inst::Bge(_) => 46,
+            Inst::Bltu(_) => 47,
+            Inst::Bgeu(_) => 48,
+            Inst::Lui(_) => 49,
+            Inst::Auipc(_) => 50,
+            Inst::Jal(_) => 51,
+            Inst::Addw(_) => 52,
+            Inst::Subw(_) => 53,
+            Inst::Sllw(_) => 54,
+            Inst::Srlw(_) => 55,
+            Inst::Sraw(_) => 56,
+            Inst::Addiw(_) => 57,
+            Inst::Slliw(_) => 58,
+            Inst::Srliw(_) => 59,
+            Inst::Sraiw(_) => 60,
+            Inst::Lwu(_) => 61,
+            Inst::Ld(_) => 62,
+            Inst::Sd(_) => 63,
+            Inst::Mul(_) => 64,
+            Inst::Mulh(_) => 65,
+            Inst::Mulhsu(_) => 66,
+            Inst::Mulhu(_) => 67,
+            Inst::Div(_) => 68,
+            Inst::Divu(_) => 69,
+            Inst::Rem(_) => 70,
+            Inst::Remu(_) => 71,
+            Inst::Mulw(_) => 72,
+            Inst::Divw(_) => 73,
+            Inst::Divuw(_) => 74,
+            Inst::Remw(_) => 75,
+            Inst::Remuw(_) => 76,
+            Inst::LrW(_) => 77,
+            Inst::ScW(_) => 78,
+            Inst::AmoswapW(_) => 79,
+            Inst::AmoaddW(_) => 80,
+            Inst::AmoxorW(_) => 81,
+            Inst::AmoandW(_) => 82,
+            Inst::AmoorW(_) => 83,
+            Inst::AmominW(_) => 84,
+            Inst::AmomaxW(_) => 85,
+            Inst::AmominuW(_) => 86,
+            Inst::AmomaxuW(_) => 87,
+            Inst::LrD(_) => 88,
+            Inst::ScD(_) => 89,
+            Inst::AmodswapD(_) => 90,
+            Inst::AmoaddD(_) => 91,
+            Inst::AmoxorD(_) => 92,
+            Inst::AmoandD(_) => 93,
+            Inst::AmoorD(_) => 94,
+            Inst::AmominD(_) => 95,
+            Inst::AmomaxD(_) => 96,
+            Inst::AmominuD(_) => 97,
+            Inst::AmomaxuD(_) => 98,
+            Inst::FmaddS(_) => 99,
+            Inst::FmsubS(_) => 100,
+            Inst::FnmsubS(_) => 101,
+            Inst::FnmaddS(_) => 102,
+            Inst::FaddS(_) => 103,
+            Inst::FsubS(_) => 104,
+            Inst::FmulS(_) => 105,
+            Inst::FdivS(_) => 106,
+            Inst::FsqrtS(_) => 107,
+            Inst::FsgnjS(_) => 108,
+            Inst::FsgnjnS(_) => 109,
+            Inst::FsgnjxS(_) => 110,
+            Inst::FminS(_) => 111,
+            Inst::FmaxS(_) => 112,
+            Inst::FcvtWS(_) => 113,
+            Inst::FcvtWuS(_) => 114,
+            Inst::FmvXW(_) => 115,
+            Inst::FeqS(_) => 116,
+            Inst::FltS(_) => 117,
+            Inst::FleS(_) => 118,
+            Inst::FclassS(_) => 119,
+            Inst::FcvtSW(_) => 120,
+            Inst::FcvtSWu(_) => 121,
+            Inst::FmvWX(_) => 122,
+            Inst::FmaddD(_) => 123,
+            Inst::FmsubD(_) => 124,
+            Inst::FnmsubD(_) => 125,
+            Inst::FnmaddD(_) => 126,
+            Inst::FaddD(_) => 127,
+            Inst::FsubD(_) => 128,
+            Inst::FmulD(_) => 129,
+            Inst::FdivD(_) => 130,
+            Inst::FsqrtD(_) => 131,
+            Inst::FsgnjD(_) => 132,
+            Inst::FsgnjnD(_) => 133,
+            Inst::FsgnjxD(_) => 134,
+            Inst::FminD(_) => 135,
+            Inst::FmaxD(_) => 136,
+            Inst::FcvtSD(_) => 137,
+            Inst::FcvtDS(_) => 138,
+            Inst::FeqD(_) => 139,
+            Inst::FltD(_) => 140,
+            Inst::FleD(_) => 141,
+            Inst::FclassD(_) => 142,
+            Inst::FcvtWD(_) => 143,
+            Inst::FcvtWuD(_) => 144,
+            Inst::FcvtDW(_) => 145,
+            Inst::FcvtDWu(_) => 146,
+            Inst::Flw(_) => 147,
+            Inst::Fsw(_) => 148,
+            Inst::Fld(_) => 149,
+            Inst::Fsd(_) => 150,
+            Inst::FcvtLS(_) => 151,
+            Inst::FcvtLuS(_) => 152,
+            Inst::FcvtSL(_) => 153,
+            Inst::FcvtSLu(_) => 154,
+            Inst::FcvtLD(_) => 155,
+            Inst::FcvtLuD(_) => 156,
+            Inst::FmvXD(_) => 157,
+            Inst::FcvtDL(_) => 158,
+            Inst::FcvtDLu(_) => 159,
+            Inst::FmvDX(_) => 160,
+            Inst::CJr(_) => 161,
+            Inst::CMv(_) => 162,
+            Inst::CEbreak(_) => 163,
+            Inst::CJalr(_) => 164,
+            Inst::CAdd(_) => 165,
+            Inst::CNop(_) => 166,
+            Inst::CAddi(_) => 167,
+            Inst::CAddiw(_) => 168,
+            Inst::CLi(_) => 169,
+            Inst::CAddi16sp(_) => 170,
+            Inst::CLui(_) => 171,
+            Inst::CSrli(_) => 172,
+            Inst::CSrai(_) => 173,
+            Inst::CAndi(_) => 174,
+            Inst::CSlli(_) => 175,
+            Inst::CFldsp(_) => 176,
+            Inst::CLwsp(_) => 177,
+            Inst::CLdsp(_) => 178,
+            Inst::CFsdsp(_) => 179,
+            Inst::CSwsp(_) => 180,
+            Inst::CSdsp(_) => 181,
+            Inst::CAddi4spn(_) => 182,
+            Inst::CFld(_) => 183,
+            Inst::CLw(_) => 184,
+            Inst::CLd(_) => 185,
+            Inst::CFsd(_) => 186,
+            Inst::CSw(_) => 187,
+            Inst::CSd(_) => 188,
+            Inst::CSub(_) => 189,
+            Inst::CXor(_) => 190,
+            Inst::COr(_) => 191,
+            Inst::CAnd(_) => 192,
+            Inst::CSubw(_) => 193,
+            Inst::CAddw(_) => 194,
+            Inst::CBeqz(_) => 195,
+            Inst::CBnez(_) => 196,
+            Inst::CJ(_) => 197,
+        }
     }
 }

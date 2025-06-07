@@ -12,13 +12,16 @@ class Inst:
         return " && ".join([f"ext!(v, Word; {hi};{lo}) == 0b{pat}" for hi, lo, pat in self.pats])
     
     def decode_arm(self) -> str:
-        return f"v if {self.decode_cond()} => Inst::{self.symbol}(inst.into()),"
+        return f"v if {self.decode_cond()} => Inst::{self.symbol}(RawInst::new(inst)),"
 
     def enum_variant(self) -> str:
-        return f"{self.symbol}(RawInst),"
+        return f"{self.symbol}(RawInst)"
         
     def run_arm(self) -> str:
         return f"Inst::{self.symbol}(inst) => {self.symbol}::run(RunData::new(inst, vm)),\n"
+    
+    def jump_table_entry(self) -> str:
+        return f"|inst, vm| {self.symbol}::run(RunData::new(inst, vm)),\n"
     
     def name_arm(self) -> str:
         return f"Inst::{self.symbol}(_) => \"{self.raw_name}\",\n"

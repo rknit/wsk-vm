@@ -9,6 +9,7 @@ use crate::*;
 
 pub struct Add;
 impl Add {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Add$
         data.set_rd(data.r1().wrapping_add(data.r2()));
@@ -19,6 +20,7 @@ impl Add {
 
 pub struct Sub;
 impl Sub {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Sub$
         data.set_rd(data.r1().wrapping_sub(data.r2()));
@@ -29,6 +31,7 @@ impl Sub {
 
 pub struct Sll;
 impl Sll {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Sll$
         data.set_rd(data.r1() << (data.r2() & 0b11111));
@@ -39,6 +42,7 @@ impl Sll {
 
 pub struct Slt;
 impl Slt {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Slt$
         if data.r1s() < data.r2s() {
@@ -53,6 +57,7 @@ impl Slt {
 
 pub struct Sltu;
 impl Sltu {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Sltu$
         if data.r1() < data.r2() {
@@ -67,6 +72,7 @@ impl Sltu {
 
 pub struct Xor;
 impl Xor {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Xor$
         data.set_rd(data.r1() ^ data.r2());
@@ -77,6 +83,7 @@ impl Xor {
 
 pub struct Srl;
 impl Srl {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Srl$
         data.set_rd(data.r1() >> (data.r2() & 0b11111));
@@ -87,6 +94,7 @@ impl Srl {
 
 pub struct Sra;
 impl Sra {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Sra$
         data.set_rd((data.r1s() >> (data.r2() & 0b11111)) as UArch);
@@ -97,6 +105,7 @@ impl Sra {
 
 pub struct Or;
 impl Or {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Or$
         data.set_rd(data.r1() | data.r2());
@@ -107,6 +116,7 @@ impl Or {
 
 pub struct And;
 impl And {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START And$
         data.set_rd(data.r1() & data.r2());
@@ -117,6 +127,7 @@ impl And {
 
 pub struct SfenceVma;
 impl SfenceVma {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START SfenceVma$
         todo!("implement SfenceVma please!");
@@ -127,6 +138,7 @@ impl SfenceVma {
 
 pub struct Addi;
 impl Addi {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Addi$
         data.set_rd(data.r1().wrapping_add_signed(data.imm_fmt_i()));
@@ -137,6 +149,7 @@ impl Addi {
 
 pub struct Slti;
 impl Slti {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Slti$
         if data.r1s() < data.imm_fmt_i() {
@@ -151,6 +164,7 @@ impl Slti {
 
 pub struct Sltiu;
 impl Sltiu {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Sltiu$
         if data.r1() < data.immu_fmt_i() {
@@ -165,6 +179,7 @@ impl Sltiu {
 
 pub struct Xori;
 impl Xori {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Xori$
         data.set_rd(data.r1() ^ data.immu_fmt_i());
@@ -175,6 +190,7 @@ impl Xori {
 
 pub struct Ori;
 impl Ori {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Ori$
         data.set_rd(data.r1() | data.immu_fmt_i());
@@ -185,6 +201,7 @@ impl Ori {
 
 pub struct Andi;
 impl Andi {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Andi$
         data.set_rd(data.r1() & data.immu_fmt_i());
@@ -195,6 +212,7 @@ impl Andi {
 
 pub struct Slli;
 impl Slli {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Slli$
         data.set_rd(data.r1() << (data.immu_fmt_i() & 0b111111));
@@ -205,6 +223,7 @@ impl Slli {
 
 pub struct Srli;
 impl Srli {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Srli$
         data.set_rd(data.r1() >> (data.immu_fmt_i() & 0b111111));
@@ -215,6 +234,7 @@ impl Srli {
 
 pub struct Srai;
 impl Srai {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Srai$
         data.set_rd((data.r1s() >> (data.immu_fmt_i() & 0b111111)) as UArch);
@@ -225,6 +245,7 @@ impl Srai {
 
 pub struct Lb;
 impl Lb {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Lb$
         let addr = data.r1().wrapping_add_signed(data.imm_fmt_i());
@@ -238,6 +259,7 @@ impl Lb {
 
 pub struct Lh;
 impl Lh {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Lh$
         let addr = data.r1().wrapping_add_signed(data.imm_fmt_i());
@@ -251,6 +273,7 @@ impl Lh {
 
 pub struct Lw;
 impl Lw {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Lw$
         let addr = data.r1().wrapping_add_signed(data.imm_fmt_i());
@@ -264,6 +287,7 @@ impl Lw {
 
 pub struct Lbu;
 impl Lbu {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Lbu$
         let addr = data.r1().wrapping_add_signed(data.imm_fmt_i());
@@ -277,6 +301,7 @@ impl Lbu {
 
 pub struct Lhu;
 impl Lhu {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Lhu$
         let addr = data.r1().wrapping_add_signed(data.imm_fmt_i());
@@ -290,6 +315,7 @@ impl Lhu {
 
 pub struct Jalr;
 impl Jalr {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Jalr$
         let return_address = data.vm.pc + 4;
@@ -303,6 +329,7 @@ impl Jalr {
 
 pub struct Fence;
 impl Fence {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Fence$
         todo!("implement Fence please!");
@@ -313,6 +340,7 @@ impl Fence {
 
 pub struct FenceI;
 impl FenceI {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START FenceI$
         todo!("implement FenceI please!");
@@ -323,6 +351,7 @@ impl FenceI {
 
 pub struct Csrrw;
 impl Csrrw {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Csrrw$
         todo!("implement Csrrw please!");
@@ -333,6 +362,7 @@ impl Csrrw {
 
 pub struct Csrrs;
 impl Csrrs {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Csrrs$
         todo!("implement Csrrs please!");
@@ -343,6 +373,7 @@ impl Csrrs {
 
 pub struct Csrrc;
 impl Csrrc {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Csrrc$
         todo!("implement Csrrc please!");
@@ -353,6 +384,7 @@ impl Csrrc {
 
 pub struct Csrrwi;
 impl Csrrwi {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Csrrwi$
         todo!("implement Csrrwi please!");
@@ -363,6 +395,7 @@ impl Csrrwi {
 
 pub struct Csrrsi;
 impl Csrrsi {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Csrrsi$
         todo!("implement Csrrsi please!");
@@ -373,6 +406,7 @@ impl Csrrsi {
 
 pub struct Csrrci;
 impl Csrrci {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Csrrci$
         todo!("implement Csrrci please!");
@@ -383,6 +417,7 @@ impl Csrrci {
 
 pub struct Ecall;
 impl Ecall {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Ecall$
         use crate::Exception;
@@ -393,6 +428,7 @@ impl Ecall {
 
 pub struct Ebreak;
 impl Ebreak {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Ebreak$
         todo!("implement Ebreak please!");
@@ -403,6 +439,7 @@ impl Ebreak {
 
 pub struct Uret;
 impl Uret {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Uret$
         todo!("implement Uret please!");
@@ -413,6 +450,7 @@ impl Uret {
 
 pub struct Sret;
 impl Sret {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Sret$
         todo!("implement Sret please!");
@@ -423,6 +461,7 @@ impl Sret {
 
 pub struct Mret;
 impl Mret {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Mret$
         todo!("implement Mret please!");
@@ -433,6 +472,7 @@ impl Mret {
 
 pub struct Wfi;
 impl Wfi {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Wfi$
         todo!("implement Wfi please!");
@@ -443,6 +483,7 @@ impl Wfi {
 
 pub struct Sb;
 impl Sb {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Sb$
         let addr = data.r1().wrapping_add_signed(data.imm_fmt_s());
@@ -455,6 +496,7 @@ impl Sb {
 
 pub struct Sh;
 impl Sh {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Sh$
         let addr = data.r1().wrapping_add_signed(data.imm_fmt_s());
@@ -468,6 +510,7 @@ impl Sh {
 
 pub struct Sw;
 impl Sw {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Sw$
         let addr = data.r1().wrapping_add_signed(data.imm_fmt_s());
@@ -481,6 +524,7 @@ impl Sw {
 
 pub struct Beq;
 impl Beq {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Beq$
         if data.r1() == data.r2() {
@@ -493,6 +537,7 @@ impl Beq {
 
 pub struct Bne;
 impl Bne {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Bne$
         if data.r1() != data.r2() {
@@ -505,6 +550,7 @@ impl Bne {
 
 pub struct Blt;
 impl Blt {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Blt$
         if data.r1s() < data.r2s() {
@@ -517,6 +563,7 @@ impl Blt {
 
 pub struct Bge;
 impl Bge {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Bge$
         if data.r1s() >= data.r2s() {
@@ -529,6 +576,7 @@ impl Bge {
 
 pub struct Bltu;
 impl Bltu {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Bltu$
         if data.r1() < data.r2() {
@@ -541,6 +589,7 @@ impl Bltu {
 
 pub struct Bgeu;
 impl Bgeu {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Bgeu$
         if data.r1() >= data.r2() {
@@ -553,6 +602,7 @@ impl Bgeu {
 
 pub struct Lui;
 impl Lui {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Lui$
         // Load upper immediate (data.immu() has already performed shift-op and sign-extension)
@@ -564,6 +614,7 @@ impl Lui {
 
 pub struct Auipc;
 impl Auipc {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Auipc$
         // Add upper immediate to the current PC (data.imm() has already performed shift-op and sign-extension)
@@ -575,6 +626,7 @@ impl Auipc {
 
 pub struct Jal;
 impl Jal {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Jal$
         let return_address = data.vm.pc + 4;

@@ -10,3 +10,15 @@ env_logger = "0.11.8"
 goblin = "0.9.3"
 clap = { version = "4.5.38", features = ["derive"] }
 libc = "0.2.172"
+
+[profile.release]
+debug = true
+lto = "thin"
+codegen-units = 1
+panic = "abort"
+opt-level = 3
+
+[profile.release.package.wsk-vm]
+opt-level = 3
+debug-assertions = false
+overflow-checks = false

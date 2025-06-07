@@ -9,6 +9,7 @@ use crate::*;
 
 pub struct Addw;
 impl Addw {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Addw$
         let result = data.r1().wrapping_add(data.r2());
@@ -22,6 +23,7 @@ impl Addw {
 
 pub struct Subw;
 impl Subw {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Subw$
         let result = data.r1().wrapping_sub(data.r2());
@@ -35,6 +37,7 @@ impl Subw {
 
 pub struct Sllw;
 impl Sllw {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Sllw$
         let shift = (data.r2() & 0b11111) as Word; // Only the lower 5 bits are used for shift
@@ -48,6 +51,7 @@ impl Sllw {
 
 pub struct Srlw;
 impl Srlw {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Srlw$
         let shift = (data.r2() & 0b11111) as Word; // Only the lower 5 bits are used for shift
@@ -61,6 +65,7 @@ impl Srlw {
 
 pub struct Sraw;
 impl Sraw {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Sraw$
         let shift = (data.r2() & 0b11111) as Word; // Only the lower 5 bits are used for shift
@@ -74,6 +79,7 @@ impl Sraw {
 
 pub struct Addiw;
 impl Addiw {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Addiw$
         let result = data.r1().wrapping_add_signed(data.imm_fmt_i());
@@ -87,6 +93,7 @@ impl Addiw {
 
 pub struct Slliw;
 impl Slliw {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Slliw$
         let shift = data.immu_fmt_i() & 0b11111; // Only the lower 5 bits are used for shift
@@ -100,6 +107,7 @@ impl Slliw {
 
 pub struct Srliw;
 impl Srliw {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Srliw$
         let shift = data.immu_fmt_i() & 0b11111; // Only the lower 5 bits are used for shift
@@ -113,6 +121,7 @@ impl Srliw {
 
 pub struct Sraiw;
 impl Sraiw {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Sraiw$
         let shift = data.immu_fmt_i() & 0b11111; // Only the lower 5 bits are used for shift
@@ -126,6 +135,7 @@ impl Sraiw {
 
 pub struct Lwu;
 impl Lwu {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Lwu$
         let addr = data.r1().wrapping_add_signed(data.imm_fmt_i());
@@ -139,6 +149,7 @@ impl Lwu {
 
 pub struct Ld;
 impl Ld {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Ld$
         let addr = data.r1().wrapping_add_signed(data.imm_fmt_i());
@@ -154,6 +165,7 @@ impl Ld {
 
 pub struct Sd;
 impl Sd {
+    #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Sd$
         let addr = data.r1().wrapping_add_signed(data.imm_fmt_s());
