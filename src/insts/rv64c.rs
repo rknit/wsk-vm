@@ -67,7 +67,6 @@ impl CNop {
     #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CNop$
-        todo!("implement CNop please!");
         Ok(())
         // $IMPL_END CNop$
     }
@@ -78,7 +77,11 @@ impl CAddi {
     #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CAddi$
-        todo!("implement CAddi please!");
+        let val = data
+            .x(data.rd())
+            .wrapping_add_signed(data.imm_12t5_6_2t4_0());
+        debug_assert!(val != 0);
+        data.set_rd(val);
         Ok(())
         // $IMPL_END CAddi$
     }
@@ -89,7 +92,11 @@ impl CAddiw {
     #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CAddiw$
-        todo!("implement CAddiw please!");
+        let val =
+            data.x(data.rd())
+                .wrapping_add_signed(data.imm_12t5_6_2t4_0()) as Word as SWord as SArch;
+        debug_assert!(val != 0);
+        data.set_rd(val as UArch);
         Ok(())
         // $IMPL_END CAddiw$
     }
@@ -100,7 +107,9 @@ impl CLi {
     #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CLi$
-        todo!("implement CLi please!");
+        let val = data.imm_12t5_6_2t4_0();
+        debug_assert!(val != 0);
+        data.set_rd(val as UArch);
         Ok(())
         // $IMPL_END CLi$
     }
@@ -243,7 +252,15 @@ impl CAddi4spn {
     #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CAddi4spn$
-        todo!("implement CAddi4spn please!");
+        let nzuimm9_6 = data.immu(10, 7) << 6;
+        let nzuimm5_4 = data.immu(12, 11) << 4;
+        let nzuimm3 = data.immu(5, 5) << 3;
+        let nzuimm2 = data.immu(6, 6) << 2;
+        let nzuimm = nzuimm9_6 | nzuimm5_4 | nzuimm3 | nzuimm2;
+        debug_assert!(nzuimm != 0);
+
+        let rd = data.immu(4, 2) as Byte + 8;
+        data.set_x(rd, data.x(2).wrapping_add(nzuimm));
         Ok(())
         // $IMPL_END CAddi4spn$
     }
@@ -254,7 +271,14 @@ impl CFld {
     #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CFld$
-        todo!("implement CFld please!");
+        let addr = data
+            .x(data.c_rs1_p97())
+            .wrapping_add(data.uimm_12_10t5_3_6_5t7_6());
+        let bytes = data.mem_range(addr, 8)?;
+        let value = DFP::from_le_bytes([
+            bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7],
+        ]);
+        data.set_f(data.c_rd_p42(), value);
         Ok(())
         // $IMPL_END CFld$
     }
@@ -265,7 +289,12 @@ impl CLw {
     #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CLw$
-        todo!("implement CLw please!");
+        let addr = data
+            .x(data.c_rs1_p97())
+            .wrapping_add(data.uimm_12_10t5_3_6t2_5t6());
+        let bytes = data.mem_range(addr, 4)?;
+        let value = Word::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]);
+        data.set_x(data.c_rd_p42(), value as UArch);
         Ok(())
         // $IMPL_END CLw$
     }
@@ -276,7 +305,14 @@ impl CLd {
     #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CLd$
-        todo!("implement CLd please!");
+        let addr = data
+            .x(data.c_rs1_p97())
+            .wrapping_add(data.uimm_12_10t5_3_6_5t7_6());
+        let bytes = data.mem_range(addr, 8)?;
+        let value = Dword::from_le_bytes([
+            bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7],
+        ]);
+        data.set_x(data.c_rd_p42(), value as UArch);
         Ok(())
         // $IMPL_END CLd$
     }
@@ -287,7 +323,11 @@ impl CFsd {
     #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CFsd$
-        todo!("implement CFsd please!");
+        let addr = data
+            .x(data.c_rs1_p97())
+            .wrapping_add(data.uimm_12_10t5_3_6_5t7_6());
+        let val = data.f(data.c_rs2_p42()) as DFP;
+        data.set_mem_range(addr, &val.to_le_bytes())?;
         Ok(())
         // $IMPL_END CFsd$
     }
@@ -298,7 +338,11 @@ impl CSw {
     #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CSw$
-        todo!("implement CSw please!");
+        let addr = data
+            .x(data.c_rs1_p97())
+            .wrapping_add(data.uimm_12_10t5_3_6t2_5t6());
+        let val = data.x(data.c_rs2_p42()) as Word;
+        data.set_mem_range(addr, &val.to_le_bytes())?;
         Ok(())
         // $IMPL_END CSw$
     }
@@ -309,7 +353,11 @@ impl CSd {
     #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CSd$
-        todo!("implement CSd please!");
+        let addr = data
+            .x(data.c_rs1_p97())
+            .wrapping_add(data.uimm_12_10t5_3_6_5t7_6());
+        let val = data.x(data.c_rs2_p42()) as Dword;
+        data.set_mem_range(addr, &val.to_le_bytes())?;
         Ok(())
         // $IMPL_END CSd$
     }

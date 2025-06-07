@@ -33,8 +33,8 @@ use rv32a_rv64a::*;
 mod rv64a;
 use rv64a::*;
 
-mod rv32f_rv64f;
-use rv32f_rv64f::*;
+mod rv32f_rv64d;
+use rv32f_rv64d::*;
 
 mod rv64f;
 use rv64f::*;
@@ -158,7 +158,7 @@ pub enum Inst {
     AmominuD(RawInst),
     AmomaxuD(RawInst),
 
-    // RV32F_RV64F
+    // RV32F_RV64D
     FmaddS(RawInst),
     FmsubS(RawInst),
     FnmsubS(RawInst),

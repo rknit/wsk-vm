@@ -94,6 +94,11 @@ impl<'vm> RunData<'vm> {
     }
 
     #[inline(always)]
+    pub const fn rd(&self) -> Byte {
+        self.inst.rd()
+    }
+
+    #[inline(always)]
     pub fn r1(&self) -> UArch {
         self.vm.x(self.inst.rs1())
     }
@@ -156,6 +161,36 @@ impl<'vm> RunData<'vm> {
     #[inline(always)]
     pub const fn imm_fmt_j(&self) -> SArch {
         self.inst.imm_fmt_j()
+    }
+
+    #[inline(always)]
+    pub const fn c_rd_p42(&self) -> Byte {
+        self.inst.c_rd_p42()
+    }
+
+    #[inline(always)]
+    pub const fn c_rs1_p97(&self) -> Byte {
+        self.inst.c_rs1_p97()
+    }
+
+    #[inline(always)]
+    pub const fn c_rs2_p42(&self) -> Byte {
+        self.inst.c_rs2_p42()
+    }
+
+    #[inline(always)]
+    pub const fn uimm_12_10t5_3_6_5t7_6(&self) -> UArch {
+        self.inst.uimm_12_10t5_3_6_5t7_6()
+    }
+
+    #[inline(always)]
+    pub const fn uimm_12_10t5_3_6t2_5t6(&self) -> UArch {
+        self.inst.uimm_12_10t5_3_6t2_5t6()
+    }
+
+    #[inline(always)]
+    pub const fn imm_12t5_6_2t4_0(&self) -> SArch {
+        self.inst.imm_12t5_6_2t4_0()
     }
 }
 
@@ -272,6 +307,43 @@ impl RawInst {
     #[inline(always)]
     pub const fn imm_fmt_j(&self) -> SArch {
         self.raw_imm_fmt_j() << 1
+    }
+
+    #[inline(always)]
+    pub const fn c_rd_p42(&self) -> Byte {
+        self.immu(4, 2) as Byte + 8
+    }
+
+    #[inline(always)]
+    pub const fn c_rs1_p97(&self) -> Byte {
+        self.immu(9, 7) as Byte + 8
+    }
+
+    #[inline(always)]
+    pub const fn c_rs2_p42(&self) -> Byte {
+        self.immu(4, 2) as Byte + 8
+    }
+
+    #[inline(always)]
+    pub const fn uimm_12_10t5_3_6_5t7_6(&self) -> UArch {
+        let uimm7_6 = self.immu(6, 5) << 6;
+        let uimm5_3 = self.immu(12, 10) << 3;
+        uimm7_6 | uimm5_3
+    }
+
+    #[inline(always)]
+    pub const fn uimm_12_10t5_3_6t2_5t6(&self) -> UArch {
+        let uimm6 = self.immu(5, 5) << 6;
+        let uimm5_3 = self.immu(12, 10) << 3;
+        let uimm2 = self.immu(6, 6) << 2;
+        uimm6 | uimm5_3 | uimm2
+    }
+
+    #[inline(always)]
+    pub const fn imm_12t5_6_2t4_0(&self) -> SArch {
+        let uimm5 = self.immu(12, 12) << 5;
+        let uimm4_0 = self.immu(6, 2);
+        sext(uimm5 | uimm4_0, 5)
     }
 }
 impl From<Word> for RawInst {
