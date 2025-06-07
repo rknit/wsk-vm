@@ -8,6 +8,7 @@ mod report;
 mod syscall;
 mod vm;
 
+use bits::*;
 use exception::*;
 use format::*;
 use insts::*;
