@@ -74,7 +74,7 @@ impl InstReport {
                 )
             }
             Format::Unknown => write!(f, "<unknown format>"),
-            _ => todo!(),
+            _ => write!(f, "<unsupported format>"),
         }
     }
 }

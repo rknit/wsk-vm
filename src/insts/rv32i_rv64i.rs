@@ -320,7 +320,8 @@ impl Jalr {
         // $IMPL_START Jalr$
         let return_address = data.vm.pc + 4;
         let addr = data.r1().wrapping_add_signed(data.imm_fmt_i());
-        data.vm.jump(addr & !1, true)?; // Jump to the target address
+        data.vm.jump(addr & !1)?; // Jump to the target address
+        data.vm.status.advance_pc = false; // Prevent PC from advancing after the jump
         data.set_rd(return_address); // Save the return address
         Ok(())
         // $IMPL_END Jalr$
@@ -528,7 +529,8 @@ impl Beq {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Beq$
         if data.r1() == data.r2() {
-            data.vm.jump_pc_rel(data.imm_fmt_b(), true)?; // Jump to the target address
+            data.vm.jump_pc_rel(data.imm_fmt_b())?; // Jump to the target address
+            data.vm.status.advance_pc = false; // Prevent PC from advancing after the jump
         }
         Ok(())
         // $IMPL_END Beq$
@@ -541,7 +543,8 @@ impl Bne {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Bne$
         if data.r1() != data.r2() {
-            data.vm.jump_pc_rel(data.imm_fmt_b(), true)?; // Jump to the target address
+            data.vm.jump_pc_rel(data.imm_fmt_b())?; // Jump to the target address
+            data.vm.status.advance_pc = false; // Prevent PC from advancing after the jump
         }
         Ok(())
         // $IMPL_END Bne$
@@ -554,7 +557,8 @@ impl Blt {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Blt$
         if data.r1s() < data.r2s() {
-            data.vm.jump_pc_rel(data.imm_fmt_b(), true)?; // Jump to the target address
+            data.vm.jump_pc_rel(data.imm_fmt_b())?; // Jump to the target address
+            data.vm.status.advance_pc = false; // Prevent PC from advancing after the jump
         }
         Ok(())
         // $IMPL_END Blt$
@@ -567,7 +571,8 @@ impl Bge {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Bge$
         if data.r1s() >= data.r2s() {
-            data.vm.jump_pc_rel(data.imm_fmt_b(), true)?; // Jump to the target address
+            data.vm.jump_pc_rel(data.imm_fmt_b())?; // Jump to the target address
+            data.vm.status.advance_pc = false; // Prevent PC from advancing after the jump
         }
         Ok(())
         // $IMPL_END Bge$
@@ -580,7 +585,8 @@ impl Bltu {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Bltu$
         if data.r1() < data.r2() {
-            data.vm.jump_pc_rel(data.imm_fmt_b(), true)?; // Jump to the target address
+            data.vm.jump_pc_rel(data.imm_fmt_b())?; // Jump to the target address
+            data.vm.status.advance_pc = false; // Prevent PC from advancing after the jump
         }
         Ok(())
         // $IMPL_END Bltu$
@@ -593,7 +599,8 @@ impl Bgeu {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START Bgeu$
         if data.r1() >= data.r2() {
-            data.vm.jump_pc_rel(data.imm_fmt_b(), true)?; // Jump to the target address
+            data.vm.jump_pc_rel(data.imm_fmt_b())?; // Jump to the target address
+            data.vm.status.advance_pc = false; // Prevent PC from advancing after the jump
         }
         Ok(())
         // $IMPL_END Bgeu$
@@ -631,7 +638,8 @@ impl Jal {
         // $IMPL_START Jal$
         let return_address = data.vm.pc + 4;
         data.set_rd(return_address as u64); // Save the return address
-        data.vm.jump_pc_rel(data.imm_fmt_j(), true)?; // Jump to the target address
+        data.vm.jump_pc_rel(data.imm_fmt_j())?; // Jump to the target address
+        data.vm.status.advance_pc = false; // Prevent PC from advancing after the jump
         Ok(())
         // $IMPL_END Jal$
     }

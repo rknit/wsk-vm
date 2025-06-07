@@ -12,8 +12,8 @@ impl CJr {
     #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CJr$
-        let addr = data.x(data.rs_11_7());
-        data.vm.jump(addr, true)?;
+        data.vm.jump(data.x(data.rs_11_7()))?;
+        data.vm.status.advance_pc = false; // Prevent PC from advancing after the jump
         Ok(())
         // $IMPL_END CJr$
     }
@@ -48,7 +48,9 @@ impl CJalr {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CJalr$
         let ret_addr = data.vm.pc + 2;
-        data.vm.jump(data.x(data.rs_11_7()), true)?;
+        let addr = data.x(data.rs_11_7()) & !1;
+        data.vm.jump(addr)?;
+        data.vm.status.advance_pc = false; // Prevent PC from advancing after the jump
         data.set_x(1, ret_addr);
         Ok(())
         // $IMPL_END CJalr$
@@ -114,7 +116,6 @@ impl CLi {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CLi$
         let val = data.imm_12t5_6_2t4_0();
-        debug_assert!(val != 0);
         data.set_rd(val as UArch);
         Ok(())
         // $IMPL_END CLi$
@@ -495,7 +496,8 @@ impl CBeqz {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CBeqz$
         if data.x(data.c_rs_p97()) == 0 {
-            data.vm.jump_pc_rel(data.c_br_offset(), true)?;
+            data.vm.jump_pc_rel(data.c_br_offset())?;
+            data.vm.status.advance_pc = false; // Prevent PC from advancing after the jump
         }
         Ok(())
         // $IMPL_END CBeqz$
@@ -508,7 +510,8 @@ impl CBnez {
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CBnez$
         if data.x(data.c_rs_p97()) != 0 {
-            data.vm.jump_pc_rel(data.c_br_offset(), true)?;
+            data.vm.jump_pc_rel(data.c_br_offset())?;
+            data.vm.status.advance_pc = false; // Prevent PC from advancing after the jump
         }
         Ok(())
         // $IMPL_END CBnez$
@@ -531,7 +534,8 @@ impl CJ {
         let uimm = uimm11 | uimm10 | uimm9_8 | uimm7 | uimm6 | uimm5 | uimm4 | uimm3_1;
         let imm = sext(uimm, 11);
 
-        data.vm.jump_pc_rel(imm, true)?;
+        data.vm.jump_pc_rel(imm)?;
+        data.vm.status.advance_pc = false; // Prevent PC from advancing after the jump
         Ok(())
         // $IMPL_END CJ$
     }

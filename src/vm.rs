@@ -29,6 +29,7 @@ pub struct VM {
     fregs: [DFP; REG_COUNT],
     mem: Box<[Byte]>,
     pub pc: UArch,
+    pub(crate) status: Status,
 
     pub(crate) halt: bool,
     pub(crate) exit_code: Byte,
@@ -44,6 +45,7 @@ impl VM {
             fregs: Default::default(),
             mem: vec![0; MEM_LEN as UHSize].into_boxed_slice(),
             pc: PROG_BEGIN,
+            status: Status::default(),
 
             halt: false,
             exit_code: 0,
@@ -196,8 +198,12 @@ impl VM {
 
         inst.run(self)?;
 
-        let new_pc = self.pc + align_len;
-        self.pc = if new_pc < PROG_LEN { new_pc } else { 0 };
+        if self.status.advance_pc {
+            let new_pc = self.pc + align_len;
+            self.pc = if new_pc < PROG_LEN { new_pc } else { 0 };
+        } else {
+            self.status.advance_pc = true;
+        }
         Ok(())
     }
 
@@ -343,14 +349,9 @@ impl VM {
     }
 
     #[inline]
-    pub fn jump(&mut self, addr: UArch, dec_4: bool) -> Result<(), VMRunError> {
+    pub fn jump(&mut self, addr: UArch) -> Result<(), VMRunError> {
         if addr < PROG_LEN {
-            if dec_4 {
-                // -4 bytes to account for the instruction fetch
-                self.pc = addr - 4;
-            } else {
-                self.pc = addr;
-            }
+            self.pc = addr;
             Ok(())
         } else {
             Err(VMRunError {
@@ -362,10 +363,10 @@ impl VM {
     }
 
     #[inline]
-    pub fn jump_pc_rel(&mut self, offset: SArch, dec_4: bool) -> Result<(), VMRunError> {
+    pub fn jump_pc_rel(&mut self, offset: SArch) -> Result<(), VMRunError> {
         let addr = self.pc.wrapping_add_signed(offset) & !1;
         if addr < PROG_LEN {
-            self.jump(addr, dec_4)
+            self.jump(addr)
         } else {
             Err(VMRunError {
                 err_addr: self.pc,
@@ -380,6 +381,15 @@ impl VM {
         match ex {
             Exception::Ecall => self.syscall(),
         }
+    }
+}
+
+pub(crate) struct Status {
+    pub advance_pc: bool,
+}
+impl Default for Status {
+    fn default() -> Self {
+        Self { advance_pc: true }
     }
 }
 
