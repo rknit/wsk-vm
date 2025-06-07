@@ -1,3 +1,4 @@
+from tri_tree import TriTree
 from util import get_match_pat_from_bit_pat
 from info import Inst, Module, Modules
 import toml
@@ -24,12 +25,18 @@ def read_insts(path: str) -> Modules:
                 
                 for inst_name, bit_pat in inst_data.items():
                     if module.bit_len != 32:
-                        bit_pat = "0" * (32 - module.bit_len) + bit_pat
+                        bit_pat = "X" * (32 - module.bit_len) + bit_pat
                     
                     pats = get_match_pat_from_bit_pat(bit_pat)
                     module.append(Inst(name=inst_name, format=format, bit_pat=bit_pat, pats=pats))
             modules.append(module)
         
+    tree = TriTree()
+    for inst in modules.all_inst():
+        tree.insert(inst)
+    print(tree)
+    exit(0)
+    
     return modules
 
 def gen_main(modules: Modules) -> str:
