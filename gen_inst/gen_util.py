@@ -65,17 +65,27 @@ def gen_main(modules: Modules) -> str:
     gen("impl Inst {")
 
     # run function
-    gen(f"""
-    #[inline]
-    pub fn run(self, vm: &mut VM) -> Result<(), VMRunError> {{
-        const RUN_TABLE: [fn(RawInst, &mut VM) -> Result<(), VMRunError>; {len(modules.all_inst())}] = [
-            {"            ".join([inst.jump_table_entry() for inst in modules.all_inst()])}
-        ];
-        
-        let id = self.discriminant();
-        let raw_inst = self.inner();
-        RUN_TABLE[id](raw_inst, vm)
-    }}""")
+    useRunTable = False
+    if useRunTable:
+        gen(f"""
+        #[inline]
+        pub fn run(self, vm: &mut VM) -> Result<(), VMRunError> {{
+            const RUN_TABLE: [fn(RawInst, &mut VM) -> Result<(), VMRunError>; {len(modules.all_inst())}] = [
+                {"            ".join([inst.jump_table_entry() for inst in modules.all_inst()])}
+            ];
+            
+            let id = self.discriminant();
+            let raw_inst = self.inner();
+            RUN_TABLE[id](raw_inst, vm)
+        }}""")
+    else:
+         gen(f"""
+        #[inline]
+        pub fn run(self, vm: &mut VM) -> Result<(), VMRunError> {{
+            match self {{
+                {"            ".join([inst.run_arm() for inst in modules.all_inst()])}
+            }}
+        }}""")
     
     # name function
     gen(f"""
