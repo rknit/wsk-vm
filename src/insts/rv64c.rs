@@ -12,7 +12,8 @@ impl CJr {
     #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CJr$
-        todo!("implement CJr please!");
+        let addr = data.x(data.rs_11_7());
+        data.vm.jump(addr, true)?;
         Ok(())
         // $IMPL_END CJr$
     }
@@ -23,7 +24,8 @@ impl CMv {
     #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CMv$
-        todo!("implement CMv please!");
+        let val = data.x(data.rs_6_2());
+        data.set_rd(val);
         Ok(())
         // $IMPL_END CMv$
     }
@@ -45,7 +47,9 @@ impl CJalr {
     #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CJalr$
-        todo!("implement CJalr please!");
+        let ret_addr = data.vm.pc + 2;
+        data.vm.jump(data.x(data.rs_11_7()), true)?;
+        data.set_x(1, ret_addr);
         Ok(())
         // $IMPL_END CJalr$
     }
@@ -56,7 +60,9 @@ impl CAdd {
     #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CAdd$
-        todo!("implement CAdd please!");
+        let v1 = data.x(data.rs_11_7());
+        let v2 = data.x(data.rs_6_2());
+        data.set_rd(v1.wrapping_add(v2));
         Ok(())
         // $IMPL_END CAdd$
     }
@@ -253,7 +259,9 @@ impl CFsdsp {
     #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CFsdsp$
-        todo!("implement CFsdsp please!");
+        let addr = data.x(2).wrapping_add(data.uimm_12_10t5_3_9_7t8_6());
+        let val = data.f(data.rs_6_2()) as DFP;
+        data.set_mem_range(addr, &val.to_le_bytes())?;
         Ok(())
         // $IMPL_END CFsdsp$
     }
@@ -264,7 +272,9 @@ impl CSwsp {
     #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CSwsp$
-        todo!("implement CSwsp please!");
+        let addr = data.x(2).wrapping_add(data.uimm_12_9t5_2_8_7t7_6());
+        let val = data.x(data.rs_6_2()) as Word;
+        data.set_mem_range(addr, &val.to_le_bytes())?;
         Ok(())
         // $IMPL_END CSwsp$
     }
@@ -275,7 +285,9 @@ impl CSdsp {
     #[inline]
     pub fn run(mut data: RunData) -> Result<(), VMRunError> {
         // $IMPL_START CSdsp$
-        todo!("implement CSdsp please!");
+        let addr = data.x(2).wrapping_add(data.uimm_12_10t5_3_9_7t8_6());
+        let val = data.x(data.rs_6_2()) as Dword;
+        data.set_mem_range(addr, &val.to_le_bytes())?;
         Ok(())
         // $IMPL_END CSdsp$
     }

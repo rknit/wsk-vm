@@ -204,6 +204,16 @@ impl<'vm> RunData<'vm> {
     }
 
     #[inline(always)]
+    pub const fn uimm_12_10t5_3_9_7t8_6(&self) -> UArch {
+        self.inst.uimm_12_10t5_3_9_7t8_6()
+    }
+
+    #[inline(always)]
+    pub const fn uimm_12_9t5_2_8_7t7_6(&self) -> UArch {
+        self.inst.uimm_12_9t5_2_8_7t7_6()
+    }
+
+    #[inline(always)]
     pub const fn imm_12t5_6_2t4_0(&self) -> SArch {
         self.inst.imm_12t5_6_2t4_0()
     }
@@ -211,6 +221,16 @@ impl<'vm> RunData<'vm> {
     #[inline(always)]
     pub const fn c_br_offset(&self) -> SArch {
         self.inst.c_br_offset()
+    }
+
+    #[inline(always)]
+    pub const fn rs_11_7(&self) -> Byte {
+        self.inst.rs_11_7()
+    }
+
+    #[inline(always)]
+    pub const fn rs_6_2(&self) -> Byte {
+        self.inst.rs_6_2()
     }
 }
 
@@ -378,6 +398,20 @@ impl RawInst {
     }
 
     #[inline(always)]
+    pub const fn uimm_12_10t5_3_9_7t8_6(&self) -> UArch {
+        let uimm8_6 = self.immu(9, 7) << 6;
+        let uimm5_3 = self.immu(12, 10) << 3;
+        uimm8_6 | uimm5_3
+    }
+
+    #[inline(always)]
+    pub const fn uimm_12_9t5_2_8_7t7_6(&self) -> UArch {
+        let uimm7_6 = self.immu(8, 7) << 6;
+        let uimm5_2 = self.immu(12, 9) << 2;
+        uimm7_6 | uimm5_2
+    }
+
+    #[inline(always)]
     pub const fn imm_12t5_6_2t4_0(&self) -> SArch {
         sext(self.uimm_12t5_6_2t4_0(), 5)
     }
@@ -391,6 +425,16 @@ impl RawInst {
         let uimm2_1 = self.immu(4, 3) << 1;
         let uimm = uimm8 | uimm7_6 | uimm5 | uimm4_3 | uimm2_1;
         sext(uimm, 8)
+    }
+
+    #[inline(always)]
+    pub const fn rs_11_7(&self) -> Byte {
+        self.immu(11, 7) as Byte
+    }
+
+    #[inline(always)]
+    pub const fn rs_6_2(&self) -> Byte {
+        self.immu(6, 2) as Byte
     }
 }
 impl From<Word> for RawInst {
