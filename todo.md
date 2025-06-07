@@ -24,7 +24,9 @@
 
 ## Optimizations
 
-- [ ] tree-based decoder (tri-ary tree)
+- [-] tree-based decoder (tri-ary tree)
+  - [x] phase 1: simple tri-ary match.
+    - tree height: 16/32
 - [ ] copying implementations into run function (to avoid making a stackframe)
+  - [ ] split run function into another file (it will be lengthy).
 - [ ] prefetching instructions (branch predictions)
-- [ ] remove RunData and use RawInst and VM directly?

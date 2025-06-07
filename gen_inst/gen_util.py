@@ -1,3 +1,4 @@
+from tri_tree import TriTree
 from util import get_match_pat_from_bit_pat
 from info import Inst, Module, Modules
 import toml
@@ -24,12 +25,12 @@ def read_insts(path: str) -> Modules:
                 
                 for inst_name, bit_pat in inst_data.items():
                     if module.bit_len != 32:
-                        bit_pat = "0" * (32 - module.bit_len) + bit_pat
+                        bit_pat = "X" * (32 - module.bit_len) + bit_pat
                     
                     pats = get_match_pat_from_bit_pat(bit_pat)
                     module.append(Inst(name=inst_name, format=format, bit_pat=bit_pat, pats=pats))
             modules.append(module)
-        
+    
     return modules
 
 def gen_main(modules: Modules) -> str:
@@ -37,6 +38,10 @@ def gen_main(modules: Modules) -> str:
     def gen(s: str = "", endl: str = "\n"):
         nonlocal out
         out += s + endl
+        
+    gen(f"mod decode;")
+    gen(f"use decode::*;")
+    gen()
 
     # include all modules
     for mod in modules.mods():
@@ -55,18 +60,9 @@ def gen_main(modules: Modules) -> str:
         if mod_idx + 1 != modules.len():
             gen()
     gen("}")
-
-    # decode function
-    gen(f"""
-impl Inst {{
-    #[inline]
-    pub const fn decode(inst: Word) -> Option<Self> {{
-        Some(match inst {{
-            {"            ".join([inst.decode_arm() for inst in modules.all_inst()])}
-            #[allow(unreachable_patterns)]
-            _ => return None,
-        }})
-    }}""")
+    
+    # impl Inst
+    gen("impl Inst {")
 
     # run function
     gen(f"""
@@ -124,6 +120,42 @@ impl Inst {{
 
     # finish impl
     gen("}")
+    return out
+
+def gen_decode(modules: Modules) -> str:
+    out: str = str()
+    def gen(s: str = "", endl: str = "\n"):
+        nonlocal out
+        out += s + endl
+        
+    useDecodeTree = False
+        
+    if useDecodeTree:  
+        tree = TriTree()
+        for inst in modules.all_inst():
+            tree.insert(inst)
+            
+        gen(f"""
+    impl Inst {{
+        #[inline]
+        pub const fn decode(inst: Word) -> Option<Self> {{
+            Some({tree.gen_match()})
+        }}
+    }}
+    """)
+    else:
+        gen(f"""
+    impl Inst {{
+        #[inline]
+        pub const fn decode(inst: Word) -> Option<Self> {{
+            Some(match inst {{
+                {"            ".join([inst.decode_arm() for inst in modules.all_inst()])}
+                _ => return None,
+            }})
+        }}
+    }}
+    """)
+    
     return out
 
 def get_impl_start_token(inst: Inst) -> str:
