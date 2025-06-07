@@ -57,16 +57,41 @@ class TriTree:
             if child is not None:
                 if child.inst is None:
                     tree_dict[bit] = TriTree.match_tree(child, depth + 1)
-                    if len(tree_dict[bit]) == 1:
-                        for k in tree_dict[bit].keys():
-                            first = k
-                            break
-                        tree_dict[f"{bit}{first}"] = tree_dict[bit][first] # type: ignore
-                        tree_dict.pop(bit)
                 else:
                     tree_dict[bit] = f"{child.inst}"
                     
         return tree_dict
+    
+    def gen_match(self) -> str:
+        return TriTree._gen_match(self.root, 0)
+    
+    @staticmethod
+    def _gen_match(node: TriNode, depth: int) -> str:
+        if node.inst is not None:
+            return f"Inst::{node.inst.symbol}(RawInst::new(inst))"
+        
+        arms: dict[str, str] = dict()
+        for bit, child in node.children.items():
+            if child is not None:
+                inner = TriTree._gen_match(child, depth + 1)
+                arms[bit] = inner
+                
+        match_str = f"match (inst >> {depth}) & 1u32 {{"
+        
+        if '0' in arms:
+            match_str += f"\n{'  ' * (depth + 1)}0b0 => {arms['0']},"
+            
+        if '1' in arms:
+            match_str += f"\n{'  ' * (depth + 1)}0b1 => {arms['1']},"
+            
+        if 'X' in arms:
+            match_str += f"\n{'  ' * (depth + 1)}_ => {arms['X']},"
+        else:
+            match_str += f"\n{'  ' * (depth + 1)}_ => return None,"
+            
+        match_str += f"\n{'  ' * depth}}}"
+                    
+        return match_str
     
     @staticmethod
     def _str_list(node: TriNode, depth: int) -> list[str]:

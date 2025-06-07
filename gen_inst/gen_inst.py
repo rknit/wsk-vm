@@ -2,7 +2,7 @@
 import os
 import sys
 from util import Colors
-from gen_util import get_impl_end_token, get_impl_start_token, read_insts, gen_main, gen_modules
+from gen_util import gen_decode, get_impl_end_token, get_impl_start_token, read_insts, gen_main, gen_modules
 from info import Modules
 from pathlib import Path
 
@@ -125,6 +125,24 @@ def read_impls(modules: Modules):
             
             impl = content[i:j].strip()
             inst.impl = impl
+            
+def gen_decode_file(modules: Modules):
+    path = f"{OUTPUT_DIR}/decode.rs"
+    # Validate destination module
+    if os.path.exists(path):
+        try:
+            assert_file_compat_ver(path)
+        except ValueError as e:
+            print(f"{Colors.FAIL}Error: {e}{Colors.ENDC}", file=sys.stderr)
+            sys.exit(1)
+    
+    # Generate decode file
+    with open(path, "w") as f:
+        f.write(MAIN_HEADER.strip() + "\n\n")
+        f.write(gen_decode(modules).strip())
+        
+    print(f"{Colors.OKGREEN}Generated {path}{Colors.ENDC}")
+    return path
      
 if __name__ == "__main__":
     if len(sys.argv) != 2:
@@ -134,12 +152,21 @@ if __name__ == "__main__":
     
     print(f"Generator version {GEN_VERSION}")
     modules = read_insts(path)
+    
+    fmt_paths: list[str] = []
+    
     main_path = gen_main_file(modules)
+    fmt_paths.append(main_path)
+    
+    decode_path = gen_decode_file(modules)
+    fmt_paths.append(decode_path)
+    
     read_impls(modules)
     module_paths = gen_module_files(modules)
+    fmt_paths.extend(module_paths)
     
     
-    fmt_cmd = f"rustfmt --config-path={OUTPUT_DIR}/../../rustfmt.toml " + main_path + " " + " ".join(module_paths)
+    fmt_cmd = f"rustfmt --config-path={OUTPUT_DIR}/../../rustfmt.toml " + " ".join(fmt_paths)
     print(f"running rustfmt: {fmt_cmd}")
     os.system(fmt_cmd)
     
