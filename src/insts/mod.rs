@@ -1291,3 +1291,9 @@ impl Inst {
         }
     }
 }
+
+impl Default for Inst {
+    fn default() -> Self {
+        Inst::CNop(0.into())
+    }
+}

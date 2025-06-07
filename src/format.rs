@@ -1,5 +1,5 @@
 use super::bits::*;
-use crate::{Byte, SArch, SWord, UArch, VM, VMRunError, Word, ext};
+use crate::{Byte, DFP, SArch, SWord, UArch, VM, VMRunError, Word, ext};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Format {
@@ -31,6 +31,16 @@ impl<'vm> RunData<'vm> {
     #[inline(always)]
     pub const fn new(inst: RawInst, vm: &'vm mut VM) -> Self {
         RunData { inst, vm }
+    }
+
+    #[inline(always)]
+    pub fn f(&self, reg: Byte) -> DFP {
+        self.vm.f(reg)
+    }
+
+    #[inline(always)]
+    pub fn set_f(&mut self, reg: Byte, value: DFP) {
+        self.vm.set_f(reg, value);
     }
 
     #[inline(always)]

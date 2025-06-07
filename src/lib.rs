@@ -26,6 +26,9 @@ pub type SDword = i64;
 pub type Qword = u128;
 pub type SQword = i128;
 
+pub type SFP = f32;
+pub type DFP = f64;
+
 // architecture-specific integer types of the VM
 pub type UArch = Dword;
 pub type SArch = SDword;

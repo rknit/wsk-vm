@@ -6,7 +6,7 @@ use std::{
 use log::{info, log_enabled, trace};
 
 use crate::{
-    Byte, Exception, Half, Inst, InstReport, SArch, SHalf, UArch, UHSize, Word, cache::Cache,
+    Byte, DFP, Exception, Half, Inst, InstReport, SArch, SHalf, UArch, UHSize, Word, cache::Cache,
 };
 
 const REG_COUNT: UHSize = 32;
@@ -26,6 +26,7 @@ const CACHE_CAPACITY: UArch = 16384;
 #[repr(align(64))]
 pub struct VM {
     regs: [UArch; REG_COUNT],
+    fregs: [DFP; REG_COUNT],
     mem: Box<[Byte]>,
     pub pc: UArch,
 
@@ -40,6 +41,7 @@ impl VM {
     pub fn new() -> Self {
         Self {
             regs: Default::default(),
+            fregs: Default::default(),
             mem: vec![0; MEM_LEN as UHSize].into_boxed_slice(),
             pc: PROG_BEGIN,
 
@@ -317,10 +319,26 @@ impl VM {
     #[inline(always)]
     pub fn set_x(&mut self, i: Byte, val: UArch) {
         debug_assert!((i as UHSize) < REG_COUNT, "invalid register");
-        if i == 0 {
-            self.regs[i as UHSize] = 0;
-        } else {
+        if i != 0 {
             self.regs[i as UHSize] = val;
+        }
+    }
+
+    #[inline(always)]
+    pub fn f(&self, i: Byte) -> DFP {
+        debug_assert!((i as UHSize) < REG_COUNT, "invalid register");
+        if i == 0 {
+            return 0.0;
+        } else {
+            self.fregs[i as UHSize]
+        }
+    }
+
+    #[inline(always)]
+    pub fn set_f(&mut self, i: Byte, val: DFP) {
+        debug_assert!((i as UHSize) < REG_COUNT, "invalid register");
+        if i != 0 {
+            self.fregs[i as UHSize] = val;
         }
     }
 
@@ -362,12 +380,6 @@ impl VM {
         match ex {
             Exception::Ecall => self.syscall(),
         }
-    }
-}
-
-impl Default for Inst {
-    fn default() -> Self {
-        Inst::CNop(0.into())
     }
 }
 

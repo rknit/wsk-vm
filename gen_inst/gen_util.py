@@ -130,6 +130,15 @@ def gen_main(modules: Modules) -> str:
 
     # finish impl
     gen("}")
+    
+    # default impl for Inst
+    gen(f"""
+impl Default for Inst {{
+    fn default() -> Self {{
+        Inst::CNop(0.into())
+    }}
+}}""")
+    
     return out
 
 def gen_decode(modules: Modules) -> str:
